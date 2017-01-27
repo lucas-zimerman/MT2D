@@ -1,0 +1,34 @@
+==============================================================================
+ MT2D:
+  CREATED BY:LUCAS ZIMERMAN FRAULOB
+  ALL RIGHTS RESERVED
+  OFFICIAL LAST BUILD DATE:06-2014
+==============================================================================
+
+Questions about Making a software/game using MT2D
+
+Q:Can I make a Free/Paid Software/Game?
+A:YES!!!
+
+Q:Can I make a closed source game?
+A:YES and NO
+   you'll be able to release your game as a closed source, but not the MT2D code
+   if requested, you'll need to release your edited MT2D code, but there'll not be required to release your software/game source code.
+ So resuming, you can make a closed source game, but if requested, you'll need to give your MT2D code.
+
+Q:Can I modify MT2D?
+A:Yes, feel free do to it, but this file will not be able to be edited.
+And you'll need to include this file with your source code.
+
+Q:Can I put my name on modified MT2D code?
+A:No, but you'll be able to use this string:
+"MT2D: Created by: Lucas Zimerman Fraulob, modified by:your name"
+
+Q:Can I send to the author some modifications to be able to compile/run into
+another operational system? 
+A:YES, if it works, we'll add it into the code, and if the way things are 
+called doesn't require extra things (like something "start_sprites();")
+..
+
+
+Credited people who contributed with MT2D

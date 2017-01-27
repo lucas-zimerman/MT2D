@@ -1,0 +1,11 @@
+==============================================================================
+     TO BE MADE
+==============================================================================
+ 
+1.Linux port (Partially ok)
+2.File Explorer API 
+3.Rotate ASCII sprites 
+4.Scale ASCII sprites
+5.Draw Images inside a specific space
+6.Support to basic audio (MIDI, WAVE) (Partially ok with SDL)
+7.Threads Support (some features already work with threads)

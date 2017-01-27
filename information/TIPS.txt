@@ -1,0 +1,9 @@
+-Do not include folders with '\' and yes with '/'.
+because only ms-dos and windows will work with '\'
+ex:
+GOOD: #include "../../mt2d/Window_core.h"
+BAD   : #include "..\..\mt2d\Window_core.h"
+===============================================
+Try to use the MT2D system functions instead of system only
+ex: use Keyboard_touched instead of kbhit
+ex: use Keyboard_Keytouched instead of getch
