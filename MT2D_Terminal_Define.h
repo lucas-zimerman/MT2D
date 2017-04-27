@@ -21,7 +21,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 ===================================================================*/
 
 
-//#define SDL_USE
+#define SDL_USE
 //#define MT2D_SDL_GPU
 
 //#define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE

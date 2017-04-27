@@ -1,7 +1,7 @@
 /* Object.cpp created by Lucas Zimerman Fraulob
 
 */
-#include "../Window_core.h"
+#include "../MT2D.h"
 #include "Object.h"
 #include "Sprites.h"
 #include <stdlib.h>
@@ -240,10 +240,7 @@ ObjectSimple *Object_Create_Simple(bool Solid, bool RenderOnly, int sizeX, int s
 	Obj->State4FramesDuration = 0;
 	Obj->State5 = 0;
 	Obj->State5FramesDuration = 0;
-	Obj->User_Var1 = 0;
-	Obj->User_Var2 = 0;
-	Obj->User_Var3 = 0;
-	Obj->User_Var4 = 0;
+	Obj->DataCore.User_Vars =0;
 	return Obj;
 }
 
@@ -287,10 +284,7 @@ ObjectComplex *Object_Create_Complex(bool Solid, bool RenderOnly, int sizeX, int
 	Obj->Pain = 0;
 	Obj->PainFramesDuration = 0;
 	Obj->Target = 0;
-	Obj->User_Var1 = 0;
-	Obj->User_Var2 = 0;
-	Obj->User_Var3 = 0;
-	Obj->User_Var4 = 0;
+	Obj->DataCore.User_Vars =0;
 	return Obj;
 }
 

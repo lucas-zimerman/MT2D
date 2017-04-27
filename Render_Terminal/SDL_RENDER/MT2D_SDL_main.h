@@ -38,7 +38,7 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 ===================================================================*/
 #ifndef _MT2D_SDL_MAIN_H
 #define _MT2D_SDL_MAIN_H
-#include "../Window_core.h"
+#include <MT2D/MT2D.h>
 
 bool init();
 void close();

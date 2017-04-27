@@ -1,13 +1,13 @@
 #ifndef _MT2D_SDL_RED_H
 #define _MT2D_SDL_RED_H
 
-#include "MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef SDL_USE // if you'll not use SDL dont load this file on your project
-	#include "../Keyboard.h"
-	#include "../system_calls.h"
-	#include "../Window_core.h"
-    #include "SDL_Defines.h"
+	#include <MT2D/MT2D_Keyboard.h>
+	#include <MT2D/MT2D_System_Calls.h>
+	#include <MT2D/MT2D.h>
+    #include "MT2D_SDL_Defines.h"
 	#include <stdio.h>
 
 
@@ -139,6 +139,7 @@ MT2D_SDL_Window *MT2D_SDL_CreateWindow(const char *title, int x, int y, int w, i
 	X[0] = 1;
 	return X;
 #else
+	
 	return SDL_CreateWindow(title,x,y,w,h,flags);
 #endif
 }

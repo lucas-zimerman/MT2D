@@ -6,8 +6,8 @@
 
 #ifdef SDL_USE
 //   #include "SDL_MT2D/SDL_Defines.h"
-#include "SDL_MT2D/SDL_MT2Dmain.h"
-#include "MT2D.h"
+#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
+#include <MT2D/MT2D.h>
 #elif defined _WIN32
 #include <Windows.h>
 #elif defined __MSDOS__

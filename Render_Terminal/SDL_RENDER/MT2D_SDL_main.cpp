@@ -1,7 +1,8 @@
-#include "MT2D/MT2D_Terminal_Define.h"
-#include "MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_Redefine.h"
+#include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_Redefine.h>
 
 #ifdef SDL_USE
+#include <MT2D/MT2D.h>
 
 int FRAMEBUFFER[MAX_VER][MAX_HOR]; //used to store what was draw under the screen, (it should avoid overdrawn)
 
@@ -229,7 +230,7 @@ bool init()
 
 		//Create a window display
 		#ifdef MT2D_WINDOWED_MODE
-            gWindow = MT2D_SDL_CreateWindow( "MT2D SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+            gWindow = MT2D_SDL_CreateWindow( "MT2D SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT,  SDL_WINDOW_SHOWN);
 		#else
             gWindow = MT2D_SDL_CreateWindow( "MT2D SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
 		#endif
@@ -308,10 +309,10 @@ bool loadMedia()
 	//Loading success flag
 	bool success = true;
 
-	success = NewLoadFromFile("../../MT2D/SDL_MT2D/msdos_fnt.png");
+	success = NewLoadFromFile("./msdos_fnt.png");
 	//Load sprite sheet texture
 	if(!success){
-		success = NewLoadFromFile("./msdos_fnt.png");
+		success = NewLoadFromFile("../../MT2D/SDL_MT2D/msdos_fnt.png");
 	}
 	if(success)
 	{
@@ -332,7 +333,7 @@ bool loadMedia()
 				hor+=8;
 		}
 		//Get rid of old loaded surface
-		SDL_FreeSurface( NEWloadedSurface );
+//		SDL_FreeSurface( NEWloadedSurface );
 	}
 
 	return success;
@@ -469,21 +470,21 @@ int SDL_getkeyboard(){//keyboardhit is the function that gets the keycode, this 
                   }
             }
             if(Keyboard_event.key.keysym.sym == SDLK_LEFT){
-                key_SDL=key_left;
+                key_SDL=arrow_left_pressed;
                 key_code=_key;
 
             }
             else if(Keyboard_event.key.keysym.sym == SDLK_RIGHT){
-                key_SDL=key_right;
+                key_SDL=arrow_right_pressed;
                 key_code=_key;
 
             }
             else if(Keyboard_event.key.keysym.sym == SDLK_UP){
-                key_SDL=key_up;
+                key_SDL=arrow_up_pressed;
                 key_code=_key;
             }
             else if(Keyboard_event.key.keysym.sym == SDLK_DOWN){
-                key_SDL=key_down;
+                key_SDL=arrow_down_pressed;
                 key_code=_key;
             }else if(Keyboard_event.key.keysym.sym == SDLK_F11){
                 switch(RES_MODE){
@@ -573,22 +574,22 @@ int SDL_Keyboard_touched() {//check if a key was pressed, and if it was, get the
 		else if (Keyboard_event.key.keysym.sym == SDLK_UP) {
 			printf(" seta cima\n");
 			SDL_EmulatedKeySpecial = 224;
-			SDL_EmulatedKey = key_up;
+			SDL_EmulatedKey = arrow_up_pressed;
 		}
 		else if (Keyboard_event.key.keysym.sym == SDLK_DOWN) {
 			printf(" seta baixo\n");
 			SDL_EmulatedKeySpecial = 224;
-			SDL_EmulatedKey = key_down;
+			SDL_EmulatedKey = arrow_down_pressed;
 		}
 		else if (Keyboard_event.key.keysym.sym == SDLK_LEFT) {
 			printf(" seta esquerda\n");
 			SDL_EmulatedKeySpecial = 224;
-			SDL_EmulatedKey = key_left;
+			SDL_EmulatedKey = arrow_left_pressed;
 		}
 		else if (Keyboard_event.key.keysym.sym == SDLK_RIGHT) {
 			printf(" seta direita\n");
 			SDL_EmulatedKeySpecial = 224;
-			SDL_EmulatedKey = key_right;
+			SDL_EmulatedKey = arrow_right_pressed;
 		}
 		if (SDL_EmulatedKeySpecial == 224) {
 			SDL_SpecialKeyHit = true;

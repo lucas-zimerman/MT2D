@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Sprites.h"
-#include "../Keyboard.h" // only used for taking the definition of the key enter
-#include "../Window_core.h" // for geting the display definition
+#include "../MT2D_Keyboard.h" // only used for taking the definition of the key enter
+#include "../MT2D.h" // for geting the display definition
 
 Sprite *Load_Sprite(char *file) {
 	Sprite *S=0;
@@ -19,7 +19,7 @@ Sprite *Load_Sprite(char *file) {
 		//STEP 1: count the size of the line and column
 		while (!feof(fl)) {
 			BUFF = fgetc(fl);
-			if (BUFF == enter) {
+			if (BUFF == enter_pressed) {
 				fgetc(fl);// why there's always a '\r' after the \n ?
 				if (Xi == 0) {
 					Xi = X;
@@ -60,7 +60,7 @@ Sprite *Load_Sprite(char *file) {
 		while (!feof(fl)) {
 			BUFF = fgetc(fl);
 			printf("%c", BUFF);
-			if (BUFF == enter) 
+			if (BUFF == enter_pressed) 
 			{
 				fgetc(fl);// why there's always a '\r' after the \n ?
 				X = -1;//only zeroed to avoid overflow...

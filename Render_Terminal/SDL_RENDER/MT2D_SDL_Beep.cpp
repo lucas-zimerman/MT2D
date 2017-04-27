@@ -35,7 +35,7 @@ class Beeper
 private:
 	double v;
 	std::queue<BeepObject> beeps;
-	bool Beep_Started = false;
+	bool Beep_Started ;//= false;
 public:
 	Beeper();
 	~Beeper();

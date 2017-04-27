@@ -1,10 +1,10 @@
 #ifndef __MSDOS__
-#include "MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #endif
 
 #ifdef SDL_USE
-    #include "SDL_MT2D/SDL_MT2Dmain.h"
-    #include "SDL_MT2D/SDL_MT2DBeep.h"
+#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
+#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_Beep.h>
 #elif defined _WIN32
     #include <windows.h>
 #elif defined __MSDOS__

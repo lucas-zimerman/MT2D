@@ -3,6 +3,7 @@
 
 #include "SpriteBlock.h"
 #include "Coordinates.h"
+#include "Vars.h"
 
 #define OBJECT_DEATH -1
 //Simple Object define
@@ -35,6 +36,7 @@ struct Object{
 	int Frame; // the actual frame that is being showed by the object, the spriteblock to be used can be determined by the State.
 	int FrameCnt; // count how many tics the actual frame has to be showed, start with x and ends with 0; -1 means restart.
 	bool Enabled;
+	MT2D_VAR *User_Vars;
 };
 
 struct ObjectSimple{// used for simple stuff like board games where things are more hard coded
@@ -49,10 +51,6 @@ struct ObjectSimple{// used for simple stuff like board games where things are m
 	char *State4FramesDuration;
 	SpriteBlock *State5;
 	char *State5FramesDuration;
-	int User_Var1;
-	int User_Var2;
-	int User_Var3;
-	int User_Var4;
 };
 
 struct ObjectComplex{ // used for more complex games where the objects are more autonomous and less hard coded
@@ -81,10 +79,6 @@ struct ObjectComplex{ // used for more complex games where the objects are more 
 	char *PainFramesDuration; // indicates the duration that should be stayed over each animation
 	SpriteBlock *Death;
 	char *DeathFramesDuration;// indicates the duration that should be stayed over each animation
-	int User_Var1;// use it the way the user wants
-	int User_Var2;// use it the way the user wants
-	int User_Var3;// use it the way the user wants
-	int User_Var4;// use it the way the user wants	
 };
 
 struct ObjectProjectile {
