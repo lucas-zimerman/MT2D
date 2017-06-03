@@ -1,7 +1,7 @@
-#include "MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef SDL_USE
-#include "SDL_MT2D/SDL_MT2DAudio.h"
+#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_Audio.h>
 #endif
 #ifdef _DEBUG
     #include <stdio.h>

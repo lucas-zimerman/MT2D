@@ -4,64 +4,64 @@
 #include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef SDL_USE // if you'll not use SDL dont load this file on your project
-	#include <MT2D/MT2D_Keyboard.h>
-	#include <MT2D/MT2D_System_Calls.h>
-	#include <MT2D/MT2D.h>
-    #include "MT2D_SDL_Defines.h"
-	#include <stdio.h>
+#include <MT2D/MT2D_Keyboard.h>
+#include <MT2D/MT2D_System_Calls.h>
+#include <MT2D/MT2D.h>
+#include "MT2D_SDL_Defines.h"
+#include <stdio.h>
 
 
 #ifdef _WIN32
-	#ifdef SDL_stbimage
+#ifdef SDL_stbimage
 
-		#define SDL_STBIMAGE_IMPLEMENTATION
-		#include "SDL_stbimage.h"
-	#elif defined(MT2D_SDL_GPU)
+#define SDL_STBIMAGE_IMPLEMENTATION
+#include "SDL_stbimage.h"
+#elif defined(MT2D_SDL_GPU)
 #define SDL_GPU_DISABLE_OPENGL 1
 #define SDL_GPU_DISABLE_GLES_1 1
 #define SDL_GPU_DISABLE_GLES_3 1
 
-		#include "SDL.h"
-		#include "SDL_gpu.h"
-	#else
-		#include <SDL_image.h>
-	#endif
+#include "SDL.h"
+#include "SDL_gpu.h"
 #else
-	#include <SDL2/SDL.h>
-	#ifdef SDL_stbimage
-		#include "SDL_stbimage.h"
-	#else
-		#include <SDL2/SDL_image.h>
-	#endif
-	#include "SDL_Defines.h"
+#include <SDL_image.h>
+#endif
+#else
+#include <SDL2/SDL.h>
+#ifdef SDL_stbimage
+#include "SDL_stbimage.h"
+#else
+#include <SDL2/SDL_image.h>
+#endif
+#include "SDL_Defines.h"
 #endif
 
 #pragma region TYPES
 #ifdef MT2D_SDL_GPU
-	#define IMG_INIT_PNG true
+#define IMG_INIT_PNG true
 //============
-	#define MT2D_SDL_Texture GPU_Image
-	#define MT2D_SDL_Rect GPU_Rect
-	#define MT2D_SDL_Renderer GPU_Target
+#define MT2D_SDL_Texture GPU_Image
+#define MT2D_SDL_Rect GPU_Rect
+#define MT2D_SDL_Renderer GPU_Target
 #define MT2D_SDL_Window int
 #else
-	#define MT2D_SDL_Texture SDL_Texture
-	#define MT2D_SDL_Rect SDL_Rect
-	#define MT2D_SDL_Renderer SDL_Renderer
-	#define MT2D_SDL_Window SDL_Window
+#define MT2D_SDL_Texture SDL_Texture
+#define MT2D_SDL_Rect SDL_Rect
+#define MT2D_SDL_Renderer SDL_Renderer
+#define MT2D_SDL_Window SDL_Window
 #endif
 #pragma endregion
 
 #ifdef MT2D_SDL_GPU
-	#define IMG_Load GPU_LoadSurface
+#define IMG_Load GPU_LoadSurface
 #endif
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
-	#ifndef MT2D_SDL_GPU
-		return IMG_Load(Addr);
-	#else
-		return GPU_LoadSurface(Addr);
-	#endif
+#ifndef MT2D_SDL_GPU
+	return IMG_Load(Addr);
+#else
+	return GPU_LoadSurface(Addr);
+#endif
 }
 
 
@@ -71,7 +71,7 @@ MT2D_SDL_Texture *MT2D_SDL_CreateTextureFromSurface(MT2D_SDL_Renderer *render, S
 }
 #else
 MT2D_SDL_Texture *MT2D_SDL_CreateTextureFromSurface(SDL_Renderer *render, SDL_Surface *surface) {
-	return SDL_CreateTextureFromSurface(render,surface);
+	return SDL_CreateTextureFromSurface(render, surface);
 }
 
 #endif
@@ -79,7 +79,7 @@ MT2D_SDL_Texture *MT2D_SDL_CreateTextureFromSurface(SDL_Renderer *render, SDL_Su
 
 void MT2D_SDL_DestroyTexture(MT2D_SDL_Texture *Tex) {
 #ifdef MT2D_SDL_GPU
-		GPU_FreeImage(Tex);
+	GPU_FreeImage(Tex);
 #else
 	SDL_DestroyTexture(Tex);
 #endif
@@ -97,7 +97,7 @@ int MT2D_SDL_RenderCopyEx(MT2D_SDL_Renderer * renderer, MT2D_SDL_Texture * textu
 }
 
 int MT2D_SDL_RenderCopy(MT2D_SDL_Renderer * renderer, MT2D_SDL_Texture * texture,
-	 MT2D_SDL_Rect * srcrect, const MT2D_SDL_Rect * dstrect) {
+	MT2D_SDL_Rect * srcrect, const MT2D_SDL_Rect * dstrect) {
 #ifdef MT2D_SDL_GPU
 	GPU_BlitScale(texture, srcrect, renderer, dstrect->x, dstrect->y, dstrect->h, dstrect->w);
 	return 0;
@@ -128,7 +128,7 @@ MT2D_SDL_Renderer *MT2D_SDL_CreateRenderer(MT2D_SDL_Window * window, int index, 
 #ifdef MT2D_SDL_GPU
 	return GPU_Init(SCREEN_WIDTH, SCREEN_HEIGHT, flags);
 #else
-	return SDL_CreateRenderer(window,index,flags);
+	return SDL_CreateRenderer(window, index, flags);
 #endif
 }
 MT2D_SDL_Window *MT2D_SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags) {
@@ -139,13 +139,13 @@ MT2D_SDL_Window *MT2D_SDL_CreateWindow(const char *title, int x, int y, int w, i
 	X[0] = 1;
 	return X;
 #else
-	
-	return SDL_CreateWindow(title,x,y,w,h,flags);
+
+	return SDL_CreateWindow(title, x, y, w, h, flags);
 #endif
 }
 
 
-void MT2D_SDL_SetWindowIcon(MT2D_SDL_Window * window, SDL_Surface * icon){
+void MT2D_SDL_SetWindowIcon(MT2D_SDL_Window * window, SDL_Surface * icon) {
 #ifdef MT2D_SDL_GPU
 	//not implemented
 #else
@@ -168,9 +168,9 @@ int IMG_Init(int i) {
 	return true;
 }
 
-void SDL_DestroyWindow(MT2D_SDL_Window *window){}
+void SDL_DestroyWindow(MT2D_SDL_Window *window) {}
 
-void IMG_Quit(){
+void IMG_Quit() {
 	GPU_Quit();
 }
 #endif
@@ -199,7 +199,7 @@ void MT2D_SDL_RenderClear(MT2D_SDL_Renderer *renderer) {
 #endif
 }
 
-void MT2D_SDL_SetWindowFullscreen(MT2D_SDL_Window * window, Uint32 flags){
+void MT2D_SDL_SetWindowFullscreen(MT2D_SDL_Window * window, Uint32 flags) {
 #ifdef MT2D_SDL_GPU
 	if (flags) {
 		GPU_SetFullscreen(true, flags);

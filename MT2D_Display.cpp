@@ -1,4 +1,3 @@
-
 // MT2D Created By Lucas Zimerman Fraulob
 // This is the core of MT2D engine, with only this .cpp you can do everything
 // This file is related to almost all MT2D video interface, like draw, clear and update.
@@ -6,25 +5,25 @@
 #include <stdio.h>
 
 #ifndef __MSDOS__
-    #include "MT2D/MT2D_Terminal_Define.h"
+#include "MT2D/MT2D_Terminal_Define.h"
 #endif
 
 #ifdef SDL_USE
 #include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
 #elif defined _WIN32
-    #include <Windows.h>
+#include <Windows.h>
 #elif defined __MSDOS__
-    #ifdef __DJGPP__ // DJGPP uses another method for writing data on screen
-        #include <sys/farptr.h> /* _farpokeb() */
-        #include <go32.h> /* _dos_ds */
-    #else //Turbo C | Borland C
-        #include <dos.h>
-    #endif
+#ifdef __DJGPP__ // DJGPP uses another method for writing data on screen
+#include <sys/farptr.h> /* _farpokeb() */
+#include <go32.h> /* _dos_ds */
+#else //Turbo C | Borland C
+#include <dos.h>
+#endif
 #elif defined linux
-    #include <cstdlib>
-    #include <curses.h>
-    #include <signal.h>
-    #include <locale.h>
+#include <cstdlib>
+#include <curses.h>
+#include <signal.h>
+#include <locale.h>
 #endif
 
 #include <MT2D/MT2D.h>
@@ -97,11 +96,11 @@ void MT2D_Draw_Window(int which) {
 			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
 				offset = (80 * y + x) * 2;
 
-				#ifdef __DJGPP__
+#ifdef __DJGPP__
 				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW1[y][x]);
-				#else
+#else
 				pokeb(0xB800, offset, WINDOW1[y][x]);
-				#endif
+#endif
 			}
 		}
 	}
@@ -109,11 +108,11 @@ void MT2D_Draw_Window(int which) {
 		for (x = 0; x <= MAX_HOR; x++) {
 			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
 				offset = (80 * y + x) * 2;
-				#ifdef __DJGPP__
+#ifdef __DJGPP__
 				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW2[y][x]);
-				#else
+#else
 				pokeb(0xB800, offset, WINDOW2[y][x]);
-				#endif
+#endif
 			}
 		}
 	}
