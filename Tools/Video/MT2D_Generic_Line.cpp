@@ -1,4 +1,4 @@
-#include "MT2D/MT2D.h"
+#include <MT2D/MT2D.h>
 
 void MT2D_Line_Draw_Vertical(int pos, int type){
  int i=0;

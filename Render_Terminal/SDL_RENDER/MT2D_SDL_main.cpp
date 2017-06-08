@@ -28,15 +28,7 @@ int IMG_Init(int flags) { return true; }
 SDL_DisplayMode mode;
 
 int SDL_Keyboard_touched();
-/*
-extern int SCREEN_WIDTH;//640
-extern int SCREEN_HEIGHT;//200
 
-extern int FONT_SIZEX;//the size of the font image
-extern int FONT_SIZEY;
-extern int FONT_RESIZEX;//how many pixels it'll increase/decrease
-extern int FONT_RESIZEY;
-*/
 SDL_Event Keyboard_event;
 
 //The actual hardware texture
@@ -58,11 +50,13 @@ MT2D_SDL_Window* gWindow = NULL;
 
 //The window renderer
 MT2D_SDL_Renderer* gRenderer = NULL;
+MT2D_SDL_Renderer* bb_gRenderer = NULL; //Back Buffer Render
 
 //Scene sprites
 MT2D_SDL_Rect gSpriteClips[ 256 ];
 SDL_Surface* NEWloadedSurface;
 MT2D_SDL_Texture *CharSprite[256] = { NULL };;
+MT2D_SDL_Texture *CharSpriteRotated[256] = { NULL };;
 
 bool NewLoadFromFile(char *string){
 	//Get rid of preexisting texture
@@ -70,6 +64,12 @@ bool NewLoadFromFile(char *string){
 	int mHeight;
 	free_Texture();
 	int TAccess = SDL_TEXTUREACCESS_STREAMING;
+	SDL_Rect RotateClip;
+
+	RotateClip.h = FONT_SIZEY;
+	RotateClip.w = FONT_SIZEX;
+	RotateClip.x = 0;
+	RotateClip.y = 0;
 
 	//The final texture
 	MT2D_SDL_Texture* newTexture = NULL;
@@ -100,6 +100,7 @@ bool NewLoadFromFile(char *string){
 			mHeight = NEWloadedSurface->h;
 		}
 		int hor = 0, ver = 0;
+
 		for (int i = 0; i<256; i++) {
 			if (hor>256 - 8) {
 				hor = 0;
@@ -113,6 +114,13 @@ bool NewLoadFromFile(char *string){
 			tmpSurface = SDL_CreateRGBSurface(0, FONT_SIZEX, FONT_SIZEY,24,0,0,0,0);
 			MT2D_SDL_BlitSurface(NEWloadedSurface, &gSpriteClips[i], tmpSurface,NULL);
 			CharSprite[i] = MT2D_SDL_CreateTextureFromSurface(gRenderer, tmpSurface);
+			CharSpriteRotated[i] = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEY, FONT_SIZEX);
+			//			CharSpriteRotated[i] = SDL_CreateTextureFromSurface(gRenderer, tmpSurface);
+//			SDL_SetTextureBlendMode(CharSpriteRotated[i], SDL_BLENDMODE_BLEND);
+			SDL_SetRenderTarget(gRenderer, CharSpriteRotated[i]);
+			SDL_RenderCopyEx(gRenderer, CharSprite[i], &RotateClip, &RotateClip, 90, NULL, SDL_FLIP_NONE);
+			SDL_SetRenderTarget(gRenderer, NULL);
+			SDL_RenderCopy(gRenderer, CharSpriteRotated[i], NULL, &RotateClip);
 		}
 		//Get rid of old loaded surface
 		SDL_FreeSurface(NEWloadedSurface);
@@ -146,15 +154,51 @@ void Clean_Render(){
 	MT2D_SDL_RenderCopy(gRenderer, mTexture, &gSpriteClips[32], &renderQuad);
 }
 
+unsigned char GetDisplayAngle() {
+	return 0;
+}
 
 void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	int posx = 0;
 	int posy=0;
+	int angle = 0;
+	int NextA = 0;
+	int NextB = 0;
 	MT2D_SDL_Rect renderQuad;
 	MT2D_SDL_Rect Original;
 	void *mPixels;
 	int mPitch;
+	int CHAR_ResizedX = 0;
+	int CHAR_ResizedY = 0;
+	int Heigth;
+	int Width;
+	int OffsetX, OffsetY;
+	bool inverte = false;
+	SDL_GetCurrentDisplayMode(0, &mode);
+	if (mode.h >= mode.w) 
+	{
+		//smartphone
+		angle = 0;
+		inverte = true;
+		Heigth = mode.w;
+		Width = mode.h;
+		CHAR_ResizedX = Heigth / (MAX_VER - 1);//afetando horizontal
+		CHAR_ResizedY = Width/ (MAX_HOR -1);//afetando a vertical
+	}
+	else {
+		//desktop
+		Heigth = mode.h;
+		Width = mode.w;
+		CHAR_ResizedX = Width / (MAX_HOR - 1);
+		CHAR_ResizedY = Heigth / (MAX_VER - 1);
+	}
+
+
+
+	SDL_RenderClear(gRenderer);
+	SDL_SetRenderDrawColor(gRenderer, rand() % 255, rand() % 255, rand()%255, 255);
 	for (posx = 0; posx < MAX_HOR; posx++) {
+		NextA = 0;
 		for (posy = 0; posy < MAX_VER; posy++) {
 			if (FRAMEBUFFER[posy][posx] != BUFFER[posy][posx]) {//avoids overdraw
 				//FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
@@ -162,6 +206,27 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 				Original.w = FONT_SIZEY;
 				Original.x = 0;
 				Original.y = 0;
+
+				#ifdef MT2D_SCREEN_RESIZE
+
+				if (mode.h >= mode.w) {
+					//90º
+					renderQuad.x = mode.w - NextA - CHAR_ResizedX;
+					renderQuad.y = NextB;
+					renderQuad.w = CHAR_ResizedX;
+					renderQuad.h = CHAR_ResizedY;
+					NextA += CHAR_ResizedX;
+					MT2D_SDL_RenderCopyEx(gRenderer, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+				}
+				else {
+					renderQuad.x = NextB;
+					renderQuad.y = NextA;
+					renderQuad.w = CHAR_ResizedX;
+					renderQuad.h = CHAR_ResizedY;
+					NextA += CHAR_ResizedY;
+					MT2D_SDL_RenderCopyEx(gRenderer, CharSprite[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+				}
+				#else
 				if (mode.h >= mode.w) {
 					//invert posx (posy is ok)
 					posx = 79 - posx;
@@ -181,9 +246,17 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 					//				SDL_RenderCopy(gRenderer, mTexture, &gSpriteClips[BUFFER[posy][posx]], &renderQuad);
 					MT2D_SDL_RenderCopyEx(gRenderer, CharSprite[BUFFER[posy][posx]], &Original, &renderQuad,0,NULL, SDL_FLIP_NONE);
 				}
+				#endif
 			}
 
 		}
+		if (mode.h >= mode.w) {
+			NextB += CHAR_ResizedY;
+		}
+		else {
+			NextB += CHAR_ResizedX;
+		}
+
 	}
 }
 
@@ -216,7 +289,7 @@ bool init()
 		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
 			return 1;
 		}
-		#ifndef MT2D_WINDOWED_MODE //set the screen size as the size of the screen in case of fullscreen.
+		#if  !defined(MT2D_WINDOWED_MODE) || defined(MT2D_SCREEN_RESIZE) //set the screen size as the size of the screen in case of fullscreen.
             SCREEN_WIDTH = mode.w;
             SCREEN_HEIGHT = mode.h;
 		#endif
