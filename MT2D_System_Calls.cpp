@@ -5,7 +5,7 @@
 #ifdef SDL_USE_AUDIO
 #include <MT2D/SDL/Audio/MT2D_SDL_Beep.h>
 #elif defined _WIN32
-	#include <wrl.h>// includes the WINAPI_FAMILY_DESKTOP_APP flag
+//	#include <wrl.h>// includes the WINAPI_FAMILY_DESKTOP_APP flag
 	#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 //  we do this check so we're not going to call the Beep function from windows.h over UWP apps.
     #include <windows.h>
