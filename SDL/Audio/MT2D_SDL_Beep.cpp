@@ -1,11 +1,11 @@
 #ifndef _SDLBEEP
 #define _SDLBEEP
-#include "MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef _DEBUG
 #include <stdio.h>
 #endif
-#ifdef SDL_USE
+#ifdef SDL_USE_AUDIO
 #ifdef linux
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
@@ -148,6 +148,8 @@ void SDL_Beep(int frequency, int TimeMS) {
 	PC_SPEAKER_SDL.wait();
 }
 
+#else
+//#e define "SDL_USE_AUDIO" must be declared to use the emulated PC SPEAKER function
 #endif
 
 #endif

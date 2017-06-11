@@ -10,8 +10,9 @@
 
 #ifdef SDL_USE
  //   #include "SDL_MT2D/SDL_Defines.h"
-	#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
 	#include <MT2D/MT2D.h>
+	#include <MT2D/SDL/MT2D_SDL_main.h>
+	#include <thread>
 #elif defined _WIN32
 	#include <Windows.h>
 	#include "MT2D/MT2D.h"
@@ -34,7 +35,7 @@ unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 bool MT2D_Init() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
 	bool output = true;
 	#ifdef SDL_USE
-	 output = init();//Start SDL files and other things
+	MT2D_SDL_Init();//Start SDL files and other things
 	#else
 		#ifndef _DEBUG
 			#ifdef _WIN32// hides the console on release projects

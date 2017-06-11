@@ -38,19 +38,10 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 ===================================================================*/
 #ifndef _MT2D_SDL_MAIN_H
 #define _MT2D_SDL_MAIN_H
-#include <MT2D/MT2D.h>
 
-bool init();
+void MT2D_SDL_Init();
 void close();
-void Render_New(unsigned char BUFFER[][MAX_HOR]);
 void free_Texture();
-void SDL_Clear_Display();
-void SDL_Render();
-void SDL_ResizeScreen(int SCREEN_NEW_WIDTH,int SCREEN_NEW_HEIGHT);
-void SDL_FreeWindow();
-int SDL_getkeyboard();
-int SDL_Keyboard_touched();
 void SDL_MT2DDelay(int Milliseconds);
-void Clean_Render();
 
 #endif

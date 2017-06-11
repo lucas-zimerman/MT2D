@@ -2,7 +2,7 @@
 #include "MT2D/MT2D_Keyboard.h"
 
 #ifdef SDL_USE
-	#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
+	#include <MT2D/SDL/IO/SDL_MT2D_Keyboard.h>
     #include <stdio.h>
 #elif defined __MSDOS__
     #include <conio.h>
@@ -65,7 +65,6 @@ int	MT2D_Keyboard_keytouched(){//Generic function, easy to be replaced for porti
 	int x=0;
 	#ifdef SDL_USE
         x=SDL_getkeyboard();
-        printf("Keyboard key touched:%d\n",x);
     #elif defined _WIN32
 		x=_getch();
 		fflush(stdin);

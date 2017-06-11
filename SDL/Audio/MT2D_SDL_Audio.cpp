@@ -6,7 +6,7 @@
 #ifdef _DEBUG
 #include <stdio.h>
 #endif
-#ifdef SDL_USE
+#ifdef SDL_USE_AUDIO
 	#ifdef linux
 		#include <SDL2/SDL.h>
 		#include <SDL2/SDL_audio.h>
@@ -123,6 +123,8 @@ void SDL_Play_Sound(char *Name){
 }
 
 
+#else
+//#warning define "SDL_USE_AUDIO" must be declared to use the SDL audio code
 #endif
 
 #endif

@@ -9,7 +9,7 @@
 #endif
 
 #ifdef SDL_USE
-#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_main.h>
+#include <MT2D/SDL/Render/MT2D_SDL_Render.h>
 #elif defined _WIN32
 #include <Windows.h>
 #elif defined __MSDOS__

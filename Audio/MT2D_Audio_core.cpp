@@ -1,7 +1,7 @@
 #include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef SDL_USE
-#include <MT2D/Render_Terminal/SDL_RENDER/MT2D_SDL_Audio.h>
+#include <MT2D/SDL/Audio/MT2D_SDL_Audio.h>
 #endif
 #ifdef _DEBUG
     #include <stdio.h>
@@ -11,7 +11,7 @@ void MT2D_Audio_Init(){
     #ifdef _DEBUG
         printf("MT2D: Starting audio system\n");
     #endif
-    #ifdef SDL_USE
+    #ifdef SDL_USE_AUDIO
         //Start the SDL audio system
         SDL_Start_Sound_System();
     #elif defined WIN32
@@ -27,7 +27,7 @@ void MT2D_Audio_Close(){
         printf("MT2D: Closing audio system\n");
     #endif
 
-    #ifdef SDL_USE
+    #ifdef SDL_USE_AUDIO
         //Close the SDL audio system
         SDL_Close_Sound_System();
     #elif defined WIN32
@@ -42,7 +42,7 @@ void MT2D_Play_Audio(char *Name){
     #ifdef _DEBUG
         printf("MT2D: Playing Sound %s\n",Name);
     #endif
-    #ifdef SDL_USE
+    #ifdef SDL_USE_AUDIO
         SDL_Play_Sound(Name);
     #endif
 }
@@ -50,7 +50,7 @@ void MT2D_Play_Music(char *Name){
     #ifdef _DEBUG
         printf("MT2D: Playing Music\n");
     #endif
-    #ifdef SDL_USE
+    #ifdef SDL_USE_AUDIO
         SDL_Play_Music(Name);
     #endif
 }

@@ -20,8 +20,10 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 	-https://github.com/grimfang4/sdl-gpu
 ===================================================================*/
 
+#define SDL_USE_AUDIO
 
-//#define SDL_USE
+#define SDL_USE
+#define MT2D_SCREEN_RESIZE
 //#define MT2D_SDL_GPU
 
 //#define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE

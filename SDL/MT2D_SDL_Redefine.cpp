@@ -1,60 +1,10 @@
-#ifndef _MT2D_SDL_RED_H
-#define _MT2D_SDL_RED_H
 
 #include <MT2D/MT2D_Terminal_Define.h>
 
 #ifdef SDL_USE // if you'll not use SDL dont load this file on your project
-#include <MT2D/MT2D_Keyboard.h>
-#include <MT2D/MT2D_System_Calls.h>
-#include <MT2D/MT2D.h>
-#include "MT2D_SDL_Defines.h"
-#include <stdio.h>
+#include <MT2D/SDL/MT2D_SDL_Redefine.h>
 
 
-#ifdef _WIN32
-#ifdef SDL_stbimage
-
-#define SDL_STBIMAGE_IMPLEMENTATION
-#include "SDL_stbimage.h"
-#elif defined(MT2D_SDL_GPU)
-#define SDL_GPU_DISABLE_OPENGL 1
-#define SDL_GPU_DISABLE_GLES_1 1
-#define SDL_GPU_DISABLE_GLES_3 1
-
-#include "SDL.h"
-#include "SDL_gpu.h"
-#else
-#include <SDL_image.h>
-#endif
-#else
-#include <SDL2/SDL.h>
-#ifdef SDL_stbimage
-#include "SDL_stbimage.h"
-#else
-#include <SDL2/SDL_image.h>
-#endif
-#include "SDL_Defines.h"
-#endif
-
-#pragma region TYPES
-#ifdef MT2D_SDL_GPU
-#define IMG_INIT_PNG true
-//============
-#define MT2D_SDL_Texture GPU_Image
-#define MT2D_SDL_Rect GPU_Rect
-#define MT2D_SDL_Renderer GPU_Target
-#define MT2D_SDL_Window int
-#else
-#define MT2D_SDL_Texture SDL_Texture
-#define MT2D_SDL_Rect SDL_Rect
-#define MT2D_SDL_Renderer SDL_Renderer
-#define MT2D_SDL_Window SDL_Window
-#endif
-#pragma endregion
-
-#ifdef MT2D_SDL_GPU
-#define IMG_Load GPU_LoadSurface
-#endif
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 #ifndef MT2D_SDL_GPU
@@ -222,6 +172,14 @@ void MT2D_SDL_SetWindowSize(MT2D_SDL_Window * window, int w, int h) {
 #endif
 }
 
+int MT2D_SDL_SetRenderTarget(MT2D_SDL_Renderer *renderer, MT2D_SDL_Texture *texture) {
+#ifdef MT2D_SDL_GPU
+	renderer = GPU_LoadTarget(texture);
+	return 1;
+#else
+	return SDL_SetRenderTarget(renderer, texture);
 #endif
+
+}
 
 #endif

@@ -1,5 +1,5 @@
 /*===================================================================
-	SDL_Defines.h Created by: Lucas Zimerman Fraulob
+	MT2D_SDL_Defines Created by: Lucas Zimerman Fraulob
 
 	Here we have some of the definitions from SDL, these parameters
 	are required for a proper functioning.
@@ -14,17 +14,16 @@
 
 #ifndef SDL_DEFINES
 #define SDL_DEFINES
-
 //Screen dimension
-int SCREEN_WIDTH = 640;//640
-int SCREEN_HEIGHT = 200;//200
-int SCREEN_MISSING_WIDTH = 0;
-int SCREEN_MISSING_HEIGHT = 0;
+extern int SCREEN_WIDTH;//640
+extern int SCREEN_HEIGHT;//200
+extern int SCREEN_MISSING_WIDTH;
+extern int SCREEN_MISSING_HEIGHT;
 
-int FONT_SIZEX = 8;//the size of the font image
-int FONT_SIZEY = 8;
-int FONT_RESIZEX = 0;//how many pixels it'll increase/decrease
-int FONT_RESIZEY = 0;
+extern int FONT_SIZEX;//the size of the font image
+extern int FONT_SIZEY;
+extern int FONT_RESIZEX;//how many pixels it'll increase/decrease
+extern int FONT_RESIZEY;
 
-char SDL_SOUND_TYPE = -1;// -1 not defined, 0 BEEPER, 1 AUDIO FILE
+extern char SDL_SOUND_TYPE;// -1 not defined, 0 BEEPER, 1 AUDIO FILE
 #endif
