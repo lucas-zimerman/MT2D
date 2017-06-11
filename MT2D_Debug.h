@@ -1,0 +1,1 @@
+void MT2D_Ide_Printf(char *String);
