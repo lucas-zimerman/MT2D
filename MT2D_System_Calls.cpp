@@ -6,8 +6,9 @@
 #include <MT2D/SDL/Audio/MT2D_SDL_Beep.h>
 #elif defined _WIN32
 //	#include <wrl.h>// includes the WINAPI_FAMILY_DESKTOP_APP flag
-	#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
+//	#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
 //  we do this check so we're not going to call the Beep function from windows.h over UWP apps.
+	#ifndef WINAPI_FAMILY // not the correct way but it works for now
     #include <windows.h>
 	#endif
 #elif defined __MSDOS__
@@ -24,7 +25,7 @@
 void MT2D_System_Delay(int time_millisecond){
 #ifdef SDL_USE
     SDL_MT2DDelay(time_millisecond);
-#elif defined _WIN32
+#elif defined _WIN32 && !defined WINAPI_FAMILY/*exclude windows uwp*/
 	Sleep(time_millisecond);
 #elif defined __MSDOS__
 	delay(time_millisecond);//ms-dos
@@ -38,10 +39,8 @@ void MT2D_System_Beep(int frequency, int time_milisecond){
 #ifdef SDL_USE_AUDIO
     SDL_Beep(frequency,time_milisecond);
     //not implemented
-#elif defined(_WIN32 )
-#if !defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
+#elif defined(_WIN32 ) && !defined (WINAPI_FAMILY)
 	Beep(frequency,time_milisecond);//Do not load this beep function in UWP apps
-#endif
 #elif defined __MSDOS__
 	sound(frequency);
 	delay(time_milisecond);
