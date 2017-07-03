@@ -1,6 +1,6 @@
 #ifndef SPRITES_
 #define SPRITES_
-#include "Coordinates.h"
+#include <MT2D/Objectcore/Coordinates.h>
 
 struct Sprite {
 	char **Data;

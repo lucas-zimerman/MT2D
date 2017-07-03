@@ -18,7 +18,7 @@ SDL_Surface* NEWloadedSurface;
 MT2D_SDL_Texture *CharSprite[256] = { NULL };;
 MT2D_SDL_Texture *CharSpriteRotated[256] = { NULL };
 MT2D_SDL_Rect ScreenBuffer_Size;
-MT2D_SDL_Texture *ScreenBuffer = NULL;
+MT2D_SDL_Texture *OffscrBuff[2];
 bool fullscreen = false;
 SDL_Surface *surface;
 extern MT2D_SDL_Events MainEvents;
@@ -97,8 +97,8 @@ bool NewLoadFromFile(char *string) {
 		ScreenBuffer_Size.y = 0;
 		ScreenBuffer_Size.w = mode.w;
 		ScreenBuffer_Size.h = mode.h;
-		ScreenBuffer = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, mode.h, mode.w);
-
+		OffscrBuff[1]= SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEY*MAX_VER, FONT_SIZEX*MAX_HOR);
+		OffscrBuff[0] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEX*MAX_HOR, FONT_SIZEY*MAX_VER);
 		for (int i = 0; i<256; i++) {
 			if (hor>256 - 8) {
 				hor = 0;
@@ -198,12 +198,12 @@ void MT2D_SDL_Init()
 	}
     else
 	{
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+//		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+//		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 		//Get screen resolution
 		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
@@ -213,7 +213,6 @@ void MT2D_SDL_Init()
 //            SCREEN_WIDTH = mode.w;
  //           SCREEN_HEIGHT = mode.h;
 		#endif
-
 
 		//Set texture filtering to linear
 		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0" ) )

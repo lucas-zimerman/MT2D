@@ -28,7 +28,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 
 //#define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE
 
-#if !defined(_WIN32) || !defined(__MSDOS__) || !defined(SDL_USE) // If there`s no way of using some form of hardware aceleration for displaying the screen,
+#if !defined(_WIN32) && !defined(__MSDOS__) && !defined(SDL_USE) // If there`s no way of using some form of hardware aceleration for displaying the screen,
 // tell it`s using an ancient way of displaying stuff...
    #define MT2D_RENDERING_PRINTF //we are forced to use printf :(
 #endif

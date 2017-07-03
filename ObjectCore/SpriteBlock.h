@@ -1,6 +1,6 @@
 #ifndef SPRITEBLOCK_
 #define SPRITEBLOCK_
-#include "Sprites.h"
+#include <MT2D/Objectcore/Sprites.h>
 
 struct SpriteBlock {
 	Sprite *sprites; //start = 0

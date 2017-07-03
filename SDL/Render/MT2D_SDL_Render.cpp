@@ -8,6 +8,7 @@ extern int FRAMEBUFFER[MAX_VER][MAX_HOR]; //used to store what was draw under th
 extern MT2D_SDL_Texture *CharSprite[256];
 extern MT2D_SDL_Texture *CharSpriteRotated[256];
 extern SDL_DisplayMode mode;
+extern MT2D_SDL_Texture *OffscrBuff[2];
 
 extern MT2D_SDL_Events MainEvents;
 
@@ -43,8 +44,10 @@ void Clean_Render() {
 	renderQuad.h = mode.h / 2;
 	MT2D_SDL_RenderCopy(MainEvents.Render, mTexture, &gSpriteClips[32], &renderQuad);
 }
-
+void Render_New2(unsigned char BUFFER[][MAX_HOR]);
 void Render_New(unsigned char BUFFER[][MAX_HOR]) {
+//	Render_New2(BUFFER);
+//	return;
 	int posx = 0;
 	int posy = 0;
 	int angle = 0;
@@ -126,6 +129,95 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	}
 	//	MT2D_SDL_SetRenderTarget(gRenderer, NULL);
 	//	MT2D_SDL_RenderCopy(gRenderer, ScreenBuffer, &ScreenBuffer_Size, &ScreenBuffer_Size);
+
+}
+
+void Render_New2(unsigned char BUFFER[][MAX_HOR]) {
+	int posx = 0;
+	int posy = 0;
+	int angle = 0;
+	int NextA = 0;
+	int NextB = 0;
+	MT2D_SDL_Rect renderQuad;
+	MT2D_SDL_Rect Original;
+	void *mPixels;
+	int mPitch;
+	int CHAR_ResizedX = 0;
+	int CHAR_ResizedY = 0;
+	int Heigth;
+	int Width;
+	int OffsetX, OffsetY;
+	bool inverte = false;
+	CheckVideoEvent();
+	if (mode.h >= mode.w)
+	{
+		//smartphone
+		angle = 0;
+		inverte = true;
+		Heigth = mode.w;
+		Width = mode.h;
+		MT2D_SDL_SetRenderTarget(MainEvents.Render, OffscrBuff[1]);
+	}
+	else {
+		//desktop
+		Heigth = mode.h;
+		Width = mode.w;
+		MT2D_SDL_SetRenderTarget(MainEvents.Render, OffscrBuff[0]);
+	}
+	Original.h = FONT_SIZEY;
+	Original.w = FONT_SIZEX;
+	Original.x = 0;
+	Original.y = 0;
+
+	for (posx = 0; posx < MAX_HOR; posx++) {
+		NextA = 0;
+		for (posy = 0; posy < MAX_VER; posy++) {
+			if (FRAMEBUFFER[posy][posx] != BUFFER[posy][posx]) {//avoids overdraw
+																//FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
+				if (mode.h >= mode.w) {
+					//90º
+					renderQuad.y = posx * FONT_SIZEX;
+					renderQuad.x = posy * FONT_SIZEY;
+					renderQuad.w = FONT_SIZEX;
+					renderQuad.h = FONT_SIZEY;
+					NextA += CHAR_ResizedX;
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+				}
+				else {
+					renderQuad.x = posx * FONT_SIZEX;
+					renderQuad.y = posy * FONT_SIZEY;
+					renderQuad.w = FONT_SIZEX;
+					renderQuad.h = FONT_SIZEY;
+					NextA += CHAR_ResizedY;
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSprite[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+				}
+			}
+
+		}
+	}
+	MT2D_SDL_SetRenderTarget(MainEvents.Render, NULL);
+	if(!inverte){
+		Original.h = FONT_SIZEY*MAX_VER;
+		Original.w = FONT_SIZEX*MAX_HOR;
+		Original.x = 0;
+		Original.y = 0;
+		renderQuad.x = 0;
+		renderQuad.y = 0;
+		renderQuad.w = mode.w;
+		renderQuad.h = mode.h;
+		MT2D_SDL_RenderCopy(MainEvents.Render, OffscrBuff[0], &Original, &renderQuad);
+	}
+	else {
+		Original.w = FONT_SIZEY*MAX_VER;
+		Original.h = FONT_SIZEX*MAX_HOR;
+		Original.x = 0;
+		Original.y = 0;
+		renderQuad.x = 0;
+		renderQuad.y = 0;
+		renderQuad.w = mode.w;
+		renderQuad.h = mode.h;
+		MT2D_SDL_RenderCopy(MainEvents.Render, OffscrBuff[1], &Original, &renderQuad);
+	}
 
 }
 

@@ -1,9 +1,9 @@
 #ifndef OBJECT_
 #define OBJECT_
 
-#include "SpriteBlock.h"
-#include "Coordinates.h"
-#include "Vars.h"
+#include <MT2D/Objectcore/SpriteBlock.h>
+#include <MT2D/Objectcore/Coordinates.h>
+#include <MT2D/Objectcore/Vars.h>
 
 #define OBJECT_DEATH -1
 //Simple Object define

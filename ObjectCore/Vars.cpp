@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Vars.h"
+#include <MT2D/Objectcore/Vars.h>
 
 MT2D_VAR_ERROR MT2D_Var_Last_Error = Var_No_Error;
 
@@ -72,28 +72,28 @@ void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data)
 {
 	bool *ptr = (bool*)malloc(sizeof(bool));
 	ptr[0] = Data;
-	MT2D_Object_Set_Var(Var, (void*)ptr);
+	//MT2D_Object_Set_Var(Var, (void*)ptr);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data)
 {
 	int *ptr = (int*)malloc(sizeof(int));
 	ptr[0] = Data;
-	MT2D_Object_Set_Var(Var, (void*)ptr,VAR_INT);
+	//MT2D_Object_Set_Var(Var, (void*)ptr,VAR_INT);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, unsigned int Data)
 {
 	unsigned int *ptr = (unsigned int*)malloc(sizeof(unsigned int));
 	ptr[0] = Data;
-	MT2D_Object_Set_Var(Var, (void*)ptr,VAR_UNSIGNED_INT);
+	//MT2D_Object_Set_Var(Var, (void*)ptr,VAR_UNSIGNED_INT);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, char *Data)
 {
 //	char *Copy = (char*)malloc(strlen(Data)*sizeof(char));
 //	strcpy(Copy,Data);
-	MT2D_Object_Set_Var(Var, (void*)Data,VAR_CHAR);
+	//MT2D_Object_Set_Var(Var, (void*)Data,VAR_CHAR);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data)

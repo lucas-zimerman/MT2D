@@ -5,9 +5,9 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include "Sprites.h"
-#include "../MT2D_Keyboard.h" // only used for taking the definition of the key enter
-#include "../MT2D.h" // for geting the display definition
+#include <MT2D/Objectcore/Sprites.h>
+#include <MT2D/MT2D_Keyboard.h> // only used for taking the definition of the key enter
+#include <MT2D/MT2D.h> // for geting the display definition
 
 Sprite *Load_Sprite(char *file) {
 	Sprite *S=0;

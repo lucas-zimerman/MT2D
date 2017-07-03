@@ -1,5 +1,5 @@
 //#include "Sprites.h"
-#include "SpriteBlock.h"
+#include <MT2D/Objectcore/SpriteBlock.h>
 #include <stdlib.h>
 
 SpriteBlock *SpriteBlock_Create() {//creates an empty sprite block

@@ -1,9 +1,9 @@
 /* Object.cpp created by Lucas Zimerman Fraulob
 
 */
-#include "../MT2D.h"
-#include "Object.h"
-#include "Sprites.h"
+#include <MT2D/MT2D.h>
+#include <MT2D/Objectcore/Object.h>
+#include <MT2D/Objectcore/Sprites.h>
 #include <stdlib.h>
 
 void Object_Render(ObjectSimple *obj) {
