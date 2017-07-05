@@ -1,0 +1,48 @@
+/======MT2D==SYSTEM REQUIREMENTS======\
+|                                     |
+| WARNING!!! THIS INFORMATION MAY CHAN|
+| GE ON THE FUTURE.                   |
+|                                     |
+| MS-DOS:                             |
+|   OS VERSION: ?                     |
+|   RAM REQUIRED: 21KB                |
+|   80X25 TEXT MODE GRAPHICS CARD     |
+|   INTEL 8086 COMPATIBLE             |
+|                                     |
+| COMPILERS:                          |
+|   Borland C++ 5                     |
+|   DJGPP (WITH CODEBLOCKS 1)         |
+|                                     |
+| WINDOWS WIN32:                      |
+|  (WITHOUT SDL)                      |
+|  OS VERSION: XP OR HIGHER           |
+|  RAM REQUIRED: 670KB                |
+|  ANY X86/X64 COMPATIBLE CPU         |
+|                                     |
+| COMPILERS:                          |
+|  DEVC++                             |
+|  VISUAL STUDIO (2010 OR HIGHER)     |
+|  GCC (WITH CODEBLOCKS)              |
+|                                     |
+| LINUX:                              |
+|  (WITHOUT SDL)                      |
+|  IT'S PROBLEMATIC, DO NOT USE THIS  |
+|  FOR NOW                            |
+|                                     |
+| SDL:                                |
+|  REQUIRED SDL: 2.x                  |
+|  RAM: 22MB                          |
+|  1GHz CPU OR HIGHER                 |
+|  SOUND CARD FOR PC SPEAKER SOUNDS OR|
+|  SOUND/MUSIC                        |
+|                                     |
+| SUPPORTED PLATFORM FOR SDL:         |
+|  WINDOWS (XP TO HIGHER)             |
+|  LINUX (TESTED WITH UBUNTU)         |
+|  WINDOWS PHONE/MOBILE 8.X/10        |
+|                                     |
+| COMPILERS:                          |
+|  GCC (CODEBLOCKS)                   |
+|  VISUAL STUDIO                      |
+|                                     |
+\=====================================/
