@@ -11,7 +11,8 @@ enum MT2D_VAR_TYPE
 	VAR_FLOAT,
 	VAR_UNSIGNED_CHAR,
 	VAR_UNSIGNED_INT,
-	VAR_UNSIGNED_FLOAT
+	VAR_UNSIGNED_FLOAT,
+	VAR_STRING
 };
 
 enum MT2D_VAR_ERROR
@@ -50,8 +51,16 @@ MT2D_VAR *MT2D_Object_Get_Var_Pointer(MT2D_VAR *ArrayVARS, char *Name);
 
 MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error();
 
-MT2D_VAR *MT2D_Object_Create_Var(char *Name, MT2D_VAR_TYPE Type, void *InitialData);
-MT2D_VAR *MT2D_Object_Create_Var(char *Name, MT2D_VAR_TYPE Type, int InitialData);
-MT2D_VAR *MT2D_Object_Create_Var(char *Name, MT2D_VAR_TYPE Type, unsigned int InitialData);
+MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * InitialData);
+MT2D_VAR *MT2D_Object_Create_Var_Int(char *Name, int InitialData);
+MT2D_VAR *MT2D_Object_Create_Var_UInt(char *Name, unsigned int InitialData);
+MT2D_VAR * MT2D_Object_Create_Var_Char(char * Name, char InitialData);
+MT2D_VAR * MT2D_Object_Create_Var_UChar(char * Name, unsigned char InitialData);
+
+int MT2D_Object_VAR_GetInt(MT2D_VAR *Var);
+
+
+void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd);
+void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd);
 
 #endif

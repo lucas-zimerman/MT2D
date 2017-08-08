@@ -185,17 +185,38 @@ MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error()
 	return MT2D_VAR_ERROR();
 }
 
-MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, int InitialData)
+MT2D_VAR * MT2D_Object_Create_Var_Int(char * Name, int InitialData)
 {
 	int *Data = (int*)malloc(sizeof(int));
 	Data[0] = InitialData;
-	MT2D_VAR *out =  MT2D_Object_Create_Var(Name, Type, (void*)Data);
+	MT2D_VAR *out =  MT2D_Object_Create_Var(Name, VAR_INT, (void*)Data);
 	free(Data);
 	return out;
 }
-MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, unsigned int InitialData)
+MT2D_VAR * MT2D_Object_Create_Var_UInt(char * Name, unsigned int InitialData)
 {
-	return MT2D_Object_Create_Var(Name, Type, (int)InitialData);
+	unsigned int *Data = (unsigned int*)malloc(sizeof(unsigned int));
+	Data[0] = InitialData;
+	MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_UNSIGNED_INT, (void*)Data);
+	free(Data);
+	return out;
+}
+
+MT2D_VAR * MT2D_Object_Create_Var_Char(char * Name, char InitialData)
+{
+	char *Data = (char*)malloc(sizeof(char));
+	Data[0] = InitialData;
+	MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_CHAR, (void*)Data);
+	free(Data);
+	return out;
+}
+MT2D_VAR * MT2D_Object_Create_Var_UChar(char * Name, unsigned char InitialData)
+{
+	unsigned char *Data = (unsigned char*)malloc(sizeof(unsigned char));
+	Data[0] = InitialData;
+	MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_UNSIGNED_CHAR, (void*)Data);
+	free(Data);
+	return out;
 }
 
 /*
@@ -236,6 +257,7 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 				else
 				{
 					bool *Nb;
+					char *Nc;
 					int *Ni;
 					float *Nf;
 
@@ -257,8 +279,11 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 						Nf = (float*)malloc(sizeof(float));
 						Nf[0] = *(float*)InitialData;
 						V->Data = Nf;
+					case VAR_UNSIGNED_CHAR:
 					case VAR_CHAR:
-						V->Data = InitialData;
+						Nc = (char*)malloc(sizeof(char));
+						Nc[0] = *(char*)InitialData;
+						V->Data = Nc;
 						break;
 					}
 				}
@@ -273,4 +298,89 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 #endif
 	}
 	return V;
+}
+
+int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
+	int output = 0;
+	if (Var->Type == VAR_BOOL) {
+		if (*(bool*)Var->Data == 1) {
+			output = 1;
+		}
+	}
+	else if (Var->Type == VAR_UNSIGNED_CHAR) {
+		output = (int)(*(unsigned char*)Var->Data);
+	}
+	else if (Var->Type == VAR_CHAR) {
+		output = (int)(*(char*)Var->Data);
+	}
+	else if (Var->Type == VAR_INT) {
+		output = *(int*)Var->Data;
+	}
+	else if (Var->Type == VAR_UNSIGNED_INT) {
+		output = *(unsigned int*)Var->Data;
+	}
+	else if (Var->Type == VAR_FLOAT) {
+		output = *(float*)Var->Data;
+
+	}
+	else {
+		MT2D_Var_Last_Error = Var_Type_Not_Supported;
+	}
+	return output;
+
+}
+
+
+
+void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
+	if (Store->Type == VAR_INT) {
+		if (ToAdd->Type == VAR_INT) {
+			*(int*)Store->Data = *(int*)Store->Data + *(int*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_CHAR) {
+			*(int*)Store->Data = *(int*)Store->Data + *(char*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_FLOAT) {
+			*(int*)Store->Data = *(int*)Store->Data + *(float*)ToAdd->Data;
+		}
+	}
+	else if (Store->Type == VAR_CHAR) {
+		if (ToAdd->Type == VAR_INT) {
+			*(char*)Store->Data = *(char*)Store->Data + *(int*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_CHAR) {
+			*(char*)Store->Data = *(char*)Store->Data + *(char*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_FLOAT) {
+			*(char*)Store->Data = *(char*)Store->Data + *(float*)ToAdd->Data;
+		}
+	}
+
+}
+
+
+void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
+	if (Store->Type == VAR_INT) {
+		if (ToAdd->Type == VAR_INT) {
+			*(int*)Store->Data = *(int*)Store->Data - *(int*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_CHAR) {
+			*(int*)Store->Data = *(int*)Store->Data - *(char*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_FLOAT) {
+			*(int*)Store->Data = *(int*)Store->Data - *(float*)ToAdd->Data;
+		}
+	}
+	else if (Store->Type == VAR_CHAR) {
+		if (ToAdd->Type == VAR_INT) {
+			*(char*)Store->Data = *(char*)Store->Data - *(int*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_CHAR) {
+			*(char*)Store->Data = *(char*)Store->Data - *(char*)ToAdd->Data;
+		}
+		else if (ToAdd->Type == VAR_FLOAT) {
+			*(char*)Store->Data = *(char*)Store->Data - *(float*)ToAdd->Data;
+		}
+
+	}
 }

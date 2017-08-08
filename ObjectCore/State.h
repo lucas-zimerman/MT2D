@@ -5,24 +5,20 @@
 //A state contains a set of sprites, a function call and a timer.
 //A label contains a set of states.
 
-#include "Sprites.h"
-#include "Vars.h"
+#include <MT2D/ObjectCore/Sprites.h>
+#include <MT2D/ObjectCore/Functions.h>
+struct MT2D_OBJECT_FUNCTION;
 
 struct MT2D_OBJECT_STATE
 {
 	Sprite *Sprites;// a set of sprites
-	int Wait;// the time that you need to wait for each sprite
-	int ActualSprite;
+	int *WaitSprites;// the time that you need to wait for each sprite
 	int Count;
-	MT2D_VAR *function_args;
+	MT2D_OBJECT_FUNCTION *Functions;//the functions for each sprite
+	char *Name; //name from this state.
 };
 
-struct MT2D_OBJECT_STATE_LABEL
-{
-	MT2D_OBJECT_STATE *States;
-	int ActualState;
-	int Count;
-	MT2D_OBJECT_STATE_LABEL *NextStateLabel; // the next state that the object should go when we are out of states.
-};
+MT2D_OBJECT_STATE *MT2D_OBJECT_CREATE_STATE(char *StateName);
+void MT2D_OBJECT_ADD_STATE(MT2D_OBJECT_STATE *State, Sprite *sprite, int Wait, MT2D_OBJECT_FUNCTION *Function);
 
 #endif
