@@ -2,7 +2,7 @@
 // This is the core of MT2D engine, with only this .cpp you can do everything
 // This file is related to almost all MT2D video interface, like draw, clear and update.
 
-#include <stdio.h>
+//#include <stdio.h>
 
 #ifndef __MSDOS__
 #include "MT2D/MT2D_Terminal_Define.h"
