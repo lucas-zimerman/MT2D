@@ -9,6 +9,7 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_Empty()
 	F->vPtr3 = 0;
 	F->vPtr4 = 0;
 	F->vPtr5 = 0;
+	F->vPtr6 = 0;
 	F->ReturnVAR_ID = 0;
 	F->TotalVars = 0;
 	F->TempVars = 0;
@@ -29,7 +30,7 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_New2(char *ReturnVAR_ID,void(*Funct
 
 }
 
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New3(MT2D_VAR *ObjVarPointer,void(*Function)(Object *, MT2D_VAR *)) {
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New3(MT2D_VAR **ObjVarPointer,void(*Function)(Object *, MT2D_VAR **)) {
 	MT2D_OBJECT_FUNCTION *F = Object_Function_Create_Empty();
 	F->vPtr3 = Function;
 	F->TempVars = ObjVarPointer;
@@ -37,7 +38,7 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_New3(MT2D_VAR *ObjVarPointer,void(*
 	return F;
 }
 
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New4(MT2D_VAR *ObjVarPointers,int TotalPointers,void(*Function)(Object *, MT2D_VAR *, int )) {
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New4(MT2D_VAR **ObjVarPointers,int TotalPointers,void(*Function)(Object *, MT2D_VAR **, int )) {
 	MT2D_OBJECT_FUNCTION *F = Object_Function_Create_Empty();
 	F->vPtr4 = Function;
 	F->TempVars = ObjVarPointers;
@@ -46,7 +47,7 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_New4(MT2D_VAR *ObjVarPointers,int T
 
 }
 
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR *ObjVarPointers, int TotalPointers,void(*Function)(char *, Object *, MT2D_VAR *, int)) {
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR **ObjVarPointers, int TotalPointers,void(*Function)(char *, Object *, MT2D_VAR **, int)) {
 	MT2D_OBJECT_FUNCTION *F = Object_Function_Create_Empty();
 	F->vPtr5 = Function;
 	F->ReturnVAR_ID = ReturnVAR_ID;
@@ -54,6 +55,16 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR *
 	F->TotalVars = TotalPointers;
 	return F;
 }
+
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New5 (Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(Object *, Object *, MT2D_VAR **)) {
+	MT2D_OBJECT_FUNCTION *F = Object_Function_Create_Empty();
+	F->vPtr6 = Function;
+	F->TempObj = ModelObj;
+	F->TempVars = ObjVarPointers;
+	return F;
+}
+
+
 
 void Object_Function_Call(Object *Caller, MT2D_OBJECT_FUNCTION *Function) {
 	if (Function) {

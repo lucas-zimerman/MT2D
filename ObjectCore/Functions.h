@@ -19,19 +19,21 @@ struct MT2D_OBJECT_FUNCTION
 {
 	void(*vPtr1)(Object *);//main object
 	void(*vPtr2)(char *, Object *); // return (name of the object VAR), main object
-	void(*vPtr3)(Object *, MT2D_VAR *); //single var
-	void(*vPtr4)(Object *, MT2D_VAR *, int );//array of vars
-	void(*vPtr5)(char *, Object *, MT2D_VAR *, int);//return (name of the object VAR), main object, array of vars
+	void(*vPtr3)(Object *, MT2D_VAR **); //single var
+	void(*vPtr4)(Object *, MT2D_VAR **, int );//array of vars
+	void(*vPtr5)(char *, Object *, MT2D_VAR **, int);//return (name of the object VAR), main object, array of vars
+	void(*vPtr6)(Object*, Object*,MT2D_VAR**);//main object, other objects,selected object, array of vars
 	char *ReturnVAR_ID;
-	MT2D_VAR *TempVars;
+	MT2D_VAR **TempVars;
+	Object *TempObj;
 	int TotalVars;
 };
 
 MT2D_OBJECT_FUNCTION *Object_Function_Create_New1(void(*Function)(Object *));
 MT2D_OBJECT_FUNCTION *Object_Function_Create_New2(char *ReturnVAR_ID, void(*Function)(char *, Object *));
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New3(MT2D_VAR *ObjVarPointer, void(*Function)(Object *, MT2D_VAR *));
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New4(MT2D_VAR *ObjVarPointers, int TotalPointers, void(*Function)(Object *, MT2D_VAR *, int));
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR *ObjVarPointers, int TotalPointers, void(*Function)(char *, Object *, MT2D_VAR *, int));
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New3(MT2D_VAR **ObjVarPointer, void(*Function)(Object *, MT2D_VAR **));
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New4(MT2D_VAR **ObjVarPointers, int TotalPointers, void(*Function)(Object *, MT2D_VAR **, int));
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR *ObjVarPointers, int TotalPointers, void(*Function)(char *, Object *, MT2D_VAR **, int));
 
 void Object_Function_Call(Object *Caller, MT2D_OBJECT_FUNCTION *Function);
 /*

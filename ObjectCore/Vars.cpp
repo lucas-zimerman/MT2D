@@ -219,6 +219,17 @@ MT2D_VAR * MT2D_Object_Create_Var_UChar(char * Name, unsigned char InitialData)
 	return out;
 }
 
+MT2D_VAR * MT2D_Object_Create_Var_Pointer(char * Name)
+{
+	//the only important data is the Name
+	//Check ObjectCore_Get_Object_Internal_Data for looking to what Names are allowed to use.
+	unsigned char *Data = (unsigned char*)malloc(sizeof(unsigned char));
+	Data[0] = 0;
+	MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_POINTER, (void*)Data);
+	free(Data);
+	return out;
+}
+
 /*
 	Generic Function
 */
@@ -247,7 +258,7 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 			else
 			{
 				V->Type = Type;
-				if (Type < VAR_BOOL || Type > VAR_UNSIGNED_FLOAT)
+				if (Type < VAR_BOOL || Type > VAR_STRING)
 				{
 					MT2D_Var_Last_Error = Var_Type_Not_Supported;
 #ifdef _DEBUG 
@@ -284,6 +295,9 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 						Nc = (char*)malloc(sizeof(char));
 						Nc[0] = *(char*)InitialData;
 						V->Data = Nc;
+						break;
+					case VAR_POINTER:
+						V->Data = 0;
 						break;
 					}
 				}
@@ -383,4 +397,23 @@ void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
 		}
 
 	}
+}
+
+MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR) {
+	MT2D_VAR *NewVAR =0;
+	switch (VAR->Type) {
+	case VAR_INT:
+		NewVAR = MT2D_Object_Create_Var_Int(VAR->Name, *(int*)VAR->Data);
+		break;
+	case VAR_UNSIGNED_INT:
+		NewVAR = MT2D_Object_Create_Var_UInt(VAR->Name, *(unsigned int*)VAR->Data);
+		break;
+	case VAR_CHAR:
+		NewVAR = MT2D_Object_Create_Var_Char(VAR->Name, *(char*)VAR->Data);
+		break;
+	case VAR_UNSIGNED_CHAR:
+		NewVAR = MT2D_Object_Create_Var_UChar(VAR->Name, *(unsigned char*)VAR->Data);
+		break;
+	}
+	return NewVAR;
 }

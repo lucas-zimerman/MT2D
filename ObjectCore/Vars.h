@@ -12,6 +12,7 @@ enum MT2D_VAR_TYPE
 	VAR_UNSIGNED_CHAR,
 	VAR_UNSIGNED_INT,
 	VAR_UNSIGNED_FLOAT,
+	VAR_POINTER,
 	VAR_STRING
 };
 
@@ -56,8 +57,10 @@ MT2D_VAR *MT2D_Object_Create_Var_Int(char *Name, int InitialData);
 MT2D_VAR *MT2D_Object_Create_Var_UInt(char *Name, unsigned int InitialData);
 MT2D_VAR * MT2D_Object_Create_Var_Char(char * Name, char InitialData);
 MT2D_VAR * MT2D_Object_Create_Var_UChar(char * Name, unsigned char InitialData);
+MT2D_VAR * MT2D_Object_Create_Var_Pointer(char * Name);
 
 int MT2D_Object_VAR_GetInt(MT2D_VAR *Var);
+MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR);
 
 
 void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd);
