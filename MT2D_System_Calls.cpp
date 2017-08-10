@@ -25,7 +25,8 @@
 void MT2D_System_Delay(int time_millisecond){
 #ifdef SDL_USE
     SDL_MT2DDelay(time_millisecond);
-#elif defined _WIN32 && !defined WINAPI_FAMILY/*exclude windows uwp*/
+#elif defined _WIN32 /* && !defined WINAPI_FAMILY*//*exclude windows uwp*/
+//I'll fix this shit later in UWP
 	Sleep(time_millisecond);
 #elif defined __MSDOS__
 	delay(time_millisecond);//ms-dos
