@@ -314,6 +314,150 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 	return V;
 }
 
+
+/**
+	does not change the original object type
+**/
+void MT2D_Object_VAR_SetVar(MT2D_VAR *Var, MT2D_VAR *New) {
+	int output = 0;
+	if (Var->Type == VAR_BOOL) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(bool*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(bool*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(bool*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(bool*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(bool*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(bool*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else if (Var->Type == VAR_UNSIGNED_CHAR) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(unsigned char*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(unsigned char*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(unsigned char*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(unsigned char*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(unsigned char*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(unsigned char*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else if (Var->Type == VAR_CHAR) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(char*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(char*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(char*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(char*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(char*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(char*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else if (Var->Type == VAR_INT) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(int*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(int*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(int*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(int*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(int*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(int*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else if (Var->Type == VAR_UNSIGNED_INT) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(unsigned int*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(unsigned int*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(unsigned int*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(unsigned int*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(unsigned int*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(unsigned int*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else if (Var->Type == VAR_FLOAT) {
+		switch (New->Type) {
+		case VAR_BOOL:
+			*(float*)Var->Data = *(bool*)New->Data;
+			break;
+		case VAR_CHAR:
+			*(float*)Var->Data = *(char*)New->Data;
+			break;
+		case VAR_UNSIGNED_CHAR:
+			*(float*)Var->Data = *(unsigned char*)New->Data;
+			break;
+		case VAR_INT:
+			*(float*)Var->Data = *(int*)New->Data;
+			break;
+		case VAR_UNSIGNED_INT:
+			*(float*)Var->Data = *(unsigned int*)New->Data;
+			break;
+		case VAR_FLOAT:
+			*(float*)Var->Data = *(float*)New->Data;
+			break;
+		}
+	}
+	else {
+		MT2D_Var_Last_Error = Var_Type_Not_Supported;
+	}
+
+}
+
 int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
 	int output = 0;
 	if (Var->Type == VAR_BOOL) {

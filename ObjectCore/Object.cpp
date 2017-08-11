@@ -35,6 +35,8 @@ Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int Pos
 	Obj->MyScene = 0;
 	Obj->Aceleration.X = 0;
 	Obj->Aceleration.Y = 0;
+	Obj->User_Vars_Count = 0;
+	Obj->User_Vars = 0;
 	return Obj;
 }
 
@@ -42,7 +44,7 @@ void Object_Private_Run_Function(Object *O) {
 	if (O->State[O->ActualState]->Functions == 0) {
 
 	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr1) {
+ 	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr1) {
 		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr1(O);
 	}else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr2) {
 		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr2(
@@ -55,7 +57,7 @@ void Object_Private_Run_Function(Object *O) {
 			O,
 			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
 		);
-	}
+	} 
 	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr4) {
 		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr4(
 			O,
@@ -89,6 +91,18 @@ void Object_Goto_NextStep(Object *O) {
 	}
 	else {
 		while (O->ActualFrameWait == 0) {
+#ifdef _DEBUG
+			if (O->ActualState == 3 && O->ActualFrame == 5) {
+				O = O;
+			}
+			if(O->User_Vars != 0){
+				printf("function Object tank Timeout %d State [%s] Frame %d\n", *(int*)O->User_Vars[0].Data, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
+			}
+			else {
+				printf("function Object projectile State [%s] Frame %d pos X %d speed X %d\n",(O->ActualState == 0 ? "spawn" : "dead"), O->ActualFrame,O->SpacePosition.X,O->Aceleration.X);
+			}
+#endif
+			Object_Private_Run_Function(O);
 			O->ActualFrame++;
 			if (O->ActualFrame < O->State[O->ActualState]->Count) {
 				O->ActualFrameWait = O->State[O->ActualState]->WaitSprites[O->ActualFrame];
@@ -98,7 +112,6 @@ void Object_Goto_NextStep(Object *O) {
 				O->ActualFrame = 0;
 				O->ActualFrameWait = O->State[O->ActualState]->WaitSprites[0];
 			}
-			Object_Private_Run_Function(O);
 		}
 	}
 }
@@ -130,6 +143,9 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 	int i = 0;
 	int j = 0;
 	for (; i < Scene->Count; i++) {
+#ifdef _DEBUG
+		printf("Parsing Object %d\n", i);
+#endif
 		Object_Goto_NextStep(Scene->ObjectGroup[i]);
 //		printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
 		if (Scene->ObjectGroup[i]->CanDelete == true) {

@@ -56,7 +56,7 @@ MT2D_OBJECT_FUNCTION *Object_Function_Create_New5(char *ReturnVAR_ID, MT2D_VAR *
 	return F;
 }
 
-MT2D_OBJECT_FUNCTION *Object_Function_Create_New5 (Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(Object *, Object *, MT2D_VAR **)) {
+MT2D_OBJECT_FUNCTION *Object_Function_Create_New6(Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(Object *, Object *, MT2D_VAR **)) {
 	MT2D_OBJECT_FUNCTION *F = Object_Function_Create_Empty();
 	F->vPtr6 = Function;
 	F->TempObj = ModelObj;
@@ -81,9 +81,13 @@ void Object_Function_Call(Object *Caller, MT2D_OBJECT_FUNCTION *Function) {
 			else if (Function->vPtr4) {
 				Function->vPtr4(Caller, Function->TempVars,Function->TotalVars);
 			}
-			else if (Function->vPtr2) {
+			else if (Function->vPtr5) {
 				Function->vPtr5(Function->ReturnVAR_ID, Caller, Function->TempVars,Function->TotalVars);
 			}
+			else if (Function->vPtr6) {
+				Function->vPtr6(Caller,Function->TempObj, Function->TempVars);
+			}
+
 		}
 	}
 }
