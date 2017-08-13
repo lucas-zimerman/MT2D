@@ -143,7 +143,9 @@ bool loadMedia()
 	int dif = 0;
 	//Loading success flag
 	bool success = true;
+#ifdef _DEBUG
 	MT2D_Ide_Printf("MT2D: SDL Load tilemap char - ");
+#endif;
 	success = NewLoadFromFile("./msdos_fnt.png");
 	//Load sprite sheet texture
 	if (!success) {
@@ -168,10 +170,14 @@ bool loadMedia()
 			hor += 8;
 
 		}
+#ifdef _DEBUG
 		MT2D_Ide_Printf("Success\n");
+#endif
 	}
 	else {
+#ifdef _DEBUG
 		MT2D_Ide_Printf("Failed\n");
+#endif
 	}
 	return success;
 }

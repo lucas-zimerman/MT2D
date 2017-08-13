@@ -15,7 +15,7 @@ void Object_Render(Object *obj) {
 	}
 }
 
-Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int PosX, int PosY,MT2D_OBJECT_STATE **_States, int States_Count ) {
+Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int PosX, int PosY,ObjectState **_States, int States_Count ) {
 	Object *Obj;
 	Obj = (Object*)malloc(sizeof(Object));
 
@@ -44,37 +44,23 @@ void Object_Private_Run_Function(Object *O) {
 	if (O->State[O->ActualState]->Functions == 0) {
 
 	}
- 	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr1) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr1(O);
-	}else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr2) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr2(
-			O->State[O->ActualState]->Functions[O->ActualFrame].ReturnVAR_ID,
-			O
-		);
+ 	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj(O);
 	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr3) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr3(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars(
 			O,
 			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
 		);
 	} 
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr4) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr4(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars(
 			O,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TotalVars
+			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
 		);
 	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr5) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr5(
-			O->State[O->ActualState]->Functions[O->ActualFrame].ReturnVAR_ID,
-			O,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TotalVars
-		);
-	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame].vPtr6) {
-		O->State[O->ActualState]->Functions[O->ActualFrame].vPtr6(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Obj_Vars(
 			O,
 			O->State[O->ActualState]->Functions[O->ActualFrame].TempObj,
 			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
@@ -91,7 +77,7 @@ void Object_Goto_NextStep(Object *O) {
 	}
 	else {
 		while (O->ActualFrameWait == 0) {
-#ifdef _DEBUG
+#ifdef DEBUG_OBJECTCORE
 			if (O->ActualState == 3 && O->ActualFrame == 5) {
 				O = O;
 			}

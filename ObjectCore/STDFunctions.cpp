@@ -1,12 +1,20 @@
-#include <MT2D/ObjectCore/Functions.h>
+#include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Vars.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>
 #include <cstring>
 #include <cstdlib>
 
-int ObjectCore_VAR_Get_Integer(Object *object, MT2D_VAR *Var);
 
-int ObjectCore_Get_Object_VarIndex(MT2D_VAR *Var) {
+#pragma region INTERNAL
+
+int Cscript_VAR_Get_Integer(Object *object, MT2D_VAR *Var);
+
+/**
+Return the index of a Var inside an Object where is
+the first similar Var with the same requested name
+by the Pointer.
+**/
+int Cscript_Get_Object_VarIndex(MT2D_VAR *Var) {
 	int out = -1;
 	Object *O = (Object*)Var->Data;
 	int i = 0;
@@ -20,16 +28,16 @@ int ObjectCore_Get_Object_VarIndex(MT2D_VAR *Var) {
 }
 
 /**
->> USE ObjectCore_VAR_Get_Integer
-	Get the value from the internal struct of an object.
-	use the function ObjectCore_VAR_Get_Integer in case you are dealing
-	with other types of data other than object struct data.
+>> USE Cscript_VAR_Get_Integer
+Get the value from the internal struct of an object.
+use the function Cscript_VAR_Get_Integer in case you are dealing
+with other types of data other than object struct data.
 **/
-int ObjectCore_Get_Object_Internal_Data(MT2D_VAR *Var) {
+int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
 	Object *O = (Object*)Var->Data;
 	int Return = 0;
 	if (O) {
-		if (strcmp(Var->Name, "Acel_X")==0) {
+		if (strcmp(Var->Name, "Acel_X") == 0) {
 			Return = O->Aceleration.X;
 		}
 		else if (strcmp(Var->Name, "Acel_Y") == 0) {
@@ -50,7 +58,7 @@ int ObjectCore_Get_Object_Internal_Data(MT2D_VAR *Var) {
 		else {
 			//check vars
 			int i = 0;
-			for (i < 0;i < O->User_Vars_Count; i++) {
+			for (i < 0; i < O->User_Vars_Count; i++) {
 				if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
 					Return = MT2D_Object_VAR_GetInt(&O->User_Vars[i]);
 					i = O->User_Vars_Count;
@@ -62,45 +70,46 @@ int ObjectCore_Get_Object_Internal_Data(MT2D_VAR *Var) {
 }
 
 /**
+>> USE Cscript_VAR_Set_Integer
 Get the value from the internal struct of an object.
-use the function ObjectCore_VAR_Get_Integer in case you are dealing
+use the function Cscript_VAR_Get_Integer in case you are dealing
 with other types of data other than object struct data.
 **/
-void ObjectCore_Set_Object_Internal_Data(Object *Caller, MT2D_VAR *Var, MT2D_VAR *NewVar) {
+void Cscript_Set_Object_Internal_Data(Object *Caller, MT2D_VAR *Var, MT2D_VAR *NewVar) {
 	Object *O = (Object*)Var->Data;
 	int Return = 0;
 	if (O) {
 		if (strcmp(Var->Name, "Acel_X") == 0) {
-			O->Aceleration.X = ObjectCore_VAR_Get_Integer(Caller,NewVar);
+			O->Aceleration.X = Cscript_VAR_Get_Integer(Caller, NewVar);
 		}
 		else if (strcmp(Var->Name, "Acel_Y") == 0) {
-			O->Aceleration.Y = ObjectCore_VAR_Get_Integer(Caller, NewVar);
+			O->Aceleration.Y = Cscript_VAR_Get_Integer(Caller, NewVar);
 		}
 		else if (strcmp(Var->Name, "Pos_X") == 0) {
-			O->SpacePosition.X = ObjectCore_VAR_Get_Integer(Caller, NewVar);
+			O->SpacePosition.X = Cscript_VAR_Get_Integer(Caller, NewVar);
 		}
 		else if (strcmp(Var->Name, "Pos_Y") == 0) {
-			O->SpacePosition.Y = ObjectCore_VAR_Get_Integer(Caller, NewVar);;
+			O->SpacePosition.Y = Cscript_VAR_Get_Integer(Caller, NewVar);;
 		}
 		else if (strcmp(Var->Name, "Size_X") == 0) {
-			O->Size.X = ObjectCore_VAR_Get_Integer(Caller, NewVar);;
+			O->Size.X = Cscript_VAR_Get_Integer(Caller, NewVar);;
 		}
 		else if (strcmp(Var->Name, "Size_Y") == 0) {
-			O->Size.Y = ObjectCore_VAR_Get_Integer(Caller, NewVar);;
+			O->Size.Y = Cscript_VAR_Get_Integer(Caller, NewVar);;
 		}
 	}
 }
 
 
 /**
-	gets an integer representation of the data pointed in MT2D_VAR.
-	It checks what type of var is before taking directly the data.
+gets an integer representation of the data pointed in MT2D_VAR.
+It checks what type of var is before taking directly the data.
 **/
-int ObjectCore_VAR_Get_Integer(Object *object, MT2D_VAR *Var) {
+int Cscript_VAR_Get_Integer(Object *object, MT2D_VAR *Var) {
 	int Return = 0;
 	if (Var->Type == VAR_POINTER) {
 		Var->Data = object;
-		Return = ObjectCore_Get_Object_Internal_Data(Var);
+		Return = Cscript_Get_Object_Internal_Data(Var);
 		Var->Data = 0;
 	}
 	else {
@@ -113,15 +122,15 @@ int ObjectCore_VAR_Get_Integer(Object *object, MT2D_VAR *Var) {
 set an integer representation of the data pointed in MT2D_VAR.
 It checks what type of var is before taking directly the data.
 **/
-void ObjectCore_VAR_Set_Integer(Object *object, MT2D_VAR *Var,MT2D_VAR *NewData) {
+void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 	if (Var->Type == VAR_POINTER) {
 		Var->Data = object;
-		ObjectCore_Set_Object_Internal_Data(object, Var, NewData);
+		Cscript_Set_Object_Internal_Data(object, Var, NewData);
 	}
 	else if (NewData->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_Get_Object_Internal_Data(NewData));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_Get_Object_Internal_Data(NewData));
 		MT2D_Object_VAR_SetVar(Var, NewData);
-//		del tmp
+		//		del tmp
 
 	}
 	else {
@@ -129,7 +138,13 @@ void ObjectCore_VAR_Set_Integer(Object *object, MT2D_VAR *Var,MT2D_VAR *NewData)
 	}
 }
 
-void ObjectCore_Object_SetState(Object *Object, MT2D_VAR **StateName) {
+#pragma endregion FUNCTIONS
+
+#pragma region LOGIC
+
+
+
+void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName) {
 	int i = 0;
 	while (i < Object->States_Count) {
 		if (strcmp(Object->State[i]->Name, (char*)StateName[0]->Name) == 0) {
@@ -142,44 +157,26 @@ void ObjectCore_Object_SetState(Object *Object, MT2D_VAR **StateName) {
 	}
 }
 
-void ObjectCore_VAR_INC(Object *object, MT2D_VAR **VAR) {
-	int i = 0;
-	MT2D_VAR *One = MT2D_Object_Create_Var_Char("One",1);
-	while (i < object->User_Vars_Count) {
-		if (strcmp(object->User_Vars[i].Name, VAR[0]->Name) == 0) {
-			MT2D_Object_ADD(&object->User_Vars[i], One);
-			i = object->User_Vars_Count;
-		}
-		i++;
-	}
-}
-
-void ObjectCore_VAR_DEC(Object *object, MT2D_VAR **VAR) {
-	MT2D_VAR *One = MT2D_Object_Create_Var_Char("One", 1);
-	MT2D_Object_SUB(VAR[0], One);
-/*
-	while (i < object->User_Vars_Count) {
-		if (strcmp(object->User_Vars[i].Name, VAR[0]->Name) == 0) {
-			MT2D_Object_SUB(&object->User_Vars[i], One);
-			i = object->User_Vars_Count;
-		}
-		i++;
-	}
-	*/
-}
 
 /**
-	VARS[0] = Pointer
-	VARS[1] = Data to transfer
+VARS[0] = Pointer
+VARS[1] = Data to transfer
 **/
-void ObjectCore_Set_Var(Object *Object, MT2D_VAR **VARS, int TwoVars) {
+void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
 	MT2D_VAR *tmp;
 	if (VARS[0]->Type == VAR_POINTER) {
-		ObjectCore_Set_Object_Internal_Data(Object, VARS[0], VARS[1]);
+		if (VARS[0]->Data == 0) {
+			VARS[0]->Data = Object;
+			Cscript_Set_Object_Internal_Data(Object, VARS[0], VARS[1]);
+			VARS[0]->Data = 0;
+		}
+		else {
+			Cscript_Set_Object_Internal_Data(Object, VARS[0], VARS[1]);
+		}
 	}
 	else if (VARS[1]->Type == VAR_POINTER) {
-		tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_VAR_Get_Integer(Object,VARS[1]));
-		MT2D_Object_VAR_SetVar(VARS[0],tmp);
+		tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(Object, VARS[1]));
+		MT2D_Object_VAR_SetVar(VARS[0], tmp);
 		//del tmp
 	}
 	else {
@@ -187,14 +184,18 @@ void ObjectCore_Set_Var(Object *Object, MT2D_VAR **VARS, int TwoVars) {
 	}
 }
 
-//Object *, MT2D_VAR *, int
+
 /**
-	Main Object
+object  = caller
+VARS[0] = Name of the state to jump
+VARS[1] = MAX vALUe to JUMP
+VARS[2] = ACTUAL VALUE TO SELECT (Rand()%VARS[2]  <= VARS[1])
+Main Object
 **/
-void ObjectCore_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX, int TreeVars) {
+void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
 	int i = 0;
-	int MAX = ObjectCore_VAR_Get_Integer(object,JUMPTO_CHANCE_MAX[2]);
-	int SEL_RANGE = ObjectCore_VAR_Get_Integer(object,JUMPTO_CHANCE_MAX[1]);
+	int MAX = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[2]);
+	int SEL_RANGE = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[1]);
 	if (rand() % MAX <= SEL_RANGE) {
 		while (i < object->States_Count) {
 			if (strcmp(object->State[i]->Name, (char*)JUMPTO_CHANCE_MAX[0]->Data) == 0) {
@@ -208,15 +209,15 @@ void ObjectCore_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX
 	}
 }
 /*
-	Vars:
-	[0] = the name of the state to be jumped
-	[1] = the max value to jump
-	[2] = the var where the check number is stored
+Vars:
+[0] = the name of the state to be jumped
+[1] = the max value to jump
+[2] = the var where the check number is stored
 */
-void ObjectCore_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars, int TreeVars) {
+void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
 	int i = 0;
-	int MAX = ObjectCore_VAR_Get_Integer(object,Vars[1]);
-	int Now = ObjectCore_VAR_Get_Integer(object,Vars[2]);
+	int MAX = Cscript_VAR_Get_Integer(object, Vars[1]);
+	int Now = Cscript_VAR_Get_Integer(object, Vars[2]);
 	if (Now <= MAX) {
 		while (i < object->States_Count) {
 			if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
@@ -236,10 +237,10 @@ Vars:
 [1] = the max value to jump
 [2] = the var where the check number is stored
 */
-void ObjectCore_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars, int TreeVars) {
+void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars) {
 	int i = 0;
-	int MAX = ObjectCore_VAR_Get_Integer(object, Vars[1]);
-	int Now = ObjectCore_VAR_Get_Integer(object, Vars[2]);
+	int MAX = Cscript_VAR_Get_Integer(object, Vars[1]);
+	int Now = Cscript_VAR_Get_Integer(object, Vars[2]);
 	if (object->ActualState == 2) {
 		i = 0;
 	}
@@ -257,42 +258,41 @@ void ObjectCore_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars, int TreeVars
 }
 
 
-
-void ObjectCore_PlaySound(Object *object,MT2D_VAR **SoundName) {
-	if (SoundName[0]->Name) {
-		MT2D_Play_Audio(SoundName[0]->Name);
-	}
+/**
+It'll only mark that this object wants to be deleted, so you can manually do that or let
+the Scenecontrol to do that automatically.
+**/
+void Cscript_RemoveObject(Object *Caller) {
+	Caller->CanDelete = true;
 }
 
-void ObjectCore_PlayMusic(Object *object,MT2D_VAR **MusicName) {
-	if (MusicName[0]->Name) {
-		MT2D_Play_Music(MusicName[0]->Name);
-	}
-}
+#pragma endregion FUNCTIONS
 
 
-void ObjectCore_TeleportToCoord(Object *object, MT2D_VAR **X_Y, int TwoVars) {
-	int X = ObjectCore_VAR_Get_Integer(object,X_Y[0]);
-	int Y = ObjectCore_VAR_Get_Integer(object,X_Y[1]);
+#pragma region AI
+
+void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y) {
+	int X = Cscript_VAR_Get_Integer(object, X_Y[0]);
+	int Y = Cscript_VAR_Get_Integer(object, X_Y[1]);
 	object->SpacePosition.X = X;
 	object->SpacePosition.Y = Y;
 }
 
-void ObjectCore_Move(Object *object) {
+void Cscript_Move(Object *object) {
 	object->SpacePosition.X += object->Aceleration.X;
 	object->SpacePosition.Y += object->Aceleration.Y;
 }
 /**
-	Vars[0] = Pos X
-	Vars[1] = Pos Y
-	Vars[2] = Acel X
-	Vars[3] = Acel Y
+Vars[0] = Pos X
+Vars[1] = Pos Y
+Vars[2] = Acel X
+Vars[3] = Acel Y
 **/
-void ObjectCore_CreateObject(Object *Caller, Object *NewModel,MT2D_VAR **Vars) {
+void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
 	Object *NewObject;
-	int X[2] = { ObjectCore_VAR_Get_Integer(Caller,Vars[0]),ObjectCore_VAR_Get_Integer(Caller,Vars[2]) };
-	int Y[2] = { ObjectCore_VAR_Get_Integer(Caller,Vars[1]),ObjectCore_VAR_Get_Integer(Caller,Vars[3]) };
-	NewObject = Object_Create(NewModel->Solid, NewModel->RenderOnly, NewModel->Size.X, NewModel->Size.X,X[0],Y[0],NewModel->State,NewModel->States_Count);
+	int X[2] = { Cscript_VAR_Get_Integer(Caller,Vars[0]),Cscript_VAR_Get_Integer(Caller,Vars[2]) };
+	int Y[2] = { Cscript_VAR_Get_Integer(Caller,Vars[1]),Cscript_VAR_Get_Integer(Caller,Vars[3]) };
+	NewObject = Object_Create(NewModel->Solid, NewModel->RenderOnly, NewModel->Size.X, NewModel->Size.X, X[0], Y[0], NewModel->State, NewModel->States_Count);
 	NewObject->Aceleration.X = X[1];
 	NewObject->Aceleration.Y = Y[1];
 	if (NewModel->User_Vars_Count > 0) {
@@ -309,57 +309,29 @@ void ObjectCore_CreateObject(Object *Caller, Object *NewModel,MT2D_VAR **Vars) {
 
 
 /**
-	It'll only mark that this object wants to be deleted, so you can manually do that or let
-	the Scenecontrol to do that automatically.
+This function will check if a hit happened in every object inside the objectscene
+pointed by this object.
+VARS[0] = State to jump if object hit A solid object
+VARS[1] = Amount of damage in case (SHOULD NOT BE A POINTER TYPE)
+VARS[2] = The index of the var that's used to represent the health on the other object
 **/
-void ObjectCore_RemoveObject(Object *Caller) {
-	Caller->CanDelete = true;
-}
-
-/**
-	WhatShouldIdo:
-	 0 = nothing
-	 1 = damage touched object
-	 2 = reflect aceleration
-	 3 = nothing
-	 4 = mark caller as touched
-	 4 = damage touched object and mark caller as touched
-	 5 = reflect aceleration and mark caller as touched
-	 6 = mark both objects as touched.
-	Vars:
-	[0] = Damage Amount
-	[1] = the name of the Var from Caller that should be marked as touched
-	[2] = the name of the Var from the touched object that should be marked as touched
-
-**/
-void Object_Touched(Object *Caller, MT2D_VAR **Vars, int WhatShouldIdo) {
-
-}
-
-/**
-	This function will check if a hit happened in every object inside the objectscene
-	pointed by this object.
-	VARS[0] = State to jump if object hit A solid object
-	VARS[1] = Amount of damage in case (SHOULD NOT BE A POINTER TYPE)
-	VARS[2] = The index of the var that's used to represent the health on the other object
-**/
-void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars, int State_AmDmg_HitHealthIndex) {
+void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars) {
 	int i = 0;
 	int ObjVarInded = 0;
 	while (i < Caller->MyScene->Count) {
 		if (Caller->MyScene->ObjectGroup[i]->Solid == true) {
-			if (Caller->SpacePosition.X <= Caller->MyScene->ObjectGroup[i]->SpacePosition.X + Caller->MyScene->ObjectGroup[i]->Size.X){
+			if (Caller->SpacePosition.X <= Caller->MyScene->ObjectGroup[i]->SpacePosition.X + Caller->MyScene->ObjectGroup[i]->Size.X) {
 				if (Caller->SpacePosition.X + Caller->Size.X >= Caller->MyScene->ObjectGroup[i]->SpacePosition.X) {
 					if (Caller->SpacePosition.Y <= Caller->MyScene->ObjectGroup[i]->SpacePosition.Y + Caller->MyScene->ObjectGroup[i]->Size.Y) {
 						if (Caller->SpacePosition.Y + Caller->Size.Y >= Caller->MyScene->ObjectGroup[i]->SpacePosition.Y) {
 							//there's indeed a hit
 							//so lets do some dmg in this object.
 							Vars[2]->Data = Caller->MyScene->ObjectGroup[i];
-							ObjVarInded = ObjectCore_Get_Object_VarIndex(Vars[2]);
-							Vars[2]->Data = 0; 
+							ObjVarInded = Cscript_Get_Object_VarIndex(Vars[2]);
+							Vars[2]->Data = 0;
 							MT2D_Object_SUB(&Caller->MyScene->ObjectGroup[i]->User_Vars[ObjVarInded], Vars[1]);
 							i = Caller->MyScene->Count;
-							ObjectCore_Object_SetState(Caller, Vars);
+							Cscript_Object_SetState(Caller, Vars);
 						}
 					}
 				}
@@ -368,29 +340,35 @@ void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars, int State_AmDmg_Hit
 		i++;
 	}
 }
+
+#pragma endregion FUNCTIONS
+
+
+#pragma region MATH
+
 /**
-	VARS[0] the number to be increased
-	VARS[1] the amount to increase
+VARS[0] the number to be increased
+VARS[1] the amount to increase
 **/
-void ObjectCore_VAR_ADD(Object *object, MT2D_VAR **VARS, int Two) {
+void Cscript_VAR_ADD(Object *object, MT2D_VAR **VARS) {
 	int i = 0;
 	if (VARS[0]->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_VAR_Get_Integer(object, VARS[0]));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", ObjectCore_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_ADD(Tmp, Tmp2);
-			ObjectCore_VAR_Set_Integer(object, VARS[0], Tmp);
+			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			//Del Tmp
 		}
 		else {
 			MT2D_Object_ADD(Tmp, VARS[1]);
-			ObjectCore_VAR_Set_Integer(object, VARS[0], Tmp);
+			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			//Del Tmp
 		}
 	}
 	else {
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_ADD(VARS[0], Tmp);
 			//Del Tmp
 		}
@@ -404,25 +382,25 @@ void ObjectCore_VAR_ADD(Object *object, MT2D_VAR **VARS, int Two) {
 VARS[0] the number to be decreased
 VARS[1] the amount to decrease
 **/
-void ObjectCore_VAR_SUB(Object *object, MT2D_VAR **VARS, int Two) {
+void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS) {
 	int i = 0;
 	if (VARS[0]->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_VAR_Get_Integer(object, VARS[0]));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", ObjectCore_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_SUB(Tmp, Tmp2);
-			ObjectCore_VAR_Set_Integer(object, VARS[0], Tmp);
+			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			//Del Tmp
 		}
 		else {
 			MT2D_Object_SUB(Tmp, VARS[1]);
-			ObjectCore_VAR_Set_Integer(object, VARS[0], Tmp);
+			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			//Del Tmp
 		}
 	}
 	else {
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", ObjectCore_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_SUB(VARS[0], Tmp);
 			//Del Tmp
 		}
@@ -431,3 +409,55 @@ void ObjectCore_VAR_SUB(Object *object, MT2D_VAR **VARS, int Two) {
 		}
 	}
 }
+
+
+/**
+	object = caller
+	VAR[0] = pointer. (always)
+**/
+void Cscript_VAR_INC(Object *object, MT2D_VAR **VAR) {
+ MT2D_VAR *One = MT2D_Object_Create_Var_Char("One", 1);
+	if (VAR[0]->Type == VAR_POINTER) {
+		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
+		MT2D_Object_ADD(tmp, One);
+		Cscript_VAR_Set_Integer(object, VAR[0], tmp);
+	}
+	else {
+		MT2D_Object_ADD(VAR[0], One);
+	}
+}
+
+/**
+object = caller
+VAR[0] = pointer. (always)
+**/
+void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
+ 	MT2D_VAR *One = MT2D_Object_Create_Var_Char("One", 1);
+	if (VAR[0]->Type == VAR_POINTER) {
+		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
+		MT2D_Object_SUB(tmp, One);
+		Cscript_VAR_Set_Integer(object, VAR[0], tmp);
+	}
+	else {
+		MT2D_Object_SUB(VAR[0], One);
+	}
+}
+
+
+#pragma endregion FUNCTIONS
+
+#pragma region AUDIO
+
+void Cscript_PlaySound(Object *object,MT2D_VAR **SoundName) {
+	if (SoundName[0]->Name) {
+		MT2D_Play_Audio(SoundName[0]->Name);
+	}
+}
+
+void Cscript_PlayMusic(Object *object,MT2D_VAR **MusicName) {
+	if (MusicName[0]->Name) {
+		MT2D_Play_Music(MusicName[0]->Name);
+	}
+}
+
+#pragma endregion FUNCTIONS

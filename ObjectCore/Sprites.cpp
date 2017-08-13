@@ -59,7 +59,6 @@ Sprite *Load_Sprite(char *file) {
 		Y = 0;
 		while (!feof(fl)) {
 			BUFF = fgetc(fl);
-			printf("%c", BUFF);
 			if (BUFF == enter_pressed) 
 			{
 				fgetc(fl);// why there's always a '\r' after the \n ?

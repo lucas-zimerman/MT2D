@@ -79,7 +79,9 @@ void SDL_Play_Music(char *Name){
 #endif
 				}
 				music_loaded = 1;
+#ifdef _DEBUG
 				printf("som na caixa\n");
+#endif
 				Mix_PlayMusic(SDL_mus, 10);
 			}
 			else {

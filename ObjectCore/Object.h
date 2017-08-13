@@ -1,11 +1,15 @@
 #ifndef OBJECT2_H
 #define OBJECT2_H
 
+#ifdef _DEBUG
+//#define DEBUG_OBJECTCORE
+#endif
+
 #include <MT2D/ObjectCore/State.h>
 #include <MT2D/ObjectCore/Coordinates.h>
 #include <MT2D/ObjectCore/Vars.h>
 
-struct MT2D_OBJECT_STATE;
+struct ObjectState;
 struct ObjectScene;
 
 struct Object{
@@ -16,7 +20,7 @@ struct Object{
 	Coord Aceleration;
 	Object *Target;
 	ObjectScene *MyScene;
-	MT2D_OBJECT_STATE **State; /*The first state is the initial state where the object is going to be initiated*/
+	ObjectState **State; /*The first state is the initial state where the object is going to be initiated*/
 	int States_Count;
 	int ActualState;
 	int ActualFrame;// the actual frame that is being showed by the object, the spriteblock to be used can be determined by the State.
@@ -33,7 +37,7 @@ struct ObjectScene {
 };
 
 void Object_Render(Object *obj);
-Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int PosX, int PosY, MT2D_OBJECT_STATE **_States, int States_Count);
+Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int PosX, int PosY, ObjectState **_States, int States_Count);
 void Object_Goto_NextStep(Object *O);
 
 
