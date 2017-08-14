@@ -74,6 +74,8 @@ int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
 Get the value from the internal struct of an object.
 use the function Cscript_VAR_Get_Integer in case you are dealing
 with other types of data other than object struct data.
+
+!! WARNING, NewVar must not be a POINTER!!!
 **/
 void Cscript_Set_Object_Internal_Data(Object *Caller, MT2D_VAR *Var, MT2D_VAR *NewVar) {
 	Object *O = (Object*)Var->Data;
@@ -96,6 +98,16 @@ void Cscript_Set_Object_Internal_Data(Object *Caller, MT2D_VAR *Var, MT2D_VAR *N
 		}
 		else if (strcmp(Var->Name, "Size_Y") == 0) {
 			O->Size.Y = Cscript_VAR_Get_Integer(Caller, NewVar);;
+		}
+		else {
+			//check vars
+			int i = 0;
+			for (i < 0; i < O->User_Vars_Count; i++) {
+				if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+					MT2D_Object_VAR_SetVar(&O->User_Vars[i], NewVar);
+					i = O->User_Vars_Count;
+				}
+			}
 		}
 	}
 }
@@ -125,7 +137,14 @@ It checks what type of var is before taking directly the data.
 void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 	if (Var->Type == VAR_POINTER) {
 		Var->Data = object;
-		Cscript_Set_Object_Internal_Data(object, Var, NewData);
+		if (NewData->Type == VAR_POINTER) {
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_Get_Object_Internal_Data(NewData));
+			Cscript_Set_Object_Internal_Data(object, Var, Tmp);
+			//Del tmp
+		}
+		else {
+			Cscript_Set_Object_Internal_Data(object, Var, NewData);
+		}
 	}
 	else if (NewData->Type == VAR_POINTER) {
 		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_Get_Object_Internal_Data(NewData));
@@ -167,7 +186,14 @@ void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
 	if (VARS[0]->Type == VAR_POINTER) {
 		if (VARS[0]->Data == 0) {
 			VARS[0]->Data = Object;
-			Cscript_Set_Object_Internal_Data(Object, VARS[0], VARS[1]);
+			if (VARS[1]->Type == VAR_POINTER) {
+				VARS[1]->Data = Object;
+				Cscript_VAR_Set_Integer(Object, VARS[0], VARS[1]);
+				VARS[1]->Data = 0;
+			}
+			else {
+				Cscript_VAR_Set_Integer(Object, VARS[0], VARS[1]);
+			}
 			VARS[0]->Data = 0;
 		}
 		else {
@@ -244,7 +270,11 @@ void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars) {
 	if (object->ActualState == 2) {
 		i = 0;
 	}
+
 	if (Now == MAX) {
+		if (strcmp(Vars[0]->Name, "Moving") == 0) {
+			i = 0;
+		}
 		while (i < object->States_Count) {
 			if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
 				object->ActualState = i;
@@ -256,6 +286,24 @@ void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars) {
 		}
 	}
 }
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Vars:
+[1] = the max value to jump
+[2] = the var where the check number is stored
+*/
+void Cscript_JumpNextFrameIfVarEq(Object *object, MT2D_VAR **Vars) {
+	int i = 0;
+	int MAX = Cscript_VAR_Get_Integer(object, Vars[0]);
+	int Now = Cscript_VAR_Get_Integer(object, Vars[1]);
+	if (Now == MAX) {
+		object->ActualFrame++;
+		object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame-1];
+
+	}
+}
+
 
 
 /**

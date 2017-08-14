@@ -38,6 +38,7 @@ void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars);
 void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX);
 void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars);
 void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars);
+void Cscript_JumpNextFrameIfVarEq(Object *object, MT2D_VAR **Vars);
 void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName);
 void Cscript_Set_Var(Object *Object, MT2D_VAR **StateName);
 void Cscript_RemoveObject(Object *Caller);
