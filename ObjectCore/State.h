@@ -32,4 +32,11 @@ struct ObjectState
 ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName);
 void MT2D_OBJECT_ADD_STATE(ObjectState *State, Sprite *sprite, int Wait, Cscript *Function);
 
+/**
+	Allows you a better control from your struct.
+**/
+
+
+void MT2D_ObjectState_ADD(ObjectState *State, Sprite *sprite, int Wait, Cscript *Script);
+
 #endif
