@@ -561,3 +561,36 @@ MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR) {
 	}
 	return NewVAR;
 }
+
+
+MT2D_VAR **MT2D_VAR_Create_Matrix1(MT2D_VAR *First) {
+	MT2D_VAR **M = (MT2D_VAR**)malloc(sizeof(MT2D_VAR*));
+	M[0] = First;
+	return M;
+}
+
+MT2D_VAR **MT2D_VAR_Create_Matrix2(MT2D_VAR *First, MT2D_VAR *Second) {
+	MT2D_VAR **M = (MT2D_VAR**)malloc(2*sizeof(MT2D_VAR*));
+	M[0] = First;
+	M[1] = Second;
+	return M;
+}
+
+MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third) {
+	MT2D_VAR **M = (MT2D_VAR**)malloc(3*sizeof(MT2D_VAR*));
+	M[0] = First;
+	M[1] = Second;
+	M[2] = Third;
+	return M;
+}
+
+
+MT2D_VAR **MT2D_VAR_Create_Matrix4(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third, MT2D_VAR *Fourth) {
+	MT2D_VAR **M = (MT2D_VAR**)malloc(4*sizeof(MT2D_VAR*));
+	M[0] = First;
+	M[1] = Second;
+	M[2] = Third;
+	M[3] = Fourth;
+	return M;
+}
+
