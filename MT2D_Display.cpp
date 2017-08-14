@@ -73,6 +73,9 @@ void MT2D_Clear_Main_Window() {
 		j = 0;
 	}
 #endif
+#ifdef SDL_USE
+	SDL_Clear_Sprites();
+#endif
 }
 
 

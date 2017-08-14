@@ -50,6 +50,13 @@ void free_Texture() {
 	}
 }
 
+MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface) {
+	SDL_SetColorKey(Surface, SDL_RLEACCEL, SDL_MapRGB(Surface->format, 0, 0xFF, 0xFF));
+	MT2D_SDL_Texture *newTexture = MT2D_SDL_CreateTextureFromSurface(MainEvents.Render, Surface);
+	return newTexture;
+}
+
+
 bool NewLoadFromFile(char *string) {
 	//Get rid of preexisting texture
 	int mWidth;
@@ -193,6 +200,8 @@ void MT2D_SDL_Init()
 	MainEvents.Window_Started = false;
 	MainEvents.Window_Resized = false;
 	MainEvents.Close_Program = false;
+	MainEvents.SpriteBuffer = 0;
+	MainEvents.SpriteBuffer_Count = 0;
 
 	MT2D_Ide_Printf("MT2D: Starting SDL\n");
 

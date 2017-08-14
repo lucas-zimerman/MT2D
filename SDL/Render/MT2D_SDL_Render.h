@@ -9,7 +9,10 @@ With this code you'll be able to render a terminal like user interface into an o
 ==============================================================================================*/
 
 #include <MT2D/MT2D.h>
-
+#include <MT2D/ObjectCore/Sprites.h>
 void Clean_Render();
 void Render_New(unsigned char BUFFER[][MAX_HOR]);
 void SDL_Render();
+
+void SDL_Add_ImagetoBuffer(Sprite *IMG, int X, int Y);
+void SDL_Clear_Sprites();

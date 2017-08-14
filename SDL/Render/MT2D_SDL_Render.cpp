@@ -12,6 +12,9 @@ extern MT2D_SDL_Texture *OffscrBuff[2];
 
 extern MT2D_SDL_Events MainEvents;
 
+
+void SDL_Render_Sprites();
+
 void CheckVideoEvent() {
 	MT2D_SDL_Event_Handler();
 	if (MainEvents.Window_Started && MainEvents.Window_Resized) {
@@ -129,7 +132,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	}
 	//	MT2D_SDL_SetRenderTarget(gRenderer, NULL);
 	//	MT2D_SDL_RenderCopy(gRenderer, ScreenBuffer, &ScreenBuffer_Size, &ScreenBuffer_Size);
-
+	SDL_Render_Sprites();
 }
 
 void Render_New2(unsigned char BUFFER[][MAX_HOR]) {
@@ -223,4 +226,89 @@ void Render_New2(unsigned char BUFFER[][MAX_HOR]) {
 
 void SDL_Render() {
 	MT2D_SDL_RenderPresent(MainEvents.Render);
+}
+
+
+void SDL_Add_ImagetoBuffer(Sprite *IMG,int X, int Y) {
+	if (MainEvents.SpriteBuffer_Count == 0) {
+		MainEvents.SpriteBuffer = (Sprite*)malloc(sizeof(Sprite));
+		MainEvents.SpriteBufferX = (int*)malloc(sizeof(int));
+		MainEvents.SpriteBufferY = (int*)malloc(sizeof(int));
+		MainEvents.SpriteBuffer[MainEvents.SpriteBuffer_Count] = *IMG;
+		MainEvents.SpriteBufferX[MainEvents.SpriteBuffer_Count] = X;
+		MainEvents.SpriteBufferY[MainEvents.SpriteBuffer_Count] = Y;
+	}
+	else {
+		MainEvents.SpriteBuffer = (Sprite*)realloc(MainEvents.SpriteBuffer,(MainEvents.SpriteBuffer_Count+1)*sizeof(Sprite));
+		MainEvents.SpriteBufferY = (int*)realloc(MainEvents.SpriteBufferY, (MainEvents.SpriteBuffer_Count + 1) * sizeof(int));
+		MainEvents.SpriteBufferX = (int*)realloc(MainEvents.SpriteBufferX, (MainEvents.SpriteBuffer_Count + 1) * sizeof(int));
+		MainEvents.SpriteBuffer[MainEvents.SpriteBuffer_Count] = *IMG;
+		MainEvents.SpriteBuffer[MainEvents.SpriteBuffer_Count] = *IMG;
+		MainEvents.SpriteBufferX[MainEvents.SpriteBuffer_Count] = X;
+		MainEvents.SpriteBufferY[MainEvents.SpriteBuffer_Count] = Y;
+	}
+	MainEvents.SpriteBuffer_Count++;
+}
+
+void SDL_Render_Sprites() {
+	int posx = 0;
+	int posy = 0;
+	int angle = 0;
+	int NextA = 0;
+	int NextB = 0;
+	int i = 0;
+	MT2D_SDL_Rect renderQuad;
+	MT2D_SDL_Rect Original;
+	void *mPixels;
+	int mPitch;
+	int Heigth;
+	int Width;
+	int OffsetX, OffsetY;
+	bool inverte = false;
+	CheckVideoEvent();
+	if (mode.h >= mode.w)
+	{
+		//smartphone
+		angle = 0;
+		inverte = true;
+	}
+	else {
+		//desktop
+		Heigth = mode.h;
+		Width = mode.w;
+	}
+	while (i < MainEvents.SpriteBuffer_Count) {
+		Original.w = MainEvents.SpriteBuffer[i].size.X;
+		Original.h = MainEvents.SpriteBuffer[i].size.Y;
+		Original.x = 0;
+		Original.y = 0;
+		if (mode.h >= mode.w) {
+			//90º
+			renderQuad.x = (MainEvents.SpriteBuffer[i].size.Y * mode.w) / 240;
+			renderQuad.y = (MainEvents.SpriteBuffer[i].size.X * mode.h) / 320;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.X * mode.h) / 320;
+			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.Y * mode.w) / 240;
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+		}
+ 		else {
+ 			renderQuad.x = (MainEvents.SpriteBufferX[i] * mode.w) / 320;
+			renderQuad.y = (MainEvents.SpriteBufferY[i] * mode.h) / 240;
+			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.X * mode.w) / 320;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.Y * mode.h) / 240;
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+		}
+		i++;
+	}
+}
+
+void SDL_Clear_Sprites() {
+	if (MainEvents.SpriteBuffer) {
+		free(MainEvents.SpriteBuffer);
+		MainEvents.SpriteBuffer = 0;
+		MainEvents.SpriteBuffer_Count = 0;
+		free(MainEvents.SpriteBufferX);
+		free(MainEvents.SpriteBufferY);
+		MainEvents.SpriteBufferY = 0;
+		MainEvents.SpriteBufferX = 0;
+	}
 }

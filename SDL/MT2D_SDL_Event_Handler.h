@@ -3,11 +3,16 @@
 
 #include <SDL.h>
 #include <MT2D/SDL/MT2D_SDL_Redefine.h>
+#include <MT2D/ObjectCore/Sprites.h>
 
 struct MT2D_SDL_Events {
 	SDL_KeyboardEvent Keyboard;
 	bool Keyboard_Pressed;
 	bool Keyboard_Consumed;
+	Sprite *SpriteBuffer;//array of pointers where you know what sprites are requested to render.
+	int SpriteBuffer_Count;
+	int *SpriteBufferX;
+	int *SpriteBufferY;
 	SDL_WindowEvent Window;
 	bool Window_Resized;
 	bool Window_Started;

@@ -38,10 +38,11 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 ===================================================================*/
 #ifndef _MT2D_SDL_MAIN_H
 #define _MT2D_SDL_MAIN_H
+#include <MT2D/SDL/MT2D_SDL_Redefine.h>
 
 void MT2D_SDL_Init();
 void close();
 void free_Texture();
 void SDL_MT2DDelay(int Milliseconds);
-
+MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface);
 #endif
