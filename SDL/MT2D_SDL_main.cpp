@@ -19,6 +19,7 @@ MT2D_SDL_Texture *CharSprite[256] = { NULL };;
 MT2D_SDL_Texture *CharSpriteRotated[256] = { NULL };
 MT2D_SDL_Rect ScreenBuffer_Size;
 MT2D_SDL_Texture *OffscrBuff[2];
+MT2D_SDL_Texture *ScreenBuffer;
 bool fullscreen = false;
 SDL_Surface *surface;
 extern MT2D_SDL_Events MainEvents;
@@ -49,6 +50,131 @@ void free_Texture() {
 		mTexture = NULL;
 	}
 }
+
+Uint32 get_pixel32(SDL_Surface *surface, int x, int y)
+{
+	//Convert the pixels to 32 bit
+	Uint32 *pixels = (Uint32 *)surface->pixels;
+
+	//Get the requested pixel
+	return pixels[(y * surface->w) + x];
+}
+
+Uint32 getpixel(SDL_Surface *surface, int x, int y)
+{
+	int bpp = surface->format->BytesPerPixel;
+	/* Here p is the address to the pixel we want to retrieve */
+	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+	switch (bpp) {
+	case 1:
+		return *p;
+		break;
+
+	case 2:
+		return *(Uint16 *)p;
+		break;
+
+	case 3:
+		if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+			return p[0] << 16 | p[1] << 8 | p[2];
+		else
+			return p[0] | p[1] << 8 | p[2] << 16;
+		break;
+
+	case 4:
+		return *(Uint32 *)p;
+		break;
+
+	default:
+		return 0;       /* shouldn't happen, but avoids warnings */
+	}
+}
+
+void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+{
+	int bpp = surface->format->BytesPerPixel;
+	/* Here p is the address to the pixel we want to set */
+	Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+	switch (bpp) {
+	case 1:
+		*p = pixel;
+		break;
+
+	case 2:
+		*(Uint16 *)p = pixel;
+		break;
+
+	case 3:
+		if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+			p[0] = (pixel >> 16) & 0xff;
+			p[1] = (pixel >> 8) & 0xff;
+			p[2] = pixel & 0xff;
+		}
+		else {
+			p[0] = pixel & 0xff;
+			p[1] = (pixel >> 8) & 0xff;
+			p[2] = (pixel >> 16) & 0xff;
+		}
+		break;
+
+	case 4:
+		*(Uint32 *)p = pixel;
+		break;
+	}
+}
+
+MT2D_SDL_Texture *MT2D_SDL_Create_Rotated_Texture(SDL_Surface *Surface, MT2D_SDL_Texture *newTexture) {
+	MT2D_SDL_Rect RotateClip;
+	RotateClip.h = Surface->h;
+	RotateClip.w = Surface->w;
+	RotateClip.x = 0;
+	RotateClip.y = 0;
+	MT2D_SDL_Rect RotateClip2;
+	RotateClip2.h = Surface->w;
+	RotateClip2.w = Surface->h;
+	RotateClip2.x = 0;
+	RotateClip2.y = 0;
+	SDL_Surface *RotatedSurface = SDL_CreateRGBSurface(Surface->flags,Surface->h,Surface->w, Surface->format->BitsPerPixel,Surface->format->Rmask, Surface->format->Gmask, Surface->format->Bmask, Surface->format->Amask);
+	SDL_SetColorKey(RotatedSurface, SDL_RLEACCEL, SDL_MapRGB(RotatedSurface->format, 0, 0xFF, 0xFF));
+
+	for (int Y = 0; Y < Surface->h; Y++) {
+		for (int X = 0; X < Surface->w; X++) {
+			putpixel(RotatedSurface, Y, X, getpixel(Surface, X, Y));
+		}
+	}
+	MT2D_SDL_Texture *StreamTexture = MT2D_SDL_CreateTextureFromSurface(MainEvents.Render, RotatedSurface);
+
+	/*
+		Textures of type SDL_TEXTUREACCESS_TARGET are lost when the screen is resized '-'
+	*/
+
+//	SDL_RenderReadPixels(MainEvents.Render, &RotateClip2, SDL_PIXELFORMAT_RGBA8888,;
+	//	MT2D_SDL_BlitSurface(NEWloadedSurface, &RotateClip, tmpSurface, NULL);
+// 	MT2D_SDL_Texture *TempRenderTexture = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, Surface->h, Surface->w);
+
+//	MT2D_SDL_SetRenderTarget(MainEvents.Render, TempRenderTexture);
+	/* Lets render a rotated Image into the gpu buffer*/
+//	MT2D_SDL_RenderCopyEx(MainEvents.Render, newTexture, &RotateClip, &RotateClip, 90, NULL, SDL_FLIP_NONE);
+//	MT2D_SDL_SetRenderTarget(MainEvents.Render, NULL);
+//	MT2D_SDL_RenderCopy(MainEvents.Render, TempRenderTexture, NULL, &RotateClip);
+	
+	/* Since that type of buffer is prone of failure, we're gonna store that into a safer location*/
+	/* And here's our savior*/
+//	MT2D_SDL_Texture *StreamTexture = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, Surface->h, Surface->w);
+//	void* streamingPixels;
+//	int streamingPitch;
+//	RotatedSurface = SDL_CreateRGBSurface(0, Surface->h, Surface->w, 24, 0, 0, 0, 0);
+//	MT2D_SDL_Texture *StreamTexture = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, Surface->h, Surface->w);
+//	SDL_LockTexture(StreamTexture, NULL, &streamingPixels, &streamingPitch);
+//	SDL_RenderReadPixels(MainEvents.Render, NULL, SDL_PIXELFORMAT_RGBA8888, streamingPixels, streamingPitch);
+////	SDL_UnlockTexture(StreamTexture);
+//	SDL_DestroyTexture(TempRenderTexture);
+
+	return StreamTexture;
+}
+
 
 MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface) {
 	SDL_SetColorKey(Surface, SDL_RLEACCEL, SDL_MapRGB(Surface->format, 0, 0xFF, 0xFF));
@@ -84,7 +210,6 @@ bool NewLoadFromFile(char *string) {
 	{
 		//Color key image
 		SDL_SetColorKey(NEWloadedSurface, SDL_RLEACCEL, SDL_MapRGB(NEWloadedSurface->format, 0, 0xFF, 0xFF));
-
 		//Create texture from surface pixels
 		//SDL_TEXTUREACCESS_STREAMING
 		newTexture = MT2D_SDL_CreateTextureFromSurface(MainEvents.Render, NEWloadedSurface);
@@ -104,8 +229,7 @@ bool NewLoadFromFile(char *string) {
 		ScreenBuffer_Size.y = 0;
 		ScreenBuffer_Size.w = mode.w;
 		ScreenBuffer_Size.h = mode.h;
-		OffscrBuff[1]= SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEY*MAX_VER, FONT_SIZEX*MAX_HOR);
-		OffscrBuff[0] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEX*MAX_HOR, FONT_SIZEY*MAX_VER);
+		ScreenBuffer = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,mode.w,mode.h);
 		for (int i = 0; i<256; i++) {
 			if (hor>256 - 8) {
 				hor = 0;
@@ -119,13 +243,15 @@ bool NewLoadFromFile(char *string) {
 			tmpSurface = SDL_CreateRGBSurface(0, FONT_SIZEX, FONT_SIZEY, 24, 0, 0, 0, 0);
 			MT2D_SDL_BlitSurface(NEWloadedSurface, &gSpriteClips[i], tmpSurface, NULL);
 			CharSprite[i] = MT2D_SDL_CreateTextureFromSurface(MainEvents.Render, tmpSurface);
-			CharSpriteRotated[i] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEY, FONT_SIZEX);
+/*			CharSpriteRotated[i] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, FONT_SIZEY, FONT_SIZEX);
 			//			CharSpriteRotated[i] = SDL_CreateTextureFromSurface(gRenderer, tmpSurface);
 			//			SDL_SetTextureBlendMode(CharSpriteRotated[i], SDL_BLENDMODE_BLEND);
 			MT2D_SDL_SetRenderTarget(MainEvents.Render, CharSpriteRotated[i]);
 			MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSprite[i], &RotateClip, &RotateClip, 90, NULL, SDL_FLIP_NONE);
 			MT2D_SDL_SetRenderTarget(MainEvents.Render, NULL);
 			MT2D_SDL_RenderCopy(MainEvents.Render, CharSpriteRotated[i], NULL, &RotateClip);
+			*/
+			CharSpriteRotated[i] = MT2D_SDL_Create_Rotated_Texture(tmpSurface, CharSprite[i]);
 		}
 		//Get rid of old loaded surface
 		SDL_FreeSurface(NEWloadedSurface);
@@ -213,12 +339,12 @@ void MT2D_SDL_Init()
 	}
     else
 	{
-//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 //		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-//		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 		//Get screen resolution
 		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {

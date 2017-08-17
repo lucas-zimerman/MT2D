@@ -5,6 +5,9 @@
 
 struct Sprite {
 	char **Data;
+#ifdef SDL_USE
+	char **RotatedTexture;
+#endif
 	Coord size;//The size of the sprite
 	Coord scale;//the scale of the image applied to a 320x240 screen
 	char type;/* ASCII image = 0, Image = 1*/

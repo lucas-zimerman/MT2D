@@ -93,11 +93,12 @@ Sprite *Load_Sprite(char *file) {
 	 FILE *fl = fopen(file, "rb");//read only
 	 if (fl) {
 		 fclose(fl);
-		 Img = MT2D_SDL_Load_Image(file);
+		 Img =  MT2D_SDL_Load_Image(file);
 		 S = (Sprite*)malloc(sizeof(Sprite));
 		 S->Data = (char**)MT2D_SDL_Create_Texture(Img);
-		 S->size.X = Img->w;
-		 S->size.Y = Img->h;
+		 S->RotatedTexture = (char**)MT2D_SDL_Create_Rotated_Texture(Img,(MT2D_SDL_Texture*)S->Data);
+		 S->size.X =  Img->w;
+		 S->size.Y =  Img->h;
 		 S->scale.X = ScaleX;
 		 S->scale.Y = ScaleY;
 		 S->type = 1;
@@ -152,7 +153,10 @@ Sprite *Load_Sprite(char *file) {
 			 }
 		 }
 		 else {
-			 SDL_Add_ImagetoBuffer(img, pos_x, pos_y);
+			 //lets optimize a bit...
+			 if (pos_x <= 320 && pos_x + img->scale.X >= 0) {
+				 SDL_Add_ImagetoBuffer(img, pos_x, pos_y);
+			 }
 		 }
 	 }
 
