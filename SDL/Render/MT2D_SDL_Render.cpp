@@ -46,6 +46,22 @@ void CheckVideoEvent() {
 		}
 	}
 }
+unsigned char  CheckifSpriteonBox(int PosX,int PosY, int SizeX, int SizeY) {
+	unsigned char Colide = false;
+	for (int i = 0; i < MainEvents.SpriteBuffer_Count && Colide == false; i++) {
+		if (PosX <= MainEvents.SpriteBufferX[i] + MainEvents.SpriteBuffer[i].scale.X) {
+			if (PosX + SizeX >= MainEvents.SpriteBufferX[i]) {
+				if (PosY <= MainEvents.SpriteBufferY[i] + MainEvents.SpriteBuffer[i].scale.Y) {
+					if (PosY + SizeY >= MainEvents.SpriteBufferY[i]) {
+						Colide = true;
+					}
+				}
+
+			}
+		}
+	}
+	return Colide;
+}
 
 
 void Clean_Render() {
@@ -108,8 +124,12 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	for (posx = 0; posx < MAX_HOR; posx++) {
 		NextA = 0;
 		for (posy = 0; posy < MAX_VER; posy++) {
-			if (' ' != BUFFER[posy][posx]) {//avoids overdraw
-																//FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
+			if (' ' != BUFFER[posy][posx] || FRAMEBUFFER[posy][posx] != BUFFER[posy][posx] || CheckifSpriteonBox(posx,posy,FONT_SIZEX,FONT_SIZEY) == true) {//avoids overdraw
+				/*
+				CheckifSpritecolide is needed because we dont know if the sprite was moved or not so we 
+				draw the sprites around the real sprites.
+				*/
+				FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
 				Original.h = FONT_SIZEX;
 				Original.w = FONT_SIZEY;
 				Original.x = 0;
@@ -121,7 +141,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 					renderQuad.w = CHAR_ResizedX;
 					renderQuad.h = CHAR_ResizedY;
 					NextA += CHAR_ResizedX;
-					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_HORIZONTAL);
 				}
 				else {
 					renderQuad.x = NextB;
@@ -280,28 +300,24 @@ void SDL_Render_Sprites() {
 			Original.x = 0;
 			Original.y = 0;
 			//90º
-			Center.x = MainEvents.SpriteBuffer[i].size.X;
-			Center.y = MainEvents.SpriteBuffer[i].size.Y;
-			angle = 90;
-// 			renderQuad.x = MainEvents.SpriteBuffer[i].scale.Y /2 + (((240 - MainEvents.SpriteBuffer[i].scale.Y - MainEvents.SpriteBufferY[i]) * mode.w) / 320);
-			renderQuad.x = /*MainEvents.SpriteBuffer[i].scale.Y +*/ (( 320*(240 - MainEvents.SpriteBuffer[i].size.Y - MainEvents.SpriteBufferY[i])/240 ) * mode.w) / 320;
+			renderQuad.x = (( 320*(240 - MainEvents.SpriteBuffer[i].scale.Y - MainEvents.SpriteBufferY[i])/240 ) * mode.w) / 320;
 			renderQuad.y = ( (240*MainEvents.SpriteBufferX[i])/ 320  * mode.h) / 240;
 
 //			renderQuad.y = MainEvents.SpriteBuffer[i].scale.X /2  +((MainEvents.SpriteBufferX[i] + 0) * mode.h) / 240;
-			renderQuad.w = (((240 * MainEvents.SpriteBuffer[i].scale.X) / 320) * mode.h ) / 320;
-			renderQuad.h = ((320 * (MainEvents.SpriteBuffer[i].scale.Y) / 240) * mode.w ) / 240;
-			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_NONE);
+			renderQuad.h = (((240 * MainEvents.SpriteBuffer[i].scale.X) / 320) * mode.h ) / 320;
+			renderQuad.w = ((320 * (MainEvents.SpriteBuffer[i].scale.Y) / 240) * mode.w ) / 240;
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_HORIZONTAL);
 		}
  		else {
-			Original.h = MainEvents.SpriteBuffer[i].size.X;
-			Original.w = MainEvents.SpriteBuffer[i].size.Y;
+			Original.h = MainEvents.SpriteBuffer[i].scale.X;
+			Original.w = MainEvents.SpriteBuffer[i].scale.Y;
 			Original.x = 0;
 			Original.y = 0;
 			renderQuad.x = (MainEvents.SpriteBufferX[i] * mode.w) / 320;
 			renderQuad.y = (MainEvents.SpriteBufferY[i] * mode.h) / 240;
-			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.X * (mode.w / (MAX_HOR)) * MAX_HOR /*Force the sprites to be rendered where the ASCII text can render.*/) / 320;
-			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.Y * (mode.h / (MAX_VER)) * MAX_VER) / 240;
-			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, rand() % 87 + 5, NULL, SDL_FLIP_NONE);
+			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.X * mode.w ) / 320;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.Y * mode.h) / 240;
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, 0, NULL, SDL_FLIP_NONE);
 		}
 		i++;
 	}
