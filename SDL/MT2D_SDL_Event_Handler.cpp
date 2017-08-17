@@ -35,6 +35,10 @@ void MT2D_SDL_Event_Handler() {
 				MainEvents.Window_Started = true;
 			}
 		}
+		else if (Events.type == SDL_FINGERDOWN) {
+			MainEvents.Keyboard_Pressed = true;
+			MainEvents.Keyboard.keysym.sym = 32;
+		}
 		else if (Events.type == SDL_QUIT) {
 #ifdef _DEBUG
 			MT2D_Ide_Printf("MT2D: SDL Event Thread Quit\n");
