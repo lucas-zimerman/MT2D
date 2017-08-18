@@ -295,8 +295,8 @@ void SDL_Render_Sprites() {
 	int angle = 0;
 	while (i < MainEvents.SpriteBuffer_Count) {
 		if (mode.h >= mode.w) {
-			Original.w = MainEvents.SpriteBuffer[i].size.X;
-			Original.h = MainEvents.SpriteBuffer[i].size.Y;
+			Original.h = MainEvents.SpriteBuffer[i].size.X;
+			Original.w = MainEvents.SpriteBuffer[i].size.Y;
 			Original.x = 0;
 			Original.y = 0;
 			//90º
@@ -304,13 +304,13 @@ void SDL_Render_Sprites() {
 			renderQuad.y = ( (240*MainEvents.SpriteBufferX[i])/ 320  * mode.h) / 240;
 
 //			renderQuad.y = MainEvents.SpriteBuffer[i].scale.X /2  +((MainEvents.SpriteBufferX[i] + 0) * mode.h) / 240;
-			renderQuad.h = (((240 * MainEvents.SpriteBuffer[i].scale.X) / 320) * mode.h ) / 320;
-			renderQuad.w = ((320 * (MainEvents.SpriteBuffer[i].scale.Y) / 240) * mode.w ) / 240;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.X * mode.h ) / 320;
+			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.Y * mode.w ) / 240;
 			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_HORIZONTAL);
 		}
  		else {
-			Original.h = MainEvents.SpriteBuffer[i].scale.X;
-			Original.w = MainEvents.SpriteBuffer[i].scale.Y;
+			Original.h = MainEvents.SpriteBuffer[i].size.Y;
+			Original.w = MainEvents.SpriteBuffer[i].size.X;
 			Original.x = 0;
 			Original.y = 0;
 			renderQuad.x = (MainEvents.SpriteBufferX[i] * mode.w) / 320;
