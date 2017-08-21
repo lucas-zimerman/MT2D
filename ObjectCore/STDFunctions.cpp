@@ -224,7 +224,7 @@ void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
 	int SEL_RANGE = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[1]);
 	if (rand() % MAX <= SEL_RANGE) {
 		while (i < object->States_Count) {
-			if (strcmp(object->State[i]->Name, (char*)JUMPTO_CHANCE_MAX[0]->Data) == 0) {
+			if (strcmp(object->State[i]->Name, (char*)JUMPTO_CHANCE_MAX[0]->Name) == 0) {
 				object->ActualState = i;
 				object->ActualFrame = 0;
 				object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -237,14 +237,13 @@ void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
 /*
 Vars:
 [0] = the name of the state to be jumped
-[1] = the max value to jump
-[2] = the var where the check number is stored
+[1] <= [2], jump if true
 */
 void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
 	int i = 0;
-	int MAX = Cscript_VAR_Get_Integer(object, Vars[1]);
-	int Now = Cscript_VAR_Get_Integer(object, Vars[2]);
-	if (Now <= MAX) {
+	int Left = Cscript_VAR_Get_Integer(object, Vars[1]);
+	int Right = Cscript_VAR_Get_Integer(object, Vars[2]);
+	if (Left <= Right) {
 		while (i < object->States_Count) {
 			if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
 				object->ActualState = i;
@@ -256,6 +255,29 @@ void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
 		}
 	}
 }
+
+/*
+Vars:
+[0] = the name of the state to be jumped
+[1] >= [2], jump if true
+*/
+void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
+	int i = 0;
+	int Left = Cscript_VAR_Get_Integer(object, Vars[1]);
+	int Right = Cscript_VAR_Get_Integer(object, Vars[2]);
+	if (Left >= Right) {
+		while (i < object->States_Count) {
+			if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
+				object->ActualState = i;
+				object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
+				object->ActualFrameWait = object->State[i]->WaitSprites[0];
+				i = object->States_Count;
+			}
+			i++;
+		}
+	}
+}
+
 
 /*
 Vars:
