@@ -89,7 +89,7 @@ bool MT2D_Joystick_Button_Touched(int ID) {
 	bool Output = GlobalJoystickHandler->Button_Pressed[ID - 1];
 	GlobalJoystickHandler->Button_Pressed[ID - 1] = false;
 	GlobalJoystickHandler->Touched = false;
-	return GlobalJoystickHandler->Button_Pressed[ID-1];
+	return Output;
 }
 
 int MT2D_Joystick_Get_LeftAxisX() {
