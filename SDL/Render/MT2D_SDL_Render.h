@@ -15,4 +15,4 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]);
 void SDL_Render();
 
 void SDL_Add_ImagetoBuffer(Sprite *IMG, int X, int Y);
-void SDL_Clear_Sprites();
+void SDL_Clear_RenderBuffers();

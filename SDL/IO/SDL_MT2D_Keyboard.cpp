@@ -49,7 +49,7 @@ int SDL_Keyboard_touched() {//check if a key was pressed, and if it was, get the
 			//printf(" letras...\n");
 			if (MainEvents.Keyboard.keysym.mod & (KMOD_SHIFT | KMOD_CAPS))
 			{
-				SDL_EmulatedKey = MainEvents.Keyboard.keysym.sym - 32;//transforma em maiuscula
+				SDL_EmulatedKey = MainEvents.Keyboard.keysym.sym - 32;//uppercase it
 			}
 			else {
 				SDL_EmulatedKey = MainEvents.Keyboard.keysym.sym;

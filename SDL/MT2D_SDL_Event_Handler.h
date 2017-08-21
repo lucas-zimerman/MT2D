@@ -9,6 +9,8 @@ struct MT2D_SDL_Events {
 	SDL_KeyboardEvent Keyboard;
 	bool Keyboard_Pressed;
 	bool Keyboard_Consumed;
+	__int32  *Keyboard_Buffer;//used to store all the keys that are active or not
+	unsigned int Keyboard_Buffer_Count;
 	Sprite *SpriteBuffer;//array of pointers where you know what sprites are requested to render.
 	int SpriteBuffer_Count;
 	int *SpriteBufferX;
@@ -23,5 +25,6 @@ struct MT2D_SDL_Events {
 	bool RequestRender;
 };
 void MT2D_SDL_Event_Handler();
+void MT2D_SDL_Event_Handler_NoLoop();
 #endif
 

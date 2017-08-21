@@ -229,6 +229,8 @@ bool NewLoadFromFile(char *string) {
 		ScreenBuffer_Size.y = 0;
 		ScreenBuffer_Size.w = mode.w;
 		ScreenBuffer_Size.h = mode.h;
+		OffscrBuff[0] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, MAX_HOR *FONT_SIZEX, MAX_VER * FONT_SIZEY);
+		OffscrBuff[1] = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, MAX_VER * FONT_SIZEY,MAX_HOR *FONT_SIZEX);
 		ScreenBuffer = SDL_CreateTexture(MainEvents.Render, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET,mode.w,mode.h);
 		for (int i = 0; i<256; i++) {
 			if (hor>256 - 8) {
@@ -328,6 +330,8 @@ void MT2D_SDL_Init()
 	MainEvents.Close_Program = false;
 	MainEvents.SpriteBuffer = 0;
 	MainEvents.SpriteBuffer_Count = 0;
+	MainEvents.Keyboard_Buffer = 0;
+	MainEvents.Keyboard_Buffer_Count = 0;
 
 	MT2D_Ide_Printf("MT2D: Starting SDL\n");
 
@@ -339,12 +343,12 @@ void MT2D_SDL_Init()
 	}
     else
 	{
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#ifndef MT2D_SDL_USING_DIRECTX_RENDER
+//		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+#endif
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 //		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+//		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 		//Get screen resolution
 		if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {

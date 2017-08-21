@@ -46,21 +46,22 @@ void CheckVideoEvent() {
 		}
 	}
 }
-unsigned char  CheckifSpriteonBox(int PosX,int PosY, int SizeX, int SizeY) {
-	unsigned char Colide = false;
-	for (int i = 0; i < MainEvents.SpriteBuffer_Count && Colide == false; i++) {
-		if (PosX <= MainEvents.SpriteBufferX[i] + MainEvents.SpriteBuffer[i].scale.X) {
-			if (PosX + SizeX >= MainEvents.SpriteBufferX[i]) {
-				if (PosY <= MainEvents.SpriteBufferY[i] + MainEvents.SpriteBuffer[i].scale.Y) {
-					if (PosY + SizeY >= MainEvents.SpriteBufferY[i]) {
-						Colide = true;
-					}
-				}
-
+void CheckASCIIbelowSprites() {
+	int Xstart, Xend, Ystart, Yend;
+	int X;
+	for (int i = 0; i < MainEvents.SpriteBuffer_Count; i++) {
+		Xstart = (MAX_HOR * (MainEvents.SpriteBufferX[i]-1)) / 320;
+		Xend = (MAX_HOR * (MainEvents.SpriteBufferX[i] + MainEvents.SpriteBuffer[i].scale.X +1)) / 320;
+		Ystart = (MAX_VER * (MainEvents.SpriteBufferY[i]-1)) / 240;
+		Yend = (MAX_VER * (MainEvents.SpriteBufferY[i] + MainEvents.SpriteBuffer[i].scale.Y + 1)) / 240;
+		//now we clear the BUFFER behind the sprites
+		for (; Ystart <= Yend && Ystart < MAX_VER; Ystart++) {
+			for (X = Xstart; X <= Xend && X < MAX_HOR; X++) {
+				FRAMEBUFFER[Ystart][X] = -2;
 			}
 		}
+
 	}
-	return Colide;
 }
 
 
@@ -76,7 +77,7 @@ void Clean_Render() {
 }
 void Render_New2(unsigned char BUFFER[][MAX_HOR]);
 
-void Render_New(unsigned char BUFFER[][MAX_HOR]) {
+void Render_NewOld(unsigned char BUFFER[][MAX_HOR]) {
 //	Render_New2(BUFFER);
 //	return;
 	int posx = 0;
@@ -93,8 +94,10 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	int Heigth;
 	int Width;
 	int OffsetX, OffsetY;
+	char collide = 0;
 	bool inverte = false;
 	CheckVideoEvent();
+	CheckASCIIbelowSprites();
 	if (mode.h >= mode.w)
 	{
 		//smartphone
@@ -102,7 +105,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 		inverte = true;
 		Heigth = mode.w;
 		Width = mode.h;
-		CHAR_ResizedX = Heigth / (MAX_VER);//afetando horizontal
+		CHAR_ResizedX =  Heigth / (MAX_VER);//afetando horizontal
 		CHAR_ResizedY = Width / (MAX_HOR);//afetando a vertical
 	}
 	else {
@@ -114,7 +117,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	}
 
 
-	Clean_Render();
+	//Clean_Render();
 
 	//	MT2D_SDL_RenderCopyEx(gRenderer, ScreenBuffer, &ScreenBuffer_Size, &ScreenBuffer_Size, NULL, NULL, SDL_FLIP_NONE);
 	//	MT2D_SDL_SetRenderTarget(gRenderer, ScreenBuffer);
@@ -124,17 +127,19 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	for (posx = 0; posx < MAX_HOR; posx++) {
 		NextA = 0;
 		for (posy = 0; posy < MAX_VER; posy++) {
-			if (' ' != BUFFER[posy][posx] || FRAMEBUFFER[posy][posx] != BUFFER[posy][posx] || CheckifSpriteonBox(posx,posy,FONT_SIZEX,FONT_SIZEY) == true) {//avoids overdraw
-				/*
-				CheckifSpritecolide is needed because we dont know if the sprite was moved or not so we 
-				draw the sprites around the real sprites.
-				*/
-				FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
+			collide = false;
+			if (FRAMEBUFFER[posy][posx] == -2) {
+				collide = true;
+			}
+			if (' ' != BUFFER[posy][posx]/*|| collide == true*/) {//avoids overdraw
+				//if (collide == false) {
+					FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
+				//}
 				Original.h = FONT_SIZEX;
 				Original.w = FONT_SIZEY;
 				Original.x = 0;
 				Original.y = 0;
-				if (mode.h >= mode.w) {
+				if (mode.h >= mode.w){
 					//90º
 					renderQuad.x = mode.w - NextA - CHAR_ResizedX;
 					renderQuad.y = NextB;
@@ -156,7 +161,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 				NextA += (mode.h >= mode.w ? CHAR_ResizedX : CHAR_ResizedY);
 			}
 
-		}
+     		}
 		if (mode.h >= mode.w) {
 			NextB += CHAR_ResizedY;
 		}
@@ -170,7 +175,7 @@ void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	SDL_Render_Sprites();
 }
 
-void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
+void Render_New(unsigned char BUFFER[][MAX_HOR]) {
 	int posx = 0;
 	int posy = 0;
 	int angle = 0;
@@ -194,13 +199,13 @@ void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
 		inverte = true;
 		Heigth = mode.w;
 		Width = mode.h;
-		MT2D_SDL_SetRenderTarget(MainEvents.Render, ScreenBuffer);
+		MT2D_SDL_SetRenderTarget(MainEvents.Render, OffscrBuff[1]);
 	}
 	else {
 		//desktop
 		Heigth = mode.h;
 		Width = mode.w;
-		MT2D_SDL_SetRenderTarget(MainEvents.Render, ScreenBuffer);
+		MT2D_SDL_SetRenderTarget(MainEvents.Render, OffscrBuff[0]);
 	}
 	Original.h = FONT_SIZEY;
 	Original.w = FONT_SIZEX;
@@ -211,15 +216,22 @@ void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
 		NextA = 0;
 		for (posy = 0; posy < MAX_VER; posy++) {
 			if (FRAMEBUFFER[posy][posx] != BUFFER[posy][posx]) {//avoids overdraw
-																//FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
+				FRAMEBUFFER[posy][posx] = BUFFER[posy][posx];
 				if (mode.h >= mode.w) {
 					//90º
-					renderQuad.y = posx * FONT_SIZEX;
-					renderQuad.x = posy * FONT_SIZEY;
+					renderQuad.x = mode.w - NextA - FONT_SIZEX;
+					renderQuad.y = NextB;
 					renderQuad.w = FONT_SIZEX;
 					renderQuad.h = FONT_SIZEY;
 					NextA += CHAR_ResizedX;
-					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_HORIZONTAL);
+/**/
+					renderQuad.y =  posx * FONT_SIZEX;
+					renderQuad.x = ((MAX_VER-1) * FONT_SIZEY) - posy * FONT_SIZEY;
+					renderQuad.w = FONT_SIZEX;
+					renderQuad.h = FONT_SIZEY;
+					NextA += CHAR_ResizedX;
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_HORIZONTAL);
 				}
 				else {
 					renderQuad.x = posx * FONT_SIZEX;
@@ -227,14 +239,14 @@ void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
 					renderQuad.w = FONT_SIZEX;
 					renderQuad.h = FONT_SIZEY;
 					NextA += CHAR_ResizedY;
-					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSpriteRotated[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
+					MT2D_SDL_RenderCopyEx(MainEvents.Render, CharSprite[BUFFER[posy][posx]], &Original, &renderQuad, angle, NULL, SDL_FLIP_NONE);
 				}
 			}
 
 		}
 	}
 	MT2D_SDL_SetRenderTarget(MainEvents.Render, NULL);
-	if(!inverte){
+	if (!inverte) {
 		Original.h = FONT_SIZEY*MAX_VER;
 		Original.w = FONT_SIZEX*MAX_HOR;
 		Original.x = 0;
@@ -243,7 +255,7 @@ void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
 		renderQuad.y = 0;
 		renderQuad.w = mode.w;
 		renderQuad.h = mode.h;
-		MT2D_SDL_RenderCopy(MainEvents.Render, ScreenBuffer, &Original, &renderQuad);
+		MT2D_SDL_RenderCopy(MainEvents.Render, OffscrBuff[0], &Original, &renderQuad);
 	}
 	else {
 		Original.w = FONT_SIZEY*MAX_VER;
@@ -254,7 +266,7 @@ void Render_NewNot1x1Scale(unsigned char BUFFER[][MAX_HOR]) {
 		renderQuad.y = 0;
 		renderQuad.w = mode.w;
 		renderQuad.h = mode.h;
-		MT2D_SDL_RenderCopy(MainEvents.Render, ScreenBuffer, &Original, &renderQuad);
+		MT2D_SDL_RenderCopy(MainEvents.Render, OffscrBuff[1], &Original, &renderQuad);
 	}
 	SDL_Render_Sprites();
 }
@@ -323,8 +335,10 @@ void SDL_Render_Sprites() {
 	}
 }
 
-
-void SDL_Clear_Sprites() {
+/**
+	Clear the sprite buffer and also the backup from the ASCII window so we can redraw everything again.
+**/
+void SDL_Clear_RenderBuffers() {
 	if (MainEvents.SpriteBuffer) {
 		free(MainEvents.SpriteBuffer);
 		MainEvents.SpriteBuffer = 0;

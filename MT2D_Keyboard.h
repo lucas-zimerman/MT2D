@@ -18,6 +18,8 @@
 			also, if a special key was pressed like _key, this function will make two returns, one indicating that
 			_key was pressed and then witch _key was pressed.
 		Return: Key pressed (ansi char)
+	NOTE: if you want to interact with multiple keys at the same time, please use the joystick struct
+	because it also works with keyboard.
 ==============================================================================================*/
 #define arrow_key_pressed 224
 #define arrow_up_pressed 72
