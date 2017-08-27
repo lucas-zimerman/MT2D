@@ -244,7 +244,7 @@ void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
 	int Left = Cscript_VAR_Get_Integer(object, Vars[1]);
 	int Right = Cscript_VAR_Get_Integer(object, Vars[2]);
 	if (Left <= Right) {
-		while (i < object->States_Count) {
+        		while (i < object->States_Count) {
 			if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
 				object->ActualState = i;
 				object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
@@ -325,6 +325,39 @@ void Cscript_JumpNextFrameIfVarEq(Object *object, MT2D_VAR **Vars) {
 
 	}
 }
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Vars:
+[0] = Left
+[1] = Right
+*/
+void Cscript_JumpNextFrameIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
+	int i = 0;
+	int Left = Cscript_VAR_Get_Integer(object, Vars[0]);
+	int Right = Cscript_VAR_Get_Integer(object, Vars[1]);
+	if (Left <= Right) {
+		object->ActualFrame++;
+		object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame - 1];
+	}
+}
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Vars:
+[0] = Left
+[1] = Right
+*/
+void Cscript_JumpNextFrameIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
+	int i = 0;
+	int Left = Cscript_VAR_Get_Integer(object, Vars[0]);
+	int Right = Cscript_VAR_Get_Integer(object, Vars[1]);
+	if (Left >= Right) {
+		object->ActualFrame++;
+		object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame - 1];
+	}
+}
+
 
 
 

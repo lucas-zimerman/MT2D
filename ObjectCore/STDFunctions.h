@@ -41,6 +41,8 @@ void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars);
 
 void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars);
 void Cscript_JumpNextFrameIfVarEq(Object *object, MT2D_VAR **Vars);
+void Cscript_JumpNextFrameIfVarLowerEq(Object *object, MT2D_VAR **Vars);
+void Cscript_JumpNextFrameIfVarHigherEq(Object *object, MT2D_VAR **Vars);
 void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName);
 void Cscript_Set_Var(Object *Object, MT2D_VAR **StateName);
 void Cscript_RemoveObject(Object *Caller);
