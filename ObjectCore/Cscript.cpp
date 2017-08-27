@@ -8,6 +8,7 @@ Cscript *Cscript_Empty()
 	F->_Obj_Vars = 0;
 	F->_Obj_Vars = 0;
 	F->_Obj_Obj_Vars = 0;
+	F->TempObj = 0;
 	F->TempVars = 0;
 	return F;
 }
