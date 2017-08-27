@@ -7,6 +7,7 @@
 #include <MT2D/SDL/IO/SDL_MT2D_Joystick.h>
 #include <MT2D/MT2D_Keyboard.h>
 #include <MT2D/SDL/MT2D_SDL_Event_Handler.h>
+#include <MT2D/MT2D_Debug.h>
 #endif
 
 MT2D_Joystick *GlobalJoystickHandler;
@@ -25,6 +26,9 @@ void MT2D_Joystick_Init() {
 	GlobalJoystickHandler->Right_Y_axis = 0;
 	GlobalJoystickHandler->Touched = false;
 	GlobalJoystickHandler->DeadZoneAxis = 8000;
+	SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "1");
+	const char *B = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
+	MT2D_Ide_Printf((char*)B);
 	GlobalJoystickHandler->gGameController = SDL_LoadJoystick();
 #ifdef SDL_USE
 	SDL_Joystick_Init();
