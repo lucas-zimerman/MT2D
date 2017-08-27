@@ -1,5 +1,6 @@
 #include "MT2D_SDL_Event_Handler.h"
 #include <MT2D/MT2D_System_Calls.h>
+#include <MT2D/MT2D_Debug.h>
 #include <MT2D/SDL/Render/MT2D_SDL_Render.h>
 #include <MT2D/MT2D_Debug.h>
 #include <MT2D/Joystick/MT2D_Joystick.h>
@@ -75,34 +76,64 @@ void MT2D_SDL_Event_Handler() {
 			}
 		}
 		else if (Events.type == SDL_FINGERDOWN) {
+			MT2D_SDL_ADD_Key_Buffer(32);
 			MainEvents.Keyboard_Pressed = true;
 			MainEvents.Keyboard.keysym.sym = 32;
-		}
-		else if (Events.type == SDL_JOYAXISMOTION) {
-			if (Events.jaxis.axis == 0) {
-				// X axis
-				GlobalJoystickHandler->Left_X_axis = Events.jaxis.value;
-				GlobalJoystickHandler->Left_Modified = true;
-				GlobalJoystickHandler->Touched = true;
+			if (Events.tfinger.x > 0.5) {
+				MT2D_SDL_ADD_Key_Buffer(SDLK_UP);
 			}
-			else if (Events.jaxis.axis == 1) {
-				// Y axis
-				GlobalJoystickHandler->Left_Y_axis = Events.jaxis.value;
-				GlobalJoystickHandler->Left_Modified = true;
+			else if(Events.tfinger.x < 0.7){
+				MT2D_SDL_ADD_Key_Buffer(SDLK_DOWN);
+			}
+			if (Events.tfinger.y > 0.7) {
+				MT2D_SDL_ADD_Key_Buffer(SDLK_RIGHT);
+			}
+			else if (Events.tfinger.y < 0.7) {
+				MT2D_SDL_ADD_Key_Buffer(SDLK_LEFT);
+			}
+			if (GlobalJoystickHandler) {
 				GlobalJoystickHandler->Touched = true;
+				GlobalJoystickHandler->Left_Modified = true;
+			}
+		}
+		else if (Events.type == SDL_FINGERUP) {
+			MT2D_Ide_Printf("Touch Up");
+			MT2D_SDL_REMOVE_Key_Buffer(32);
+			MT2D_SDL_REMOVE_Key_Buffer( SDLK_UP);
+			MT2D_SDL_REMOVE_Key_Buffer(SDLK_DOWN);
+			MT2D_SDL_REMOVE_Key_Buffer(SDLK_LEFT);
+			MT2D_SDL_REMOVE_Key_Buffer(SDLK_RIGHT);
+		}
+
+		else if (Events.type == SDL_JOYAXISMOTION) {
+			MT2D_Ide_Printf("Joystick Motion");
+			if (GlobalJoystickHandler) {
+				if (Events.jaxis.axis == 0) {
+					// X axis
+					GlobalJoystickHandler->Left_X_axis = Events.jaxis.value;
+					GlobalJoystickHandler->Left_Modified = true;
+					GlobalJoystickHandler->Touched = true;
+				}
+				else if (Events.jaxis.axis == 1) {
+					// Y axis
+					GlobalJoystickHandler->Left_Y_axis = Events.jaxis.value;
+					GlobalJoystickHandler->Left_Modified = true;
+					GlobalJoystickHandler->Touched = true;
+				}
 			}
 		}
 		else if (Events.type == SDL_JOYBUTTONDOWN) {
-			if (Events.jbutton.button < 4) {
-				GlobalJoystickHandler->Button_Pressed[Events.jbutton.button] = true;
-				GlobalJoystickHandler->Touched = true;
+			if (GlobalJoystickHandler) {
+				if (Events.jbutton.button < 4) {
+					GlobalJoystickHandler->Button_Pressed[Events.jbutton.button] = true;
+					GlobalJoystickHandler->Touched = true;
+				}
 			}
 		}
 		else if (Events.type == SDL_QUIT) {
 			SDL_Quit();
 			exit(0);
 		}
-		printf("\n\n");
 	}
 }
 
