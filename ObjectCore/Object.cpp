@@ -11,7 +11,7 @@ void Object_Render(Object *obj) {
 		//Decrement the frame counter
 		//Check if the frame tic has expired, if yes select the next frame
 		//Render the frame
-		Sprite_Render_on_Window(&obj->State[obj->ActualState]->Sprites[obj->ActualFrame],DISPLAY_WINDOW1, obj->SpacePosition.X, obj->SpacePosition.Y);
+		Sprite_Render_on_Window(obj->State[obj->ActualState]->Sprites[obj->ActualFrame],DISPLAY_WINDOW1, obj->SpacePosition.X, obj->SpacePosition.Y);
 	}
 }
 
@@ -44,26 +44,26 @@ void Object_Private_Run_Function(Object *O) {
 	if (O->State[O->ActualState]->Functions == 0) {
 
 	}
- 	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj) {
-		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj(O);
+ 	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj(O);
 	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars) {
-		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars(
 			O,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
+			O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
 		);
 	} 
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars) {
-		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Vars(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars(
 			O,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
+			O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
 		);
 	}
-	else if (O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Obj_Vars) {
-		O->State[O->ActualState]->Functions[O->ActualFrame]._Obj_Obj_Vars(
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Obj_Vars) {
+		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Obj_Vars(
 			O,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempObj,
-			O->State[O->ActualState]->Functions[O->ActualFrame].TempVars
+			O->State[O->ActualState]->Functions[O->ActualFrame]->TempObj,
+			O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
 		);
 	}
 }
@@ -129,9 +129,6 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 	int i = 0;
 	int j = 0;
 	for (; i < Scene->Count; i++) {
-#ifdef _DEBUG
-		printf("Parsing Object %d\n", i);
-#endif
 		Object_Goto_NextStep(Scene->ObjectGroup[i]);
 //		printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
 		if (Scene->ObjectGroup[i]->CanDelete == true) {
@@ -143,4 +140,19 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 			i--;
 		}
 	}
+}
+
+void Object_Delete(Object *Me) {
+	int i = 0;
+	if (Me != 0) {
+		if (Me->User_Vars_Count) {
+			for (i = 0; i < Me->User_Vars_Count; i++) {
+				free(Me->User_Vars[i].Data);
+				free(Me->User_Vars[i].Name);
+			}
+		}
+		free(Me);
+	}
+	//We do not delete the State because it's a shared memory data that's shared by all the objects.
+	//you must manually delete the State that's shared by all those objects.
 }

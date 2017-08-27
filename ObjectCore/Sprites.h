@@ -23,4 +23,5 @@ Sprite *Load_Sprite(char *file);
 **/
 Sprite *Load_Sprite_Image(char *file,int ScaleX,int ScaleY);
 bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y);
+void Sprite_Delete(Sprite *Me);
 #endif	

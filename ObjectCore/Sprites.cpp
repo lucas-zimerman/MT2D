@@ -162,3 +162,25 @@ Sprite *Load_Sprite(char *file) {
 
 	return out;
 }
+
+ void Sprite_Delete(Sprite *Me) {
+	 if (Me) {
+		 if (Me->type == 1) {
+#ifdef SDL_USE
+			 if (Me->RotatedTexture) {
+				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->RotatedTexture);
+			 }
+			 if (Me->Data) {
+				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->Data);
+			 }
+#endif
+		 }
+		 else {
+			 for (int i = 0; i < Me->size.Y; i++) {
+				 free(Me->Data[i]);
+			 }
+			 free(Me->Data);
+		 }
+		 free(Me);
+	 }
+ }

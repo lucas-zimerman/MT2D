@@ -22,10 +22,10 @@ struct Cscript;
 
 struct ObjectState
 {
-	Sprite *Sprites;// a set of sprites
+	Sprite **Sprites;// a set of sprites
 	int *WaitSprites;// the time that you need to wait for each sprite
 	int Count;
-	Cscript *Functions;//the functions for each sprite
+	Cscript **Functions;//the functions for each sprite
 	char *Name; //name from this state.
 };
 
@@ -38,5 +38,5 @@ void MT2D_OBJECT_ADD_STATE(ObjectState *State, Sprite *sprite, int Wait, Cscript
 
 
 void MT2D_ObjectState_ADD(ObjectState *State, Sprite *sprite, int Wait, Cscript *Script);
-
+void MT2D_ObjectState_Delete(ObjectState *Me);
 #endif
