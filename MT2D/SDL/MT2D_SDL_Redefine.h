@@ -25,6 +25,7 @@
     #include "SDL.h"
     #include "SDL_gpu.h"
     #else
+	#include <SDL.h>
     #include <SDL_image.h>
     #endif
 #else

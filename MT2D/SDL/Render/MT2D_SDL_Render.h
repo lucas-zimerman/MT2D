@@ -21,4 +21,8 @@ void SDL_Render();
 void SDL_Add_ImagetoBuffer(Sprite *IMG, int X, int Y);
 void SDL_Clear_RenderBuffers();
 
+/**/
+void MT2D_SDL_Clear_Main_Window();
+void MT2D_SDL_Draw_Window(int which);
+
 #endif

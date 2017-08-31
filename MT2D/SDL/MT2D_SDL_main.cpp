@@ -26,6 +26,13 @@ bool fullscreen = false;
 SDL_Surface *surface;
 extern MT2D_SDL_Events MainEvents;
 
+#ifdef WINDOWS_TARGET
+//#pragma comment(lib, "SDL2.lib")
+//#pragma comment(lib, "SDL2main.lib")
+//#pragma comment(lib, "SDL2_image.lib")
+//#pragma comment(lib, "SDL2_ttf.lib")
+//#pragma comment(lib, "SDL2_mixer.lib")
+#endif
 
 #pragma region SDL_stbimage_adapted_code
 
@@ -458,10 +465,6 @@ void close()
 	//Quit SDL subsystems
 	IMG_Quit();
 	SDL_Quit();
-}
-
-void SDL_MT2DDelay(int Milliseconds) {
-	SDL_Delay((Uint32)Milliseconds);
 }
 
 #else

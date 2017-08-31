@@ -1,18 +1,9 @@
-#ifndef __ANDROID__
-#include "MT2D/MT2D.h"
-#include "MT2D/MT2D_Keyboard.h"
-#include "MT2D/MT2D_Display.h"
-#include "MT2D/MT2D_Layout.h"
-#include "MT2D/MT2D_System_Calls.h"
-#include "MT2D/Cursor/Cursor.h"
-#else
 #include "../MT2D.h"
 #include "../MT2D_Keyboard.h"
 #include "../MT2D_Display.h"
 #include "../MT2D_Layout.h"
 #include "../MT2D_System_Calls.h"
 #include "../Cursor/Cursor.h"
-#endif
 #include <stdio.h>
 #include <string.h>
 

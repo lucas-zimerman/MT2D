@@ -357,4 +357,32 @@ void SDL_Clear_RenderBuffers() {
 	}
 }
 
+
+void MT2D_SDL_Clear_Main_Window() {
+	int i = 0, j = 0;
+	while (i <= MAX_VER) {
+		while (j<MAX_HOR) {
+			WINDOW1[i][j] = ' ';
+			j++;
+		}
+		i++;
+		j = 0;
+	}
+	WINDOW1[MAX_VER][MAX_HOR] = '\0';
+	SDL_Clear_RenderBuffers();
+}
+
+
+void MT2D_SDL_Draw_Window(int which) {
+	int i = 0;
+	int j = 0;
+	if (which == DISPLAY_WINDOW1) {
+		Render_New(WINDOW1);
+	}
+	else {
+		Render_New(WINDOW2);
+	}
+	SDL_Render();
+}
+
 #endif

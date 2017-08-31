@@ -11,6 +11,7 @@
 #ifndef MTJOY_H
 #define MTJOY_H
 #include <MT2D/MT2D_Terminal_Define.h>
+
 #ifdef SDL_USE
 #include <MT2D/SDL/MT2D_SDL_Redefine.h>
 #endif
@@ -26,16 +27,26 @@ typedef struct MT2D_Joystick {
 	int Mapped_Button[4];// return as a normal keyboard button
 	bool Touched;
 	int DeadZoneAxis;
-
 #ifdef SDL_USE
 	SDL_Joystick* gGameController;
 #endif
 };
 
 
-void MT2D_Joystick_Init();
-void MT2D_Joystick_Close();
-void MT2D_Joystick_Update();
+#ifdef WINDOWS_TARGET
+#include "../_WINDOWS/IO/MT2D_Win_Joystick.h"
+#define MT2D_Joystick_Init MT2D_Win_Joystick_Init
+#define MT2D_Joystick_Close  MT2D_Win_Joystick_Close
+#define MT2D_Joystick_Update MT2D_Win_Joystick_Update
+#elif defined(__MSDOS__)
+#include "../_MSDOS/IO/MT2D_Dos_Joystick.h"
+#define MT2D_Joystick_Init MT2D_Dos_Joystick_Init
+#define MT2D_Joystick_Close MT2D_Dos_Joystick_Close
+#define MT2D_Joystick_Update MT2D_Dos_Joystick_Update
+#else
+#error "No code was done for this platform"
+#endif
+
 bool MT2D_Joystick_Touched();
 bool MT2D_Joystick_ArrowKey_Touched();
 bool MT2D_Joystick_LeftArrow_Touched();
@@ -49,5 +60,4 @@ int MT2D_Joystick_Get_LeftAxisX();
 int MT2D_Joystick_Get_LeftAxisY();
 int MT2D_Joystick_Get_RightAxisX();
 int MT2D_Joystick_Get_RightAxisY();
-
 #endif

@@ -4,53 +4,19 @@
 
 //#include <stdio.h>
 
-#if !defined(__MSDOS__)
+#if defined(linux) && !defined(__ANDROID__)
 #include "MT2D_Terminal_Define.h"
-#endif
-
-#if defined(SDL_USE)
-#include "SDL/Render/MT2D_SDL_Render.h"
-#elif defined _WIN32
-#include <Windows.h>
-#elif defined __MSDOS__
-	#ifdef __DJGPP__ // DJGPP uses another method for writing data on screen
-	#include <sys/farptr.h> /* _farpokeb() */
-	#include <go32.h> /* _dos_ds */
-	#else //Turbo C | Borland C
-	#include <dos.h>
-    #endif
-#elif defined(linux) && !defined(__ANDROID__)
 #include <cstdlib>
 #include <curses.h>
 #include <signal.h>
 #include <locale.h>
-#endif
-#include "MT2D.h"
+#include "../../MT2D.h"
 
 
-#if defined(_WIN32) && !defined(SDL_USE) //starting data for windows only and, if windows mode, only load the terminal stuff if not using SDL
-SMALL_RECT windowSize = { 0, 0, MAX_HOR - 1, MAX_VER - 1 };
-COORD bufferSize = { MAX_HOR, MAX_VER };
-COORD characterBufferSize = { MAX_HOR, MAX_VER };
-COORD characterPosition = { 0, 0 };
-SMALL_RECT consoleWriteArea = { 0, 0, MAX_HOR - 1, MAX_VER - 1 };
-CHAR_INFO consoleBuffer[MAX_HOR * MAX_VER];
-HANDLE wHnd; /* write (output) handle */
-HANDLE rHnd; /* read (input handle */
-#elif defined linux
 static void finish(int sig);
-#endif
 
 
-void MT2D_Clear_Main_Window() {
-#ifdef __MSDOS__
-	unsigned int x, y, offset;
-	for (x = 0; x<80; x++) {
-		for (y = 0; y <= 24; y++) {//should be 25 but the windows code isn't ready for that
-			WINDOW1[y][x] = ' ';
-		}
-	}
-#elif defined _WIN32
+void MT2D_Linux_Clear_Main_Window() {
 	int i = 0, j = 0;
 	while (i <= MAX_VER) {
 		while (j<MAX_HOR) {
@@ -60,100 +26,10 @@ void MT2D_Clear_Main_Window() {
 		i++;
 		j = 0;
 	}
-	WINDOW1[MAX_VER][MAX_HOR] = '\0';
-	//#endif
-#elif defined(linux) && !defined(__ANDROID__)
-	int i = 0, j = 0;
-	while (i <= MAX_VER) {
-		while (j<MAX_HOR) {
-			WINDOW1[i][j] = ' ';
-			j++;
-		}
-		i++;
-		j = 0;
-	}
-#endif
-#ifdef SDL_USE
-	SDL_Clear_RenderBuffers();
-#endif
 }
 
 
-void MT2D_Draw_Window(int which) {
-#ifdef SDL_USE
-	int i = 0;
-	int j = 0;
-	//	Clean_Render();
-	if (which == DISPLAY_WINDOW1) {
-		Render_New(WINDOW1);
-	}
-	else {
-		Render_New(WINDOW2);
-	}
-	SDL_Render();
-
-#elif defined __MSDOS__
-	unsigned int x, y, offset;
-	if (which == DISPLAY_WINDOW1) {//code that will save directly into video memory
-		for (x = 0; x <= MAX_HOR; x++) {
-			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
-				offset = (80 * y + x) * 2;
-
-#ifdef __DJGPP__
-				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW1[y][x]);
-#else
-				pokeb(0xB800, offset, WINDOW1[y][x]);
-#endif
-			}
-		}
-	}
-	else {
-		for (x = 0; x <= MAX_HOR; x++) {
-			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
-				offset = (80 * y + x) * 2;
-#ifdef __DJGPP__
-				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW2[y][x]);
-#else
-				pokeb(0xB800, offset, WINDOW2[y][x]);
-#endif
-			}
-		}
-	}
-	//transfer window1 or 2 memory to video memory, also include other systems that have video memory acess here too
-	//"ansi" function that will work with any operational system
-#elif defined  _WIN32
-	int x, y;
-	bool buffer_started = 0;
-
-	if (!buffer_started) {
-		wHnd = GetStdHandle(STD_OUTPUT_HANDLE);
-		rHnd = GetStdHandle(STD_INPUT_HANDLE);
-		SetConsoleWindowInfo(wHnd, TRUE, &windowSize);
-		SetConsoleScreenBufferSize(wHnd, bufferSize);
-		buffer_started = true;
-	}
-	if (which == DISPLAY_WINDOW1) {
-		for (y = 0; y < MAX_VER; ++y)
-		{
-			for (x = 0; x < MAX_HOR; ++x)
-			{
-				consoleBuffer[x + MAX_HOR * y].Char.AsciiChar = (unsigned char)WINDOW1[y][x];//insere o caracter
-				consoleBuffer[x + MAX_HOR * y].Attributes = 7;//rand() % 255;//cor do caracter + cor de fundo
-			}
-		}
-	}
-	else {
-		for (y = 0; y < MAX_VER; ++y)
-		{
-			for (x = 0; x < MAX_HOR; ++x)
-			{
-				consoleBuffer[x + MAX_HOR * y].Char.AsciiChar = (unsigned char)WINDOW2[y][x];//insere o caracter
-				consoleBuffer[x + MAX_HOR * y].Attributes = 7;//rand() % 255;//cor do caracter + cor de fundo
-			}
-		}
-	}
-	WriteConsoleOutputA(wHnd, consoleBuffer, characterBufferSize, characterPosition, &consoleWriteArea);//troca o buffer do console para o novo buffer
-#elif defined(linux) && !defined(__ANDROID__)
+void MT2D_Linux_Draw_Window(int which) {
 	int x, y;
 	if (!ncurses_started) {
 		(void)signal(SIGINT, finish);
@@ -272,15 +148,10 @@ void MT2D_Draw_Window(int which) {
 			}
 		}
 	}
-
-#endif
 }
 
-#if defined(linux) && !defined(__ANDROID__)
-    #if !defined(SDL_USE) &&  !defined(_WIN32)
-    static void finish(int sig) {
-        endwin();
-        exit(0);
-    }
-    #endif
+static void finish(int sig) {
+	endwin();
+	exit(0);
+}
 #endif

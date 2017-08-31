@@ -43,7 +43,6 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 void MT2D_SDL_Init();
 void close();
 void free_Texture();
-void SDL_MT2DDelay(int Milliseconds);
 MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface);
 MT2D_SDL_Texture *MT2D_SDL_Create_Rotated_Texture(SDL_Surface *Surface, MT2D_SDL_Texture *newTexture);
 #endif

@@ -34,3 +34,16 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
    #define MT2D_RENDERING_PRINTF //we are forced to use printf :(
 #endif
 
+#if defined(_DEBUG) /*|| 1*/ /*uncomment that line too allow a manual debug*/
+#define MT2D_DEBUG_ENABLED
+#endif
+
+#pragma region Internal_Defines
+#if defined(WIN32) || defined(_WIN32)
+#define WINDOWS_TARGET
+#elif defined(__ANDROID__)
+#define ANDROID_TARGET
+#elif defined(linux)
+#define LINUX_TARGET
+#endif
+#pragma endregion
