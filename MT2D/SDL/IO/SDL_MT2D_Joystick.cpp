@@ -30,11 +30,22 @@ void SDL_Joystick_Init() {
 	SDL_Init(SDL_INIT_JOYSTICK);
 }
 
+void MT2D_SDL_First_Time_Clear(MT2D_Joystick *MyJosytick,unsigned char *T) {
+	/*if (T[0] ==0) {
+		MyJosytick->Left_Y_axis = 0;
+		MyJosytick->Left_X_axis = 0;
+		MyJosytick->Left_Modified = false;
+		T[0]++;
+	}*/
+}
+
 void MT2D_SDL_Update_Keys(MT2D_Joystick *MyJosytick) {
 	int i = 0,j=0;
+	unsigned char FirstClean = 0;
 	unsigned char SDL_EmulatedKey = 0;
-	if (MainEvents.Keyboard_Buffer_Count == 2) {
-		i = 0;
+	if (MyJosytick->Left_Modified == false) {
+		MyJosytick->Left_X_axis = 0;
+		MyJosytick->Left_Y_axis = 0;
 	}
 	while (i < MainEvents.Keyboard_Buffer_Count) {
 		SDL_EmulatedKey = 0;
@@ -50,22 +61,26 @@ void MT2D_SDL_Update_Keys(MT2D_Joystick *MyJosytick) {
 //			SDL_EmulatedKey = MainEvents.Keyboard_Buffer[i] - 1073741823; // SDLK_F1 - 59
 //		}
 		if (MainEvents.Keyboard_Buffer[i] == SDLK_UP) {
+			MT2D_SDL_First_Time_Clear(MyJosytick, &FirstClean);
 			//printf(" seta cima\n");
 			MyJosytick->Left_Y_axis = -32768;
 			MyJosytick->Left_Modified = true;
 			MyJosytick->Touched = true;
 		}
 		else if (MainEvents.Keyboard_Buffer[i] == SDLK_DOWN) {
+			MT2D_SDL_First_Time_Clear(MyJosytick, &FirstClean);
 			MyJosytick->Left_Y_axis = 32767;
 			MyJosytick->Left_Modified = true;
 			MyJosytick->Touched = true;
 		}
 		else if (MainEvents.Keyboard_Buffer[i] == SDLK_LEFT) {
+			MT2D_SDL_First_Time_Clear(MyJosytick, &FirstClean);
 			MyJosytick->Left_X_axis = -32768;
 			MyJosytick->Left_Modified = true;
 			MyJosytick->Touched = true;
 		}
 		else if (MainEvents.Keyboard_Buffer[i] == SDLK_RIGHT) {
+			MT2D_SDL_First_Time_Clear(MyJosytick, &FirstClean);
 			MyJosytick->Left_X_axis = 32767;
 			MyJosytick->Left_Modified = true;
 			MyJosytick->Touched = true;

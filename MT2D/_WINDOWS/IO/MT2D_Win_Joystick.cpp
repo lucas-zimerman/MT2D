@@ -39,6 +39,7 @@ void ReadingChanged(Accelerometer^ sender, AccelerometerReadingChangedEventArgs^
 	// We need to dispatch to the UI thread to display the output
 	WinPhone_Accelerometer = e->Reading;
 	UWP_Acell_DoubleBuffer = WinPhone_Accelerometer->AccelerationX;
+	GlobalJoystickHandler->Left_Modified = true;
 	if (UWP_Acell_DoubleBuffer > 0.5)
 	{
 		UWP_Acell_DoubleBuffer = -32767;
@@ -153,6 +154,7 @@ void MT2D_Win_Joystick_Update() {
 	GlobalJoystickHandler->Button_Pressed[2] = false;
 	GlobalJoystickHandler->Button_Pressed[3] = false;
 	GlobalJoystickHandler->Right_Modified = false;
+	GlobalJoystickHandler->Left_Modified = false;
 	GlobalJoystickHandler->Right_X_axis = 0;
 	GlobalJoystickHandler->Right_Y_axis = 0;
 #ifdef SDL_USE

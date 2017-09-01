@@ -5,7 +5,7 @@
 
 
 bool MT2D_Win_Keyboard_touched() {//Generic function, easy to be replaced for porting
-	bool i = _kbhit();
+	bool i = (bool)_kbhit();
 	return i;
 }
 int	MT2D_Win_Keyboard_keytouched() {//Generic function, easy to be replaced for porting

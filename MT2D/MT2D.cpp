@@ -8,6 +8,8 @@
 	#include "MT2D/MT2D_Terminal_Define.h"
 #elif defined(__ANDROID__)
 	#include "MT2D_Terminal_Define.h"
+#elif defined(__MSDOS__)
+	#include "../../MT2D/MT2D_Terminal_Define.h"
 #endif
 
 #ifdef SDL_USE
@@ -40,7 +42,7 @@ unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
 unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
 
-bool MT2D_Init() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
+bool MT2D_Deprecated_Init() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
 	bool output = true;
 	#ifdef SDL_USE
 	MT2D_SDL_Init();//Start SDL files and other things

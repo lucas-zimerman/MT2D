@@ -16,7 +16,21 @@
 		Description: Plays a sound file in a loop.
 	
 ===================================================================*/
+#include "../MT2D_Terminal_Define.h"
+#if defined(SDL_USE_AUDIO)
+#include "../SDL/Audio/MT2D_SDL_Audio.h"
+#define MT2D_Play_Audio SDL_Play_Sound
+#define MT2D_Play_Music SDL_Play_Music
+#define MT2D_Audio_Init SDL_Start_Sound_System
+#define MT2D_Audio_Close SDL_Close_Sound_System
+#else
+#ifndef MT2D_AUIDO_WARN
+#define MT2D_AUIDO_WARN
+//avoid the spam of this message
+#pragma message ("Audio code not found, you can compile the project but you'll not hear any wave sound")
+#endif
 void MT2D_Audio_Init();
 void MT2D_Audio_Close();
 void MT2D_Play_Audio(char *Name);
 void MT2D_Play_Music(char *Name);
+#endif

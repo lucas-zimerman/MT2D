@@ -16,7 +16,7 @@
 #include <MT2D/SDL/MT2D_SDL_Redefine.h>
 #endif
 
-typedef struct MT2D_Joystick {
+typedef struct{
 	int Left_X_axis;
 	int Left_Y_axis;
 	bool Left_Modified;
@@ -30,7 +30,7 @@ typedef struct MT2D_Joystick {
 #ifdef SDL_USE
 	SDL_Joystick* gGameController;
 #endif
-};
+}MT2D_Joystick;
 
 
 #ifdef WINDOWS_TARGET

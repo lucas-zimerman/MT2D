@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/IO/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/Render/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Tools/UserInterface/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/MT2D/_ANDROID/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Tools/Video/*.cpp))
 
 LOCAL_LDLIBS :=

@@ -54,8 +54,11 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #ifndef MT2D_HEADER
 #define MT2D_HEADER
 
-
+#ifndef __MSDOS__
 #include "MT2D_Terminal_Define.h"
+#else
+#include "../../MT2D/MT2D_Terminal_Define.h"
+#endif
 
 #ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
 	#ifdef WINDOWS_TARGET
@@ -78,29 +81,42 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 extern unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
 extern unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
-/*OS SPECIFIC CODE*/
-#if defined(SDL_USE)
-//#undef main
-//#include "SDL/MT2D_SDL_main.h"
-//#define MT2D_Init MT2D_SDL_Init
-#elif defined(_WIN32)
-#include "_WINDOWS\MT2D_Win_Init.h"
-#define MT2D_Init MT2D_Win_Init
-#elif defined(__MSDOS__)
-#include "_MSDOS\MT2D_Dos_Init.h"
-#define MT2D_Init MT2D_Dos_Init
-#elif defined(linux)
-#include "_LINUX\MT2D_Linux_Init.h"
-#define MT2D_Init MT2D_Linux_Init
-#else
-#error "MT2D doesn't have code to support this operational system."
-#endif
-
-bool MT2D_Init();
 void transfer_window1_to_window2();
 void transfer_window2_to_window1();
 void insert_string_on_display(char *x, int pos_ver, int pos_hor, bool which);
 void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
 
+#ifdef WINDOWS_DESKTOP_TARGET
+	#ifdef SDL_USE
+	#undef main
+	#pragma comment(lib, "SDL2.lib")
+	#pragma comment(lib, "SDL2main.lib")
+	#pragma comment(lib, "SDL2_image.lib")
+	//#pragma comment(lib, "SDL2_ttf.lib")
+	#pragma comment(lib, "SDL2_mixer.lib")
+	#endif
+#endif
+
+/*OS SPECIFIC CODE*/
+#if defined(SDL_USE)
+//#undef main
+//#include "SDL/MT2D_SDL_main.h"
+//#define MT2D_Init MT2D_SDL_Init
+#define MT2D_Init MT2D_Deprecated_Init
+
+#elif defined(_WIN32)
+#include "_WINDOWS\MT2D_Win_Init.h"
+#define MT2D_Init MT2D_Win_Init
+
+#elif defined(__MSDOS__)
+#include "..\..\MT2D\_MSDOS\MT2D_Dos_Init.h"
+#define MT2D_Init MT2D_Dos_Init
+#elif defined(linux)
+#include "_LINUX\MT2D_Linux_Init.h"
+#define MT2D_Init MT2D_Linux_Init
+
+#else
+#error "MT2D doesn't have code to support this operational system."
+#endif
 
 #endif

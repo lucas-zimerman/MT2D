@@ -104,6 +104,5 @@ int SDL_Keyboard_touched() {//check if a key was pressed, and if it was, get the
 }
 
 #else
-	#warning define "SDL_USE" must be created to use the SDL keyboard code
-
+#pragma message("WARNING SDL_MT2D_Keyboard:SDL_USE must be created to use the SDL keyboard code")
 #endif

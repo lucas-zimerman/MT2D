@@ -1,3 +1,5 @@
+#include "../MT2D_Terminal_Define.h"
+#ifdef SDL_USE
 #include <SDL_config.h>
 #include "MT2D_SDL_Event_Handler.h"
 #include "../Joystick/MT2D_Joystick.h"
@@ -170,3 +172,4 @@ void MT2D_SDL_Event_Handler_NoLoop() {
 	}
 }
 
+#endif

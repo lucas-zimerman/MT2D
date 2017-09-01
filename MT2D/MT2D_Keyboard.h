@@ -38,22 +38,27 @@
 
 //#define ç 135
 
+#ifndef __MSDOS__
 #include "MT2D_Terminal_Define.h"
+#else
+#include "../../MT2D/MT2D_Terminal_Define.h"
+#endif
+
 #if defined(SDL_USE)
 #include "SDL/IO/SDL_MT2D_Keyboard.h"
 #define MT2D_Keyboard_keytouched SDL_getkeyboard
 #define MT2D_Keyboard_touched  SDL_Keyboard_touched
 #elif defined(_WIN32)
 #include "_WINDOWS\IO\MT2D_Win_Keyboard.h"
-#define MT2D_Keyboard_touched  M2D_Win_Keyboard_touched
+#define MT2D_Keyboard_touched  MT2D_Win_Keyboard_touched
 #define MT2D_Keyboard_keytouched MT2D_Win_Keyboard_keytouched
 #elif defined(__MSDOS__)
-#include "_MSDOS\IO\MT2D_Dos_Keyboard.h"
-#define MT2D_Keyboard_touched  M2D_Dos_Keyboard_touched
+#include "..\..\MT2D\_MSDOS\IO\MT2D_Dos_Keyboard.h"
+#define MT2D_Keyboard_touched  MT2D_Dos_Keyboard_touched
 #define MT2D_Keyboard_keytouched MT2D_Dos_Keyboard_keytouched
 #elif defined(linux) && !defined(__ANDROID__)
 #include "_LINUX/IO/MT2D_Linux_Keyboard.h"
-#define MT2D_Keyboard_touched  M2D_Linux_Keyboard_touched
+#define MT2D_Keyboard_touched  MT2D_Linux_Keyboard_touched
 #define MT2D_Keyboard_keytouched MT2D_Linux_Keyboard_keytouched
 #else
 #error "MT2D_Keyboard: There's no code support for your operational system"

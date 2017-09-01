@@ -12,7 +12,7 @@
 #include <dos.h>
 #endif
 
-#include "../../MT2D.h"
+#include "../../MT2D/MT2D.h"
 
 
 

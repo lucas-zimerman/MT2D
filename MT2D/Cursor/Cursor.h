@@ -5,7 +5,12 @@
 #ifndef MT2D_CURSOR_H
 #define MT2D_CURSOR_H
 
-#include "../MT2D_Terminal_Define.h"
+#ifndef __MSDOS__
+#include "MT2D_Terminal_Define.h"
+#else
+#include "../../MT2D/MT2D_Terminal_Define.h"
+#endif
+
 #if defined(SDL_USE)
 #define MT2D_Cursor_goto_topscreen 0
 #define MT2D_Cursor_Set_Position 0
@@ -14,7 +19,7 @@
 #define MT2D_Cursor_goto_topscreen MT2D_Win_Cursor_goto_topscreen
 #define MT2D_Cursor_Set_Position MT2D_Win_Cursor_Set_Position
 #elif defined(__MSDOS__)
-#include "..\_MSDOS\MT2D_Dos_Cursor.h"
+#include "..\..\MT2D\_MSDOS\MT2D_Dos_Cursor.h"
 #define MT2D_Cursor_goto_topscreen MT2D_Dos_Cursor_goto_topscreen
 #define MT2D_Cursor_Set_Position MT2D_Dos_Cursor_Set_Position
 #elif defined(linux)

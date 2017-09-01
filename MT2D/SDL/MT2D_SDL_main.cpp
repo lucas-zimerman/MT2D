@@ -1,4 +1,8 @@
+#ifdef __MSDOS__
+#include "../../MT2D/MT2D_Terminal_Define.h"
+#else
 #include "../MT2D_Terminal_Define.h"
+#endif
 
 #ifdef SDL_USE
 #include "MT2D_SDL_Defines.h"
@@ -468,6 +472,6 @@ void close()
 }
 
 #else
-#warning You must define "SDL_USE" to use the SDL code
+#pragma message("MT2D_SDL_main:You must define SDL_USE to use the SDL code")
 #endif	
 
