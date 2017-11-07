@@ -19,8 +19,19 @@
 	This File will only include the minimal struct for using Cscript, you can build your own functions
 	and link it on Cscript or you could also use the build in functions in the file STDFunctions
 
+*/
+
+/* HOW TO USE A FUNCTION WITH Cscript
+
+You can link any kind of c/c++ function with Cscript, you just need to create a function where the input args are one of the following ones:
+void ...();
+void ...(Object *Name);
+void ...(Object *Name, MT2D_VAR **Array of const Vars);
+
+You can also use the build in functions inside STDFunctions.h
 
 */
+
 
 #ifndef MT2D_OBJFUN_H
 #define MT2D_OBJFUN_H
@@ -60,31 +71,6 @@ Cscript *Cscript_New2(void(*Function)(Object *));
 Cscript *Cscript_New3(MT2D_VAR **ObjVarPointer, void(*Function)(Object *, MT2D_VAR **));
 Cscript *Cscript_New4(Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(Object *, Object *, MT2D_VAR **));
 
-void Cscript_Execute(Object *Caller, Cscript *Function);
-void Cscript_RemoveFromMemory(Cscript *Me);
-/*
-	Supported Operations: + - * / ^
-*/
-
-/* ================== OBJECT AI  ===================== */
-/*void MT2D_OF_CHASE(Object *O); //moves in direction of a target
-void MT2D_OF_MOVE(Object *O);  //moves in direction of the aceleration data.
-void MT2D_OF_CLEAR_TARGET(Object *O);
-void MT2D_OF_SET_TARGET(Object *O, Object *Target);
-void MT2D_OF_DIE(Object *O);   //set this object in death state and set the health to zero.
-void MT2D_OF_KILL_TARGET(Object *o);
-void MT2D_OF_LOOK(Object *O,Object *ListTargets,MT2D_VAR *SizeofList);// Try to find the first target alive on the list.
-void MT2D_OF_LOOK(Object *O,Object *ListTargets,MT2D_VAR *SizeofList,MT2D_VAR *MinRange,MT2D_VAR *MaxRange);
-void MT2D_OF_TELEPORT(Object *O,MT2D_VAR *X, MT2D_VAR *Y);
-void MT2D_OF_LOSE_TARGET(Object *O, MT2D_VAR *Chance, MT2D_VAR * MinDistance);// chance from 0 to 255, min distance to test it (pass null to test at any range)
-*/
-/* ================== OBJECT ATTACK  ===================== */
-
-/* ================== OBJECT SOUND  ===================== */
-//void MT2D_OF_PLAY_SOUND(MT2D_VAR *SndName);
-//void MT2D_OF_PLAY_MUSIC(MT2D_VAR *MusicName);
-/* ================== OBJECT STATE  ===================== */
-//void MT2D_OF_JUMPSTATE_CHANCE(Object *o, MT2D_VAR *StateLabelName, MT2D_VAR *JumpChance);//select a random number from 0 to 255, if the number is lower than JumpChance so it'll perform a jump.
-//void MT2D_OF_JUMP_IF(Object *o, MT2D_VAR *StateLabelName, MT2D_VAR *ConditionOne,MT2D_VAR *LogicTest, MT2D_AR *ConditionTwo);
-
+void Cscript_Execute(Object *Caller, Cscript *Function);/*TODO*/
+void Cscript_RemoveFromMemory(Cscript *Me);/*TODO*/
 #endif
