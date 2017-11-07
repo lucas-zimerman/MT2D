@@ -375,6 +375,30 @@ void Cscript_RemoveObject(Object *Caller) {
 	Caller->CanDelete = true;
 }
 
+/**
+DESCRIPTION: Add a new MT2D_VAR under the Caller object.
+Var:
+[0] = The var to be added
+**/
+void Cscript_AddVar_ToObject(OBject *Caller, MT2D_VAR **Var){
+	int i =0;
+	while(i < Caller->User_Vars_Count){
+		if(strcmp(Var[Name],Caller->User_Vars[i] == 0){
+			i = Caller->User_Vars_Count;
+		}
+		i++;		
+	}		
+	if(i ==  Caller->User_Vars_Count){
+		/*We didn't found a duplicated*/
+		Caller->User_Vars_Count++;
+		Caller->Vars = (MT2D_VAR*)realloc(Caller->Vars,Caller->User_Vars_Count*sizeof(MT2D_VAR));
+		Caller->Vars[i] = MT2D_VAR_CLONE(Var[0]);
+	}
+}
+
+/*TODO void Cscript_RemoveVar_FromObject(OBject *Caller, MT2D_VAR **Var);*/
+
+
 #pragma endregion FUNCTIONS
 
 
