@@ -1,0 +1,94 @@
+<p style="text-align: center;"><img src="Logo.png" alt="" width="119" height="128" /></p>
+<p>Welcome to the MT2D Engine Web page.</p>
+<p>&nbsp;</p>
+<ul>
+<li style="padding-left: 30px;">
+<h4>What is MT2D</h4>
+</li>
+</ul>
+<p>Monochrome text 2D engine, is an FRAMEWORK where you can produce software<br />based on text user interface or even Graphics user interface, using a real terminal or an emulated one.<br /> As the name says, there's no color, and (in most of the cases) there're no size change, it's just the<br />basic 25x80 screen (there may be some platform specific console size where the<br />size is not going to be 25x80).</p>
+<ul>
+<li>
+<h4 style="padding-left: 30px;">What operational system would it work?</h4>
+</li>
+</ul>
+<p><br /> WINDOWS (Graphics and Real Terminal support)</p>
+<p>MS-DOS (Graphics and Real Terminal support)</p>
+<p>LINUX (Graphics support [Real terminal support is quite slow and broken])</p>
+<p>WINDOWS PHONE (Graphics support)</p>
+<p>ANDROID (Graphics support [alpha stage])</p>
+<ul>
+<li>
+<h4>What MT2D has to offer?</h4>
+</li>
+</ul>
+<ul style="list-style-type: square;">
+<li>Fragmented code: all the MT2D code is fragmented in a bunch of other source files, so you can just load what you'll need for your project, avoiding the use of having a bunch of uneeded code into your binary.</li>
+<li>C and C++ compatibility (Tested with Borland C++, DJGPP, Visual Studio, Code Blocks, Dev-C++, Android Studio NDK and more).</li>
+<li>Build in popups: a single line and you'll be able to create a messagebox and even an inputbox.</li>
+<li>Keyboard, Touch (Basic interaction) and Joystick (in Alpha stage) Support.</li>
+<li>PC Speaker support (and pc speaker emulation where it's not supported).</li>
+<li>ObjectCore: A simple but powerfull code for making complex menus and games</li>
+<li>Low RAM usage: depending of the operational system being used the engile will use less than 20KB of ram.</li>
+<li>Engine Settings inside the source files itself, with a simple define you can change the way MT2D will work.</li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li>
+<h4>What is that Graphics mode?</h4>
+</li>
+</ul>
+<p>Graphics mode is&nbsp; mode where you can render image files and also having an emulated 80x25 terminal, this mode has a limited support, for now it only works in MS-DOS and also platforms where it's supported by SDL.</p>
+<p>&nbsp;</p>
+<ul>
+<li>
+<h4>What is that ObjectCore?</h4>
+</li>
+</ul>
+<p>ObjectCore is a simple way of making "Objects", those objects have a basic set of instructions, they have a screen coordinate, size, dynamic data types support and also an a set of states where you define step by step what this object should perform.</p>
+<p>Each state can store a set of sprites (being in ASCII or images), a set of wait states and also Cscripts.</p>
+<ul>
+<li>
+<h4>WTF is a Dynamic Data Type?</h4>
+</li>
+</ul>
+<p>In short, it is a single var like int, but his data can be an integer, float, string, char, bool,pointer,...</p>
+<p>This type of dynamic data is used to store information for the objects, like you could store a health data, race data,...</p>
+<p>Or you could use it in your code without the ObjectCore part.</p>
+<ul>
+<li>
+<h4>Cscript?</h4>
+</li>
+</ul>
+<p>Cscript is a simple but powerfull script support for C created by me :D, with that you can add for each frame of an object an action function, the action function is just like a normal c function, and this part is where you can take a huge advantage of it, if the build in Cscript functions in STDFunctions aren't what you need, you can simply create a new function in C or C++ and link it without any difficulty into your object states.</p>
+<p>As an example, in Project Asteroid I had done a new Cscript function just for the menu so the option menu would call a single function where it would check the keyboard and also move the options or enter in the selected option. All that in a single Cscript function call.</p>
+<p>&nbsp;</p>
+<ul style="list-style-type: square;">
+<li>
+<h4>What are the good use cases where I could use MT2D?</h4>
+</li>
+<li>Making college software&nbsp; in C/C++ with a better presentation and the same difficulty to making the same software using just printf,scanf,getch,... (basically almost all my college softwares uses MT2D)</li>
+<li>Making simple terminal games (like pong)</li>
+<li>Makiing terminal applications where it could also support devices where terminals doesn't exist.</li>
+<li>Making software for devices where low RAM usage matters.</li>
+</ul>
+<p>&nbsp;</p>
+<ul>
+<li>
+<h4>Are there any software examples of making use of MT2D?</h4>
+</li>
+</ul>
+<p>Yes, here's a list with mixed source and video files:</p>
+<p><a href="https://www.youtube.com/watch?v=atRMo71Xgzk">Project Asteroid Gameplay</a></p>
+<p><a href="https://www.youtube.com/watch?v=0nXLyfe7aPA">Contra Clone Gameplay</a> (ASCII and Sprites hibrid gameplay)</p>
+<p><a href="https://www.youtube.com/watch?v=wm-WmNFX8Mg">Path Finder program running on a Windows Phone device</a></p>
+<p><a href="https://www.youtube.com/watch?v=8WkwBKS80oQ">HexStartup++</a> software for converting Graphic images into Hexen compatible loading images.</p>
+<p><a href="https://www.youtube.com/watch?v=JqT4374zego">3D Maze test gameplay</a></p>
+<p><a href="https://www.youtube.com/watch?v=ALux2S34D-s">Pong gameplay running on MS-DOS</a></p>
+<p><a href="https://github.com/ibm5155/MT2D_TicTacToe">Tic Tac Toe source</a></p>
+<p><a href="https://github.com/ibm5155/Simulador_Montador_asm8086">Interactive asm compiler and 8086 emulator</a></p>
+<p><a href="https://github.com/ibm5155/MT2D_Snake">Snake Game</a></p>
+<p><a href="https://github.com/ibm5155/MT2D_Notepad">Notepad</a></p>
+<p>&nbsp;</p>
+<hr />
+<p>About the license: It's going to be in MIT so don't be afraid to use MT2D :D</p>
