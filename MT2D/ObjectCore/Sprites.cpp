@@ -28,6 +28,10 @@
 #include "../SDL/Render/MT2D_SDL_Render.h"
 #endif
 
+#if defined(MT2D_USING_CONTAINER)
+#include <MT2D/Container/MT2D_Container.h>
+#endif
+
 
 Sprite *Load_Sprite(char *file) {
 	Sprite *S=0;
@@ -143,6 +147,45 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 	return S;
 #endif
  }
+
+#if defined(MT2D_USING_CONTAINER)
+Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
+#ifdef SDL_USE
+		SDL_Surface *Img = 0;
+		Sprite *S = 0;
+		int Xi = 0, Yi = 0, X = 0, Y = 0;
+		int Id = MT2D_Container_Get_FileId(file);
+		//!!! Always open non encrypted image
+		if(Id >= 0){
+			Img = MT2D_SDL_Load_Image_From_Container(Id);
+			S = (Sprite*)malloc(sizeof(Sprite));
+			S->Data = (char**)MT2D_SDL_Create_Texture(Img);
+			S->RotatedTexture = (char**)MT2D_SDL_Create_Rotated_Texture(Img, (MT2D_SDL_Texture*)S->Data);
+			S->size.X = Img->w;
+			S->size.Y = Img->h;
+			S->scale.X = ScaleX;
+			S->scale.Y = ScaleY;
+			S->type = 1;
+			//we need to kill that surface...
+		}//else return a null sprite
+		return S;
+#else 
+#pragma message ("Sprites with image are not supported so we'll return a blank image...")
+		Sprite *S = (Sprite*)malloc(sizeof(Sprite));
+		S->scale.X = ScaleX;
+		S->scale.Y = ScaleY;
+		S->size.X = 3;
+		S->size.Y = 1;
+		S->Data = (char**)malloc(sizeof(char*));
+		S->Data[0] = (char*)malloc(3 * sizeof(char));
+		S->Data[0][0] = '<';
+		S->Data[0][1] = '!';
+		S->Data[0][2] = '>';
+		S->type = 0;
+		return S;
+#endif
+}
+#endif
 
  bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) {//output: out = false : invalid sprite | out = true : valid sprite
 	//to be implemented: Sprites Scale

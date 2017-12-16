@@ -3,6 +3,9 @@
 
 #ifdef SDL_USE // if you'll not use SDL dont load this file on your project
 #include "MT2D_SDL_Redefine.h"
+#if defined(MT2D_USING_CONTAINER)
+#include <MT2D/Container/MT2D_Container.h>
+#endif
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 #if  !defined(MT2D_SDL_GPU) && !defined(__ANDROID__)
@@ -16,6 +19,15 @@ SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 	return GPU_LoadSurface(Addr);
 #endif
 }
+
+#if defined(MT2D_USING_CONTAINER)
+SDL_Surface *MT2D_SDL_Load_Image_From_Container(int Id) {
+	SDL_RWops *file = SDL_RWFromMem(MT2D_Container_Get_FileData(Id), MT2D_Container_Get_FileLength(Id));
+	SDL_Surface *tmp = IMG_Load_RW(file, 1);
+	SDL_RWclose(file);
+	return tmp;
+}
+#endif
 
 
 #ifdef MT2D_SDL_GPU

@@ -27,6 +27,12 @@ Sprite *Load_Sprite(char *file);
 	Loads an image
 **/
 Sprite *Load_Sprite_Image(char *file,int ScaleX,int ScaleY);
+#if defined(MT2D_USING_CONTAINER)
+Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY);
+#else
+#define Load_Sprite_Image_From_Container null
+khk
+#endif
 bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y);
 void Sprite_Delete(Sprite *Me);
 #endif	

@@ -46,4 +46,6 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 	void free_Texture();
 	MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface);
 	MT2D_SDL_Texture *MT2D_SDL_Create_Rotated_Texture(SDL_Surface *Surface, MT2D_SDL_Texture *newTexture);
+
+
 #endif

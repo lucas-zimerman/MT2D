@@ -66,7 +66,11 @@
 #pragma endregion
 
 #ifdef MT2D_SDL_GPU
-#define IMG_Load GPU_LoadSurface
+	#define IMG_Load GPU_LoadSurface
+#endif
+
+#if defined(MT2D_USING_CONTAINER)
+SDL_Surface *MT2D_SDL_Load_Image_From_Container(int Id);
 #endif
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr);
