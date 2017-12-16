@@ -380,10 +380,10 @@ DESCRIPTION: Add a new MT2D_VAR under the Caller object.
 Var:
 [0] = The var to be added
 **/
-void Cscript_AddVar_ToObject(OBject *Caller, MT2D_VAR **Var){
+void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
 	int i =0;
 	while(i < Caller->User_Vars_Count){
-		if(strcmp(Var[Name],Caller->User_Vars[i] == 0){
+		if(strcmp(Var[i]->Name,Caller->User_Vars[i].Name) == 0){
 			i = Caller->User_Vars_Count;
 		}
 		i++;		
@@ -391,8 +391,8 @@ void Cscript_AddVar_ToObject(OBject *Caller, MT2D_VAR **Var){
 	if(i ==  Caller->User_Vars_Count){
 		/*We didn't found a duplicated*/
 		Caller->User_Vars_Count++;
-		Caller->Vars = (MT2D_VAR*)realloc(Caller->Vars,Caller->User_Vars_Count*sizeof(MT2D_VAR));
-		Caller->Vars[i] = MT2D_VAR_CLONE(Var[0]);
+		Caller->User_Vars = (MT2D_VAR*)realloc(Caller->User_Vars,Caller->User_Vars_Count*sizeof(MT2D_VAR));
+		Caller->User_Vars[i] = *MT2D_VAR_CLONE(Var[0]);
 	}
 }
 

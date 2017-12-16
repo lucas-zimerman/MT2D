@@ -22,4 +22,21 @@ bool MT2D_Win_Init() {// Return: true - it started without any kind of problem, 
 	bool output = true;
 	return output;
 }
+
+bool MT2D_Win_Init2() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
+	bool output = true;
+	#ifdef SDL_USE
+		MT2D_SDL_Init();//Start SDL files and other things
+	#else
+		#ifndef _DEBUG
+			#ifdef _WIN32// hides the console on release projects
+				#ifdef SDL_USE
+					HWND windowHandle = GetConsoleWindow();
+					output = ShowWindow(windowHandle, SW_HIDE);
+				#endif
+			#endif//if there's a way of doing the same thing, I'm going to make it
+		#endif
+	#endif
+	return output;
+}
 #endif

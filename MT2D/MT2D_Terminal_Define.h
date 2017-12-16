@@ -22,9 +22,10 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 	-https://github.com/grimfang4/sdl-gpu
 ===================================================================*/
 
-//#define SDL_USE_AUDIO
+#define SDL_USE_AUDIO
 
-//#define SDL_USE
+#define MT2D_WINDOWED_MODE
+#define SDL_USE
 //#define MT2D_SCREEN_RESIZE
 //#define MT2D_SDL_GPU
 //#define MT2D_SDL_USING_DIRECTX_RENDER
@@ -43,17 +44,17 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #pragma region Internal_Defines
 
 #if (defined(WIN32) || defined(_WIN64)) && defined(_WIN32)
-#define WINDOWS_DESKTOP_TARGET
+	#define WINDOWS_DESKTOP_TARGET
 #elif !(!defined(WINAPI_FAMILY) || (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP))
-#define WINDOWS_UWP_TARGET
+	#define WINDOWS_UWP_TARGET
 #endif
 
 #if defined(WIN32) || defined(_WIN32)
-#define WINDOWS_TARGET
+	#define WINDOWS_TARGET
 #elif defined(__ANDROID__)
-#define ANDROID_TARGET
+	#define ANDROID_TARGET
 #elif defined(linux)
-#define LINUX_TARGET
+	#define LINUX_TARGET
 #endif
 #pragma endregion
 

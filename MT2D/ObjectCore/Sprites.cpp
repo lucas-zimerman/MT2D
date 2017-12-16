@@ -103,7 +103,6 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 #ifdef SDL_USE
 	SDL_Surface *Img = 0;
 	Sprite *S = 0;
-	char BUFF;
 	int Xi = 0, Yi = 0, X = 0, Y = 0;
 #if defined(__ANDROID__) && defined(SDL_USE)
 	SDL_RWops *fl = SDL_RWFromFile(file, "rb");

@@ -99,21 +99,20 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
 
 /*OS SPECIFIC CODE*/
 #if defined(SDL_USE)
-//#undef main
-//#include "SDL/MT2D_SDL_main.h"
-//#define MT2D_Init MT2D_SDL_Init
-#define MT2D_Init MT2D_Deprecated_Init
 
+	//#undef main
+	#include <MT2D/SDL/MT2D_SDL_main.h>
+	#define MT2D_Init MT2D_SDL_Init
 #elif defined(_WIN32)
-#include "_WINDOWS\MT2D_Win_Init.h"
-#define MT2D_Init MT2D_Win_Init
+	#include "_WINDOWS\MT2D_Win_Init.h"
+	#define MT2D_Init MT2D_Win_Init
 
 #elif defined(__MSDOS__)
-#include "..\..\MT2D\_MSDOS\MT2D_Dos_Init.h"
-#define MT2D_Init MT2D_Dos_Init
+	#include "..\..\MT2D\_MSDOS\MT2D_Dos_Init.h"
+	#define MT2D_Init MT2D_Dos_Init
 #elif defined(linux)
-#include "_LINUX\MT2D_Linux_Init.h"
-#define MT2D_Init MT2D_Linux_Init
+	#include "_LINUX\MT2D_Linux_Init.h"
+	#define MT2D_Init MT2D_Linux_Init
 
 #else
 #error "MT2D doesn't have code to support this operational system."

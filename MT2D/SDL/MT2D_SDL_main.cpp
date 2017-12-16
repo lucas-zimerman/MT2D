@@ -6,10 +6,9 @@
 
 #ifdef SDL_USE
 #include "MT2D_SDL_Defines.h"
-#include "MT2D_SDL_Redefine.h"
+#include <MT2D/SDL/MT2D_SDL_Redefine.h>
 #include "MT2D_SDL_Event_Handler.h"
 #include "../MT2D_Debug.h"
-
 
 /*GLOBAL VARS*/
 int FRAMEBUFFER[MAX_VER][MAX_HOR]; //used to store what was draw under the screen, (it should avoid overdrawn)
@@ -31,11 +30,11 @@ SDL_Surface *surface;
 extern MT2D_SDL_Events MainEvents;
 
 #ifdef WINDOWS_TARGET
-//#pragma comment(lib, "SDL2.lib")
-//#pragma comment(lib, "SDL2main.lib")
-//#pragma comment(lib, "SDL2_image.lib")
+#pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "SDL2main.lib")
+#pragma comment(lib, "SDL2_image.lib")
 //#pragma comment(lib, "SDL2_ttf.lib")
-//#pragma comment(lib, "SDL2_mixer.lib")
+#pragma comment(lib, "SDL2_mixer.lib")
 #endif
 
 #pragma region SDL_stbimage_adapted_code

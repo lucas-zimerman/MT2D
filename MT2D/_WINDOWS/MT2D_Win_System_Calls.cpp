@@ -10,7 +10,7 @@ void MT2D_Win_System_Delay(int time_millisecond) {
 }
 
 
-void MT2D_System_Beep(int frequency, int time_milisecond) {
+void MT2D_Win_System_Beep(int frequency, int time_milisecond) {
 	Beep(frequency, time_milisecond);//Do not load this beep function in UWP apps
 }
 #endif

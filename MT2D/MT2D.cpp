@@ -41,7 +41,7 @@
 unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
 unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
-
+/*
 bool MT2D_Deprecated_Init() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
 	bool output = true;
 	#ifdef SDL_USE
@@ -59,7 +59,7 @@ bool MT2D_Deprecated_Init() {// Return: true - it started without any kind of pr
 
 	return output;
 }
-
+*/
 
 void transfer_window1_to_window2(){
 int i=0;
