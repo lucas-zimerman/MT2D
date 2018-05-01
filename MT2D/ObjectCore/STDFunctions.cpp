@@ -168,7 +168,9 @@ void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 #pragma region LOGIC
 
 
-
+/**
+VARS[0] = State Name
+**/
 void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName) {
 	int i = 0;
 	while (i < Object->States_Count) {

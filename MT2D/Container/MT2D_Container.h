@@ -50,7 +50,8 @@ int MT2D_Container_Get_FileId(char *Name);
 int MT2D_Container_Get_FileLength(int Id);
 int MT2D_Container_Get_FilePadding(int Id);
 BYTE *MT2D_Container_Get_FileData(int Id);
-
+/*Return the pointer of the name of a file form the given ID*/
+char *MT2D_Container_Get_FileName_By_ID(int ID);
 
 void MT2D_Container_Init();
 
@@ -73,6 +74,8 @@ Load a normal file under the container
 -WARNING: remember to add the '\0' at the end of a raw text file in case you want to use the plain text file from a file
 **/
 bool MT2D_Container_Load_File(char *Path);
+
+void MT2D_Container_Load_File_From_Memory(char *Name, BYTE *Data, int Length);
 
 bool MT2D_Container_Save(char *NameAndPath);
 
@@ -100,5 +103,10 @@ void MT2D_Container_Password_Init();
 #define  MT2D_Container_Password_Reset MT2D_Container_Password_Init
 
 void MT2D_Container_Password_AddKey(unsigned char Key);
+
+
+int MT2D_Container_Count_Files();
+
+
 
 #endif

@@ -55,9 +55,6 @@ void Cscript_Execute(Object *Caller, Cscript *Function) {
 			else if (Function->_Obj_Vars) {
 				Function->_Obj_Vars(Caller,Function->TempVars);
 			}
-			else if (Function->_Obj_Vars) {
-				Function->_Obj_Vars(Caller, Function->TempVars);
-			}
 			else if (Function->_Obj_Obj_Vars) {
 				Function->_Obj_Obj_Vars(Caller,Function->TempObj, Function->TempVars);
 			}

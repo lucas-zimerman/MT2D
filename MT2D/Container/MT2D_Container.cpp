@@ -16,6 +16,9 @@ BYTE iv[16] = { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa
 	Return the index of the first file found with the given name.
 	-If failed the function returns -1
 **/
+
+
+
 int MT2D_Container_Get_FileId(char *Name) {
 	int Index = -1;
 	int j;
@@ -211,6 +214,28 @@ bool MT2D_Container_Load_File(char *Path) {
 	return Loaded;
 }
 
+void MT2D_Container_Load_File_From_Memory(char *Name, BYTE *Data, int Length) {
+	if (MT2D_GlobalContainer.Files == 0) {
+		MT2D_GlobalContainer.Data = (BYTE**)malloc(sizeof(BYTE*));
+		MT2D_GlobalContainer.Length = (unsigned int*)malloc(sizeof(unsigned int));
+		MT2D_GlobalContainer.Names = (char**)malloc(sizeof(char*));
+		MT2D_GlobalContainer.Xpadding = (unsigned char*)malloc(sizeof(unsigned char));
+	}
+	else
+	{
+		MT2D_GlobalContainer.Files++;
+		MT2D_GlobalContainer.Data = (BYTE**)realloc(MT2D_GlobalContainer.Data, MT2D_GlobalContainer.Files * sizeof(BYTE*));
+		MT2D_GlobalContainer.Length = (unsigned int*)realloc(MT2D_GlobalContainer.Length, MT2D_GlobalContainer.Files * sizeof(unsigned int));
+		MT2D_GlobalContainer.Names = (char**)realloc(MT2D_GlobalContainer.Names, MT2D_GlobalContainer.Files * sizeof(char*));
+		MT2D_GlobalContainer.Xpadding = (unsigned char*)realloc(MT2D_GlobalContainer.Xpadding, MT2D_GlobalContainer.Files * sizeof(unsigned char));
+		MT2D_GlobalContainer.Files--;
+	}
+	MT2D_GlobalContainer.Names[MT2D_GlobalContainer.Files] = Name;
+	MT2D_GlobalContainer.Length[MT2D_GlobalContainer.Files] = Length;
+	MT2D_GlobalContainer.Xpadding[MT2D_GlobalContainer.Files] = 0;
+	MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files] = Data;
+	MT2D_GlobalContainer.Files++;
+}
 /**
 Save all the loaded files in the container for an external file
 **/
@@ -355,4 +380,16 @@ void MT2D_Container_Password_AddKey(unsigned char Key) {
 	MT2D_ContainerKeyOffset = MT2D_ContainerKeyOffset % 16;
 }
 
+
+int MT2D_Container_Count_Files() {
+	return MT2D_GlobalContainer.Files;
+}
+
+/*Return the pointer of the name of a file form the given ID*/
+char *MT2D_Container_Get_FileName_By_ID(int ID) {
+	if (ID >= 0 && ID < MT2D_GlobalContainer.Files) {
+		return MT2D_GlobalContainer.Names[ID];
+	}
+	return NULL;
+}
 
