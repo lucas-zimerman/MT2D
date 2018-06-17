@@ -599,3 +599,13 @@ MT2D_VAR **MT2D_VAR_Create_Matrix4(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *
 	return M;
 }
 
+
+void MT2D_VAR_Free(MT2D_VAR *var, int constName) {
+	if (var->Type != VAR_POINTER) {
+		free(var->Data);
+	}
+	if (constName == 0) {
+		free(var->Name);
+	}
+	free(var);
+}

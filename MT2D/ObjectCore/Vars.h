@@ -73,4 +73,6 @@ MT2D_VAR **MT2D_VAR_Create_Matrix2(MT2D_VAR *First,MT2D_VAR *Second);
 MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *First, MT2D_VAR *Second,MT2D_VAR *Third);
 MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third);
 MT2D_VAR **MT2D_VAR_Create_Matrix4(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third,MT2D_VAR *Fourth);
+
+void MT2D_VAR_Free(MT2D_VAR *var, int constName);
 #endif
