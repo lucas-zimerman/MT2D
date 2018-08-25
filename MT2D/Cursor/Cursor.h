@@ -12,8 +12,8 @@
 #endif
 
 #if defined(SDL_USE)
-#define MT2D_Cursor_goto_topscreen 0
-#define MT2D_Cursor_Set_Position 0
+#define MT2D_Cursor_goto_topscreen
+#define MT2D_Cursor_Set_Position
 #elif defined(WINDOWS_TARGET)
 #include "..\_WINDOWS\MT2D_Win_Cursor.h"
 #define MT2D_Cursor_goto_topscreen MT2D_Win_Cursor_goto_topscreen
@@ -26,6 +26,10 @@
 #include "../_LINUX/MT2D_Linux_Cursor.h"
 #define MT2D_Cursor_goto_topscreen MT2D_Linux_Cursor_goto_topscreen
 #define MT2D_Cursor_Set_Position MT2D_Linux_Cursor_Set_Position
+#elif defined(__ANDROID__)
+#include "../_ANDROID/MT2D_Droid_Cursor.h"
+#define MT2D_Cursor_goto_topscreen MT2D_Droid_Cursor_goto_topscreen
+#define MT2D_Cursor_Set_Position MT2D_Droid_Cursor_Set_Position
 #else
 void MT2D_Cursor_goto_topscreen();
 void MT2D_Cursor_Set_Position(int line, int column);

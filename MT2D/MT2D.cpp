@@ -4,6 +4,9 @@
 
 #include <stdio.h>
 
+void quack(){
+
+}
 #if !defined(__MSDOS__) && !defined(__ANDROID__)
 	#include "MT2D/MT2D_Terminal_Define.h"
 #elif defined(__ANDROID__)
@@ -40,6 +43,7 @@
 
 unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
 unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
+
 
 /*
 bool MT2D_Deprecated_Init() {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started

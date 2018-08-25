@@ -64,7 +64,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	WINDOW2[13][35]='(';WINDOW2[13][36]='2';WINDOW2[13][37]=')';
 	i=0;
     MT2D_Draw_Window(DISPLAY_WINDOW2);
-    MT2D_Cursor_goto_topscreen();
+    MT2D_Cursor_goto_topscreen;
 	while(i!='1' && i!='2'){
 		i=MT2D_Keyboard_keytouched();
 		if(i==224)

@@ -4,7 +4,8 @@
 #include <MT2D/Objectcore/Coordinates.h>
 #include <MT2D/MT2D_Terminal_Define.h>
 #else
-#include "../Objectcore/Coordinates.h"
+#warning  "#include \../Objectcore/Coordinates.h\ testar se funciona melhor agora"
+#include "Coordinates.h"
 #include "../MT2D_Terminal_Define.h"
 #endif
 
@@ -13,26 +14,26 @@ struct Sprite {
 #ifdef SDL_USE
 	char **RotatedTexture;
 #endif
-	Coord size;//The size of the sprite
-	Coord scale;//the scale of the image applied to a 320x240 screen
+	struct Coord size;//The size of the sprite
+	struct Coord scale;//the scale of the image applied to a 320x240 screen
 	char type;/* ASCII image = 0, Image = 1*/
 };
 
 /**
 	Loads an ASCII OEM850 formated text file
 **/
-Sprite *Load_Sprite(char *file);
+struct Sprite *Load_Sprite(char *file);
 
 /**
 	Loads an image
 **/
-Sprite *Load_Sprite_Image(char *file,int ScaleX,int ScaleY);
+struct Sprite *Load_Sprite_Image(char *file,int ScaleX,int ScaleY);
 #if defined(MT2D_USING_CONTAINER)
-Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY);
+struct Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY);
 #else
 #define Load_Sprite_Image_From_Container null
 khk
 #endif
-bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y);
-void Sprite_Delete(Sprite *Me);
+bool Sprite_Render_on_Window(struct Sprite *img, int witch_window, int pos_x, int pos_y);
+void Sprite_Delete(struct Sprite *Me);
 #endif	

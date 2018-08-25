@@ -1,0 +1,83 @@
+This is a simple tutorial teaching you how to set up MT2D on Android Studio
+-You'll probably face problens trying to compile it, but mostly the iuses are going to be 
+-"easy" to solve (if you know NDK and Android studio)
+
+REQUIRED:
+SDL2 source: https://www.libsdl.org/download-2.0.php
+SDL2_Image source: https://www.libsdl.org/projects/SDL_image/
+SDL2_Mixer source: https://www.libsdl.org/projects/SDL_mixer/
+MT2D source:
+
+Clone android-project
+
+on gradle->wrapper->gradle-wrapper.properties
+
+-edit the distributionUrl to (or leave if the gradle version on it is higher than 4.1) distributionUrl=https\://services.gradle.org/distributions/gradle-4.1-all.zip
+
+go to File -> Project Structure.
+1)on the App Module
+2)Set Source and Target compatibility to the highest number.
+
+Create symbolic links, open cmd as administrator.
+1)go to your project folder
+2)go to the app->jni folder.
+2.2 for maki making a symbolic link you do the following command:
+2.3 mklink /D *link name* *real folder*
+2.4 example: mklink /D SDL2 C:\Libs\SDL2 
+<!> DONT USE SPACES IN THE FOLDER NAME 
+3)created a symbolic link named SDL (NOT SDL2!)
+4)create a symbolic link called SDL2_MIXER
+5)create a symbolic link called SDL2_IMAGE
+6)create a symbolic link called MT2D
+
+on app->jni->src->Android.mk add the below code between the #### below the SDL_PATH
+
+####
+SDL_MIXER_PATH := ../SDL2_mixer
+SDL_IMAGE_PATH := ../SDL2_image
+MT2D_PATH := ../MT2D
+####
+
+on the same file, edit the LOCAL_C_INCLUDES to
+
+####
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \
+                        $(LOCAL_PATH)/$(SDL_MIXER_PATH) \
+                        $(LOCAL_PATH)/$(SDL_IMAGE_PATH) \
+                         $(LOCAL_PATH)/$(MT2D_PATH)
+####
+
+on the same file edit the LOCAL_SHARED_LIBRARIES to
+####
+LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_image MT2D
+####
+
+on app->jni->Application.mk, remobe the # from the APP_STL := stlport_static
+
+for testing if everythign is working, make a simple main code like
+
+#####
+#include <SDL.h>
+#include <MT2D/MT2D.h>
+#include <MT2D/MT2D_Display.h>
+#include <MT2D/Audio/MT2D_Audio_core.h>
+#include <MT2D/MessageBox\MT2D_MessageBox.h>
+
+
+#define APPNAME "Project-MT2D"
+
+int main(int argc, char *argv[])
+{
+    MT2D_Init();
+    MT2D_Audio_Init();
+ //   MT2D_Play_Music("menu.ogg");
+    MT2D_Clear_Main_Window();
+    MT2D_MessageBox("Yeah boy, its working on android!");
+    return 0;
+}
+#####
+
+NOTES:
+-All files that are going to be used by your app must be inside the Assets folder.
+-his folder must be created inside the main folder, ie.
+-app->src->main

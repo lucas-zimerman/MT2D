@@ -18,7 +18,7 @@ void Clean_Render();
 void Render_New(unsigned char BUFFER[][MAX_HOR]);
 void SDL_Render();
 
-void SDL_Add_ImagetoBuffer(Sprite *IMG, int X, int Y);
+void SDL_Add_ImagetoBuffer(struct Sprite *IMG, int X, int Y);
 void SDL_Clear_RenderBuffers();
 
 /**/

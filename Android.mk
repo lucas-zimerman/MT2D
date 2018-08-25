@@ -4,17 +4,19 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := MT2D
 
-SDL_PATH := ../SDL2
+SDL_PATH := ../SDL
+SDL_IMAGE_PATH := ../SDL2_image
 SDL_MIXER_PATH := ../SDL2_mixer
 
 
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \ $(LOCAL_PATH)/$(SDL_MIXER_PATH)
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/$(SDL_PATH)/include \ $(LOCAL_PATH)/$(SDL_MIXER_PATH) \ $(LOCAL_PATH)/$(SDL_IMAGE_PATH)
 
 LOCAL_SRC_FILES := \
 	$(subst $(LOCAL_PATH)/,, \
 	$(wildcard $(LOCAL_PATH)/MT2D/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Audio/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/MT2D/Container/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Cursor/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/InputBox/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Joystick/*.cpp) \
@@ -26,12 +28,10 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/Render/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Tools/UserInterface/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/_ANDROID/*.cpp) \
+	$(wildcard $(LOCAL_PATH)/MT2D/_ANDROID/IO/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Tools/Video/*.cpp))
 
-LOCAL_LDLIBS :=
-LOCAL_STATIC_LIBRARIES :=
 LOCAL_SHARED_LIBRARIES := SDL2 SDL2_mixer SDL2_image
-
 
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_C_INCLUDES)
 

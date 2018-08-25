@@ -58,8 +58,7 @@ void SDL_Start_Sound_System()
 	SDL_ABuffer.SDL_AUDIO_STARTED = 0;
 	SDL_ABuffer.SDL_music = 0;
 	SDL_ABuffer.sound_loaded = 0;
-
-	if(SDL_SOUND_TYPE == -1){
+	if(SDL_SOUND_TYPE == (char)-1){
 		SDL_SOUND_TYPE = 1;
         if(SDL_Init(SDL_INIT_AUDIO) < 0){
             exit(1);

@@ -69,8 +69,9 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
     #include <SDL.h>
     #endif
 #endif
-
-//#include <stdbool.h>
+#ifndef  bool
+#include <stdbool.h>
+#endif
 
 #define DISPLAY_WINDOW1 1
 #define DISPLAY_WINDOW2 0
@@ -119,3 +120,4 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
 #endif
 
 #endif
+void quack();

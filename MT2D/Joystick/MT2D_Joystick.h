@@ -43,6 +43,11 @@ typedef struct{
 #define MT2D_Joystick_Init MT2D_Dos_Joystick_Init
 #define MT2D_Joystick_Close MT2D_Dos_Joystick_Close
 #define MT2D_Joystick_Update MT2D_Dos_Joystick_Update
+#elif defined(__ANDROID__)
+#include "../_ANDROID/IO/MT2D_Droid_Joystick.h"
+#define MT2D_Joystick_Init MT2D_Droid_Joystick_Init
+#define MT2D_Joystick_Close MT2D_Droid_Joystick_Close
+#define MT2D_Joystick_Update MT2D_Droid_Joystick_Update
 #else
 #error "No code was done for this platform"
 #endif
