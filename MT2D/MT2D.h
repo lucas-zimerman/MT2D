@@ -1,4 +1,4 @@
-/*===================================================================
+/*=================================================================== 
 Window_core.h/ Window_core.cpp created By Lucas Zimerman Fraulob
 
 This file will contain the basic MT2D windows display system core
