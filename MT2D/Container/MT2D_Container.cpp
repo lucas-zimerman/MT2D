@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MT2D_Container.h"
+#include "../File/MT2D_File.h"
 #include "aes.h"
 
 #define xb10000000 128
@@ -92,7 +93,7 @@ void MT2D_Container_Clear() {
 	-Name is not cloned here, we reuse the pointer that u send to us, so look out if you're going to use that pointer later.
 	-Also this function does not perform fclose
 **/
-void MT2D_Container_LoadBuffer(FILE *file, int Length, int Padding, char *Name) {
+void MT2D_Container_LoadBuffer(MT2D_FILE  *file, int Length, int Padding, char *Name) {
 	if (MT2D_GlobalContainer.Files == 0) {
 		MT2D_GlobalContainer.Data = (BYTE**)malloc(sizeof(BYTE*));
 		MT2D_GlobalContainer.Length = (unsigned int*)malloc(sizeof(unsigned int));
@@ -112,7 +113,7 @@ void MT2D_Container_LoadBuffer(FILE *file, int Length, int Padding, char *Name) 
 	MT2D_GlobalContainer.Length[MT2D_GlobalContainer.Files] = Length;
 	MT2D_GlobalContainer.Xpadding[MT2D_GlobalContainer.Files] = Padding;
 	MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files] = (BYTE*)malloc((Length+Padding) * sizeof(BYTE));
-	fread(MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files], Length + Padding, 1, file);
+	MT2D_FILE_READ(file, MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files], Length + Padding, 1);
 	MT2D_GlobalContainer.Files++;
 }
 
@@ -131,15 +132,15 @@ bool MT2D_Container_Load(char *Path) {
 	int i = 0, k;
 	int Len;
 	int j;
-	FILE *Destination = fopen(Path, "rb");
+	MT2D_FILE *Destination = MT2D_FILE_OPEN(Path, "rb");
 	if (Destination) {
-		while (!feof(Destination)) {
+		while (!MT2D_FILE_EOF(Destination)) {
 			//PART 1: READ THE NAME
 			Len = 0;
 			HiddenFileName = (unsigned  char*)malloc(sizeof(unsigned  char));
 			fbuffer = 0;
-			while (fbuffer != '\n' && !feof(Destination)) {
-				fbuffer = fgetc(Destination);
+			while (fbuffer != '\n' && !MT2D_FILE_EOF(Destination)) {
+				fbuffer = MT2D_FILE_READ_BYTE(Destination);
 				if (fbuffer != '\n') {
 					HiddenFileName = (unsigned  char*)realloc(HiddenFileName,(Len+1) * sizeof(unsigned  char));
 					HiddenFileName[Len] = fbuffer;
@@ -148,7 +149,7 @@ bool MT2D_Container_Load(char *Path) {
 				HiddenFileName = (unsigned  char*)realloc(HiddenFileName, (Len + 1) * sizeof(unsigned  char));
 				HiddenFileName[Len] = '\0';
 			}
-			if (!feof(Destination)) {
+			if (!MT2D_FILE_EOF(Destination)) {
 				//PART 1.: DECODE THE NAME
 				j = Len - 1;
 				BitPrevious = 0;// garbage's going to be inserted on the first loop and fixed after the loop
@@ -162,14 +163,14 @@ bool MT2D_Container_Load(char *Path) {
 				HiddenFileName[Len - 1] = HiddenFileName[Len - 1] | (BitPrevious >> 7);
 				//PART 2: GET THE PADDING AND LENGTH FROM THE DATA
 				//PART 2.1:GET THE PADDING
-				Padding = fgetc(Destination);
+				Padding = MT2D_FILE_READ_BYTE(Destination);
 				//PART 2.2:GET THE LENGTH AND DECODE IT
 				FileLength = 0;
 				fbuffer = 0;
 				SmartPointer = (unsigned char*)&FileLength;//get the Length pointer in form of 1byte
 				j = 0;
-				while (fbuffer != '\n' && !feof(Destination)) {
-					fbuffer = fgetc(Destination);
+				while (fbuffer != '\n' && !MT2D_FILE_EOF(Destination)) {
+					fbuffer = MT2D_FILE_READ_BYTE(Destination);
 					if (fbuffer != '\n') {
 						SmartPointer[j] = fbuffer;
 						Len++;
@@ -178,14 +179,14 @@ bool MT2D_Container_Load(char *Path) {
 				}
 				//PART 3: LOAD THE DATA
 				MT2D_Container_LoadBuffer(Destination, FileLength, Padding, (char*)HiddenFileName);
-				fgetc(Destination);//Jump the \n
+				MT2D_FILE_READ_BYTE(Destination);//Jump the \n
 			}
 			else {
 				free(HiddenFileName);
 			}
 		}
 		Loaded = true;
-		fclose(Destination);
+		MT2D_FILE_CLOSE(Destination);
 	}
 	return Loaded;
 }
@@ -196,7 +197,7 @@ Load a normal file under the container | Path char data cloned and not reused
 **/
 bool MT2D_Container_Load_File(char *Path) {
 	bool Loaded = false;
-	FILE *file = fopen(Path, "rb");
+	MT2D_FILE *file = MT2D_FILE_OPEN(Path, "rb");
 	if (file) {
 
 		Loaded = true;
@@ -206,11 +207,11 @@ bool MT2D_Container_Load_File(char *Path) {
 	strcpy(NewString, Path);
 
 	//get the size from the data
-	fseek(file, 0L, SEEK_END);
-	length = ftell(file);
-	fseek(file, 0L, SEEK_SET);
+	MT2D_FILE_SEEK(file, 0L, SEEK_END);
+	length = MT2D_FILE_TELL(file);
+	MT2D_FILE_SEEK(file, 0L, SEEK_SET);
 	MT2D_Container_LoadBuffer(file, length, 0, NewString);
-	fclose(file);
+	MT2D_FILE_CLOSE(file);
 	return Loaded;
 }
 
@@ -247,7 +248,7 @@ bool MT2D_Container_Save(char *NameAndPath) {
 	int i = 0,k;
 	int Len;
 	int j;
-	FILE *Destination = fopen(NameAndPath, "wb");
+	MT2D_FILE *Destination = MT2D_FILE_OPEN(NameAndPath, "wb");
 	if (Destination) {
 		while (i < MT2D_GlobalContainer.Files) {
 			//PART 1: SAVE THE NAME
@@ -266,21 +267,21 @@ bool MT2D_Container_Save(char *NameAndPath) {
 			HiddenFileName[0] = HiddenFileName[0] | BitPrevious << 7;
 			j = 0;
 			while (j < Len) {
-				fputc(HiddenFileName[j], Destination);
+				MT2D_FILE_WRITE_BYTE(Destination, HiddenFileName[j]);
 				j++;
 			}
 			free(HiddenFileName);
-			fputc('\n', Destination);
+			MT2D_FILE_WRITE_BYTE(Destination, '\n');
 			//PART 2: SAVE THE OFFSET AND LENGTH FROM THE DATA
 			j = MT2D_GlobalContainer.Length[i];
-			fputc(MT2D_GlobalContainer.Xpadding[i], Destination);
+			MT2D_FILE_WRITE_BYTE(Destination, MT2D_GlobalContainer.Xpadding[i]);
 			FileLength = 0;
 			Len++;
 			k = 0;
 			while (j > 0) {
 				if (k == 8) {	//FileLength is full, put it under the file and clear it on the memory
 					Len++;
-					fputc(FileLength,Destination);
+					MT2D_FILE_WRITE_BYTE(Destination, FileLength);
 					FileLength = 0;
 					k = 0;
 				}
@@ -288,15 +289,15 @@ bool MT2D_Container_Save(char *NameAndPath) {
 				j = j >> 1;
 				k++;
 			}
-			fputc(FileLength, Destination);//it'll not hurt if FileLength is zero at the end because the software will ignore it
-			fputc('\n', Destination);
+			MT2D_FILE_WRITE_BYTE(Destination, FileLength);//it'll not hurt if FileLength is zero at the end because the software will ignore it
+			MT2D_FILE_WRITE_BYTE(Destination, '\n');
 			//PART 3: SAVE THE DATA
-			fwrite(MT2D_GlobalContainer.Data[i], MT2D_GlobalContainer.Length[i] + MT2D_GlobalContainer.Xpadding[i] , 1, Destination);
-			fputc('\n', Destination);
+			MT2D_FILE_WRITE(Destination, MT2D_GlobalContainer.Data[i], MT2D_GlobalContainer.Length[i] + MT2D_GlobalContainer.Xpadding[i] , 1);
+			MT2D_FILE_WRITE_BYTE(Destination,'\n');
 			i++;
 		}
 		Saved = true;
-		fclose(Destination);
+		MT2D_FILE_CLOSE(Destination);
 
 	}
 	return Saved;
@@ -313,13 +314,13 @@ bool MT2D_Container_Save_File(char *Name, char * NewName, char *Path) {
 	bool Saved = false;
 	Filename = (char*)malloc(strlen(NewName) + strlen(Path) + 1);
 	sprintf(Filename, "%s%s\0",Path, NewName);
-	FILE *Destination = fopen(Filename, "wb");
+	MT2D_FILE *Destination = MT2D_FILE_OPEN(Filename, "wb");
 	if (Destination) {
 		free(Filename);
 		//PART 3: SAVE THE DATA
-		fwrite(MT2D_GlobalContainer.Data[Index], MT2D_GlobalContainer.Length[Index] + MT2D_GlobalContainer.Xpadding[Index], 1, Destination);
+		MT2D_FILE_WRITE(Destination,MT2D_GlobalContainer.Data[Index], MT2D_GlobalContainer.Length[Index] + MT2D_GlobalContainer.Xpadding[Index], 1);
 		Saved - true;
-		fclose(Destination);
+		MT2D_FILE_CLOSE(Destination);
 	}
 	return Saved;
 }
@@ -393,3 +394,13 @@ char *MT2D_Container_Get_FileName_By_ID(int ID) {
 	return NULL;
 }
 
+/*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
+BYTE * MT2D_Container_Get_Data(int ID, bool needDecryption) {
+	BYTE *buffer = 0;
+	if (ID < MT2D_GlobalContainer.Files){
+		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)MT2D_GlobalContainer.FilePath[MT2D_GlobalContainer.DataFileId[ID]], "rb");
+		MT2D_FILE_SEEK(file, MT2D_GlobalContainer.DataOffset[ID], SEEK_SET);
+
+	}
+	return buffer;
+}

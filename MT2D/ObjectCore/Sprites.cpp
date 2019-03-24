@@ -10,11 +10,13 @@
 #include <MT2D/Objectcore/Sprites.h>
 #include <MT2D/MT2D_Keyboard.h> // only used for taking the definition of the key enter
 #include <MT2D/MT2D.h> // for geting the display definition
+#include <MT2D/File/MT2D_File.h>
 #else
 #include "../MT2D_Terminal_Define.h"
 #include "../Objectcore/Sprites.h"
 #include "../MT2D_Keyboard.h" // only used for taking the definition of the key enter
 #include "../MT2D.h" // for geting the display definition
+#include "../File/MT2D_File.h"
 
 #endif
 
@@ -37,14 +39,14 @@ Sprite *Load_Sprite(char *file) {
 	Sprite *S=0;
 	char BUFF;
 	int Xi=0, Yi=0, X=0, Y=0;
-	FILE *fl = fopen(file, "rb");//read only
+	MT2D_FILE *fl = MT2D_FILE_OPEN(file, "rb");//read only
 	if (fl) {
 		S = (Sprite*)malloc(sizeof(Sprite));
 		//STEP 1: count the size of the line and column
-		while (!feof(fl)) {
-			BUFF = fgetc(fl);
+		while (!MT2D_FILE_EOF(fl)) {
+			BUFF = MT2D_FILE_READ_BYTE(fl);
 			if (BUFF == enter_pressed) {
-				fgetc(fl);// why there's always a '\r' after the \n ?
+				MT2D_FILE_READ_BYTE(fl);// why there's always a '\r' after the \n ?
 				if (Xi == 0) {
 					Xi = X;
 				}
@@ -78,14 +80,14 @@ Sprite *Load_Sprite(char *file) {
 			Y++;
 		}
 		//STEP 4: load the file data over the memory
-		rewind(fl);//move the pointer into the top of the file
+		MT2D_FILE_SEEK(fl,0L,SEEK_SET);//move the pointer into the top of the file
 		X = 0;
 		Y = 0;
-		while (!feof(fl)) {
-			BUFF = fgetc(fl);
+		while (!MT2D_FILE_EOF(fl)) {
+			BUFF = MT2D_FILE_READ_BYTE(fl);
 			if (BUFF == enter_pressed) 
 			{
-				fgetc(fl);// why there's always a '\r' after the \n ?
+				MT2D_FILE_READ_BYTE(fl);// why there's always a '\r' after the \n ?
 				X = -1;//only zeroed to avoid overflow...
 				Y++;
 			}
@@ -94,7 +96,7 @@ Sprite *Load_Sprite(char *file) {
 			}
 			X++;
 		}
-		fclose(fl);
+		MT2D_FILE_CLOSE(fl);
 		S->scale.X = 1;
 		S->scale.Y = 1;
 		S->type = 0;
@@ -108,17 +110,9 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 	SDL_Surface *Img = 0;
 	Sprite *S = 0;
 	int Xi = 0, Yi = 0, X = 0, Y = 0;
-#if defined(__ANDROID__) && defined(SDL_USE)
-	SDL_RWops *fl = SDL_RWFromFile(file, "rb");
-#else
-	FILE *fl = fopen(file, "rb");//read only
-#endif
+	MT2D_FILE *fl = MT2D_FILE_OPEN(file, "rb");//read only
 	if (fl) {
-#if defined(__ANDROID__) && defined(SDL_USE)
-		SDL_RWclose(fl);
-#else
-		fclose(fl);
-#endif
+		MT2D_FILE_CLOSE(fl);
 		Img = MT2D_SDL_Load_Image(file);
 		S = (Sprite*)malloc(sizeof(Sprite));
 		S->Data = (char**)MT2D_SDL_Create_Texture(Img);

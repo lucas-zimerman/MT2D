@@ -24,7 +24,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 
 #define SDL_USE_AUDIO
 
-#define MT2D_USING_CONTAINER
+//#define MT2D_USING_CONTAINER
 #define MT2D_WINDOWED_MODE
 #define SDL_USE
 #define MT2D_SCREEN_RESIZE
@@ -56,6 +56,16 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 	#define ANDROID_TARGET
 #elif defined(linux)
 	#define LINUX_TARGET
+#endif
+#pragma endregion
+
+#pragma region Portable_Inline
+#ifdef _MSC_VER
+#define forceinline __forceinline
+#elif defined(__GNUC__)
+#define forceinline __attribute__((always_inline)) inline
+#else
+#define forceinline inline
 #endif
 #pragma endregion
 

@@ -5,15 +5,12 @@
 
 enum MT2D_VAR_TYPE
 {
-	VAR_BOOL,
-	VAR_CHAR,
+//	VAR_BOOL,
+	VAR_CHAR = 1,
 	VAR_INT,
 	VAR_FLOAT,
-	VAR_UNSIGNED_CHAR,
-	VAR_UNSIGNED_INT,
-	VAR_UNSIGNED_FLOAT,
-	VAR_POINTER,
-	VAR_STRING
+	VAR_POINTER = -1,
+	VAR_STRING = -2
 };
 
 enum MT2D_VAR_ERROR
@@ -68,11 +65,11 @@ void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd);
 void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd);
 
 
-MT2D_VAR **MT2D_VAR_Create_Matrix1(MT2D_VAR *First);
-MT2D_VAR **MT2D_VAR_Create_Matrix2(MT2D_VAR *First,MT2D_VAR *Second);
-MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *First, MT2D_VAR *Second,MT2D_VAR *Third);
-MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third);
-MT2D_VAR **MT2D_VAR_Create_Matrix4(MT2D_VAR *First, MT2D_VAR *Second, MT2D_VAR *Third,MT2D_VAR *Fourth);
+MT2D_VAR **MT2D_VAR_Create_Matrix1(MT2D_VAR *first);
+MT2D_VAR **MT2D_VAR_Create_Matrix2(MT2D_VAR *first,MT2D_VAR *second);
+MT2D_VAR **MT2D_VAR_Create_Matrix3(MT2D_VAR *first, MT2D_VAR *second,MT2D_VAR *third);
+MT2D_VAR **MT2D_VAR_Create_Matrix4(MT2D_VAR *first, MT2D_VAR *second, MT2D_VAR *third,MT2D_VAR *fourth);
+MT2D_VAR **MT2D_VAR_Create_MatrixN(int amount, ...); /*I Sugest to use the other 4 funcionts in case you need less than 5 vars*/
 
 void MT2D_VAR_Free(MT2D_VAR *var, int constName);
 #endif

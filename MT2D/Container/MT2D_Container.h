@@ -39,6 +39,12 @@ typedef struct {
 	unsigned int *Length; //in bytes
 	unsigned char *Xpadding;//the number of bytes that were added to make this file to be multiple of X
 	int Files;
+
+	/**/
+	unsigned char **FilePath;
+	unsigned int FilePtrCount;
+	unsigned int *DataOffset;
+	unsigned int *DataFileId;
 }MT2D_Container;
 
 /**
