@@ -23,7 +23,7 @@ This file will contain some simple hardware calls
 #ifndef __MSDOS__
 #include "MT2D_Terminal_Define.h"
 #else
-#include "../../MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #endif
 
 #if defined(SDL_USE)
@@ -36,7 +36,7 @@ This file will contain some simple hardware calls
 #define MT2D_System_Delay MT2D_Win_System_Delay
 #define MT2D_System_Beep MT2D_Win_System_Beep
 #elif defined(__MSDOS__)
-#include "..\..\MT2D\_MSDOS\MT2D_Dos_System_Calls.h"
+#include <MT2D\_MSDOS\MT2D_Dos_System_Calls.h>
 #define MT2D_System_Delay MT2D_Dos_System_Delay
 #define MT2D_System_Beep MT2D_Dos_System_Beep
 #elif defined(linux)

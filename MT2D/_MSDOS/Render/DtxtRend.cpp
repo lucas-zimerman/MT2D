@@ -1,8 +1,8 @@
-// MT2D Created By Lucas Zimerman Fraulob
-// This is the core of MT2D engine, with only this .cpp you can do everything
-// This file is related to almost all MT2D video interface, like draw, clear and update.
+/** MT2D Created By Lucas Zimerman Fraulob
+ This is the core of MT2D engine in MS-DOS where it deals the rendering part.
+*/
 
-//#include <stdio.h>
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #if defined(__MSDOS__)
 #ifdef __DJGPP__ // DJGPP uses another method for writing data on screen
@@ -12,8 +12,12 @@
 #include <dos.h>
 #endif
 
-#include "../../MT2D/MT2D.h"
 
+#ifdef MSDOS_USE_GRAPHICS
+#include <MT2D\_MSDOS\Render\dVgaRen.h>
+#endif
+
+#include <MT2D/MT2D.h>
 
 
 void MT2D_Dos_Clear_Main_Window() {
@@ -23,9 +27,12 @@ void MT2D_Dos_Clear_Main_Window() {
 			WINDOW1[y][x] = ' ';
 		}
 	}
+   #ifdef MSDOS_USE_GRAPHICS
+   Dos_Clear_ImgBuffer();
+   #endif
 }
 
-
+#ifndef MSDOS_USE_GRAPHICS
 void MT2D_Dos_Draw_Window(int which) {
 	unsigned int x, y, offset;
 	if (which == DISPLAY_WINDOW1) {//code that will save directly into video memory
@@ -56,4 +63,19 @@ void MT2D_Dos_Draw_Window(int which) {
 	//transfer window1 or 2 memory to video memory, also include other systems that have video memory acess here too
 	//"ansi" function that will work with any operational system
 }
+#else
+
+#endif
+
+#ifdef MSDOS_USE_GRAPHICS
+void MT2D_Dos_Draw_Window(int which) {
+	if (which == DISPLAY_WINDOW1) {//code that will save directly into video memory
+        MT2D_Dos_Render_VGA_ASCII(WINDOW1);
+	}
+	else{
+        MT2D_Dos_Render_VGA_ASCII(WINDOW2);
+	}
+}
+#endif
+
 #endif

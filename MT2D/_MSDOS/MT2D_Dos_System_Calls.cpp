@@ -1,5 +1,5 @@
 #if defined(__MSDOS__)
-#include "../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #include <dos.h>
 
 void MT2D_Dos_System_Delay(int time_millisecond) {

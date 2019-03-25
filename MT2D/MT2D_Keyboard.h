@@ -41,7 +41,7 @@
 #ifndef __MSDOS__
 #include "MT2D_Terminal_Define.h"
 #else
-#include "../../MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #endif
 
 #if defined(SDL_USE)
@@ -53,7 +53,7 @@
 #define MT2D_Keyboard_touched  MT2D_Win_Keyboard_touched
 #define MT2D_Keyboard_keytouched MT2D_Win_Keyboard_keytouched
 #elif defined(__MSDOS__)
-#include "..\..\MT2D\_MSDOS\IO\MT2D_Dos_Keyboard.h"
+#include <MT2D\_MSDOS\IO\MT2D_Dos_Keyboard.h>
 #define MT2D_Keyboard_touched  MT2D_Dos_Keyboard_touched
 #define MT2D_Keyboard_keytouched MT2D_Dos_Keyboard_keytouched
 #elif defined(linux) && !defined(__ANDROID__)
