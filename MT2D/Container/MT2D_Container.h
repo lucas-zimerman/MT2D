@@ -98,11 +98,6 @@ Decode a file inside the Container
 **/
 void MT2D_Container_Decode_File(char *Name);
 
-/**
-Encode a file inside the Container
--Thread Safe
-**/
-#define MT2D_Container_Encode_File  MT2D_Container_Decode_File
 
 void MT2D_Container_Password_Init();
 
