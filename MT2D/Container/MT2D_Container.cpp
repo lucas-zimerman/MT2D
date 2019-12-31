@@ -26,8 +26,8 @@
 #pragma region  Container Struct
 
 typedef struct {
-	char *file;
-	unsigned int refCount;
+	char *file;//if refCount is -1 it points to a memory address
+	unsigned int refCount;// if -1 it represents a memory data and not a container
 	MT2D_ContainerFilePath *prev;
 	MT2D_ContainerFilePath *next;
 }MT2D_ContainerFilePath;
@@ -102,6 +102,20 @@ void add_Node(MT2D_ContainerFilePath *node){
 		node->prev = ListFilePaths.end;
 		ListFilePaths.end = node;
 	}
+}
+
+/*
+  return an empty FilePath
+	path: pointer copy, doesn't clone the path
+*/
+MT2D_ContainerFilePath *create_MT2D_ContainerFilePath(char * path, bool fromMemory){
+	MT2D_ContainerFilePath *filePath = (MT2D_ContainerFilePath*)malloc(sizeof(MT2D_ContainerFilePath));
+	filePath->file = path;
+	filePath->next = NULL;
+	filePath->prev = NULL;
+	filePath->refCount = fromMemory ? -1 : 0;
+	add_Node(filePath);
+	return filePath;
 }
 
 /*Refactored*/
@@ -214,6 +228,7 @@ void MT2D_Container_Clear() {
 /**
 	-Name is not cloned here, we reuse the pointer that u sent to us, so look out if you're going to use that pointer later.
 	-Note: this function doesn't close the MT2D_FILE
+	-offset: Where the data is located in the file 
 	Refactored
 **/
 void container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding, int offset, char *name) {
@@ -239,19 +254,21 @@ void container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding
 Can load one or more Containers under the main container struct
 **/
 bool MT2D_Container_Load(char *Path) {
-	/*TODO: Refactor*/
 	bool Loaded = false;
 	unsigned char fbuffer=0;
 	unsigned char *HiddenFileName;
 	unsigned int  FileLength;
+	unsigned int  dataOffset;
 	unsigned char BitPrevious, BitActual;
 	unsigned char Padding;
 	unsigned char *SmartPointer;
+	MT2D_ContainerFilePath *filePath;
 	int i = 0, k;
 	int Len;
 	int j;
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Path, "rb");
 	if (Destination) {
+		filePath = create_MT2D_ContainerFilePath(Path, false);
 		while (!MT2D_FILE_EOF(Destination)) {
 			//PART 1: READ THE NAME
 			Len = 0;
@@ -288,6 +305,8 @@ bool MT2D_Container_Load(char *Path) {
 				fbuffer = 0;
 				SmartPointer = (unsigned char*)&FileLength;//get the Length pointer in form of a byte
 				j = 0;
+				//Half data is inverted, so we lie to SmartPointer so he thinks its an array of chars but instead its just a an integer or "unsigned char .[2]"
+				//It might cause an error if the length is too big so the max size of a file is 256 bytes for 8 bits int, 65kb for 16 bits int and 4gb for 32 bits int
 				while (fbuffer != '\n' && !MT2D_FILE_EOF(Destination)) {
 					fbuffer = MT2D_FILE_READ_BYTE(Destination);
 					if (fbuffer != '\n') {
@@ -297,7 +316,7 @@ bool MT2D_Container_Load(char *Path) {
 					}
 				}
 				//PART 3: LOAD THE DATA
-				container_LoadBuffer(Destination, FileLength, Padding, (char*)HiddenFileName);
+				container_LoadBuffer(filePath, FileLength, Padding, MT2D_FILE_TELL(Destination), (char*)HiddenFileName);
 				MT2D_FILE_READ_BYTE(Destination);//Jump the \n
 			}
 			else {
@@ -311,12 +330,11 @@ bool MT2D_Container_Load(char *Path) {
 }
 
 /**
-Load a normal file under the container | Path char data cloned and not reused
+Load a normal file under the container | Path char data cloned and not reused.
+-the data will be cloned inside of the memory and it'll not support encryption.
 -WARNING: remember to add the '\0' at the end of a raw text file in case you want to use the plain text file from a file
 **/
 bool MT2D_Container_Load_File(char *Path) {
-		/*TODO: Refactor*/
-
 	bool loaded = false;
 	MT2D_FILE *file = MT2D_FILE_OPEN(Path, "rb");
 	if (file) {
@@ -331,34 +349,16 @@ bool MT2D_Container_Load_File(char *Path) {
 	MT2D_FILE_SEEK(file, 0L, SEEK_END);
 	length = MT2D_FILE_TELL(file);
 	MT2D_FILE_SEEK(file, 0L, SEEK_SET);
-	container_LoadBuffer(file, length, 0, newString);
+	BYTE *data = (BYTE*)malloc(length*sizeof(data));
+  MT2D_FILE_READ(file,data,length,1);
+	MT2D_Container_Load_File_From_Memory(Path,data,length);
 	MT2D_FILE_CLOSE(file);
 	return loaded;
 }
 
 void MT2D_Container_Load_File_From_Memory(char *Name, BYTE *Data, int Length) {
-		/*TODO: Refactor*/
-
-	if (MT2D_GlobalContainer.Files == 0) {
-		MT2D_GlobalContainer.Data = (BYTE**)malloc(sizeof(BYTE*));
-		MT2D_GlobalContainer.Length = (unsigned int*)malloc(sizeof(unsigned int));
-		MT2D_GlobalContainer.Names = (char**)malloc(sizeof(char*));
-		MT2D_GlobalContainer.Xpadding = (unsigned char*)malloc(sizeof(unsigned char));
-	}
-	else
-	{
-		MT2D_GlobalContainer.Files++;
-		MT2D_GlobalContainer.Data = (BYTE**)realloc(MT2D_GlobalContainer.Data, MT2D_GlobalContainer.Files * sizeof(BYTE*));
-		MT2D_GlobalContainer.Length = (unsigned int*)realloc(MT2D_GlobalContainer.Length, MT2D_GlobalContainer.Files * sizeof(unsigned int));
-		MT2D_GlobalContainer.Names = (char**)realloc(MT2D_GlobalContainer.Names, MT2D_GlobalContainer.Files * sizeof(char*));
-		MT2D_GlobalContainer.Xpadding = (unsigned char*)realloc(MT2D_GlobalContainer.Xpadding, MT2D_GlobalContainer.Files * sizeof(unsigned char));
-		MT2D_GlobalContainer.Files--;
-	}
-	MT2D_GlobalContainer.Names[MT2D_GlobalContainer.Files] = Name;
-	MT2D_GlobalContainer.Length[MT2D_GlobalContainer.Files] = Length;
-	MT2D_GlobalContainer.Xpadding[MT2D_GlobalContainer.Files] = 0;
-	MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files] = Data;
-	MT2D_GlobalContainer.Files++;
+	MT2D_ContainerFilePath* path = create_MT2D_ContainerFilePath((char*)Data,true);
+	container_LoadBuffer(path,Length,0,0,Name);
 }
 /**
 Save all the loaded files in the container for an external file
@@ -430,11 +430,8 @@ bool MT2D_Container_Save(char *NameAndPath) {
 
 /**
 -Save the loaded file under a specific file.
--Warning: You may get some trouble saving encrypted files
 **/
-bool MT2D_Container_Save_File(char *Name, char * NewName, char *Path) {
-		/*TODO: Refactor*/
-
+bool MT2D_Container_Save_File(char *Name, char * NewName, char *Path, bool decrypt) {
 	int Index = MT2D_Container_Get_FileId(Name);
 	int OffsetSaved;
 	char *Filename;
@@ -444,55 +441,16 @@ bool MT2D_Container_Save_File(char *Name, char * NewName, char *Path) {
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Filename, "wb");
 	if (Destination) {
 		free(Filename);
+		BYTE *data = MT2D_Container_Get_Data(Index,decrypt);
+		int length = MT2D_Container_Get_FileLength(Index);
+		int xpadding = MT2D_Container_Get_FilePadding(Index);
 		//PART 3: SAVE THE DATA
-		MT2D_FILE_WRITE(Destination,MT2D_GlobalContainer.Data[Index], MT2D_GlobalContainer.Length[Index] + MT2D_GlobalContainer.Xpadding[Index], 1);
-		Saved - true;
+		MT2D_FILE_WRITE(Destination,data, length + xpadding, 1);
+		free(data);
+		Saved = true;
 		MT2D_FILE_CLOSE(Destination);
 	}
 	return Saved;
-}
-
-
-/**
-Encode/Decode a file inside the Container
-TO BE REMOVED
-**/
-void MT2D_Container_Decode_File(char *Name) {
-		/*TODO: Refactor*/
-
-	int Index = MT2D_Container_Get_FileId(Name);
-	int Length = MT2D_GlobalContainer.Length[Index];
-	if (Length > 0) {
-		struct AES_ctx ctx;
-		AES_init_ctx_iv(&ctx, MT2D_ContainerKey, iv);
-		if (Length % 16 == 0) {
-			//It doesn't matter in this case if we're  encoding\decoding
-			AES_CTR_xcrypt_buffer(&ctx, MT2D_GlobalContainer.Data[Index], Length);
-		}
-		else {
-			if (MT2D_GlobalContainer.Xpadding[Index] > 0) {
-				//The file is encoded so we're going to encode
-				AES_CTR_xcrypt_buffer(&ctx, MT2D_GlobalContainer.Data[Index], Length);
-				//remove the padding memory
-				MT2D_GlobalContainer.Data[Index] = (BYTE*)realloc(MT2D_GlobalContainer.Data[Index], (Length - MT2D_GlobalContainer.Xpadding[Index] + MT2D_GlobalContainer.Xpadding[Index] ) * sizeof(BYTE));
-				//cancel the padding
-				MT2D_GlobalContainer.Xpadding[Index] = 0;
-			}
-			else
-			{
-				//the file is decoded so we're going to encode
-				MT2D_GlobalContainer.Xpadding[Index] = 16 - (Length % 16);
-				int i = 1;
-
-				MT2D_GlobalContainer.Data[Index] = (BYTE*)realloc(MT2D_GlobalContainer.Data[Index], (MT2D_GlobalContainer.Length[Index] + MT2D_GlobalContainer.Xpadding[Index] +1) * sizeof(BYTE));
-				while (i <= MT2D_GlobalContainer.Xpadding[Index]) {
-					MT2D_GlobalContainer.Data[Index][Length + i] = (i % 2 == 0 ? 255 : 0);
-					i++;
-				}
-				AES_CTR_xcrypt_buffer(&ctx, MT2D_GlobalContainer.Data[Index], Length + MT2D_GlobalContainer.Xpadding[Index]);
-			}
-		}
-	}
 }
 
 /*Refactored*/
@@ -522,33 +480,85 @@ int MT2D_Container_Count_Files() {
 }
 
 
-/*Return the pointer of the name of a file form the given ID*/
+/*Return a new filename string*/
 /*Refactored*/
 char *MT2D_Container_Get_FileName_By_ID(int id) {
-	int hashIndex  =get_Hash_Index(id);
+	int hashIndex = get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
 	if (offset < ContainerHash.count[hashIndex]) {
-		/*TODO: return a copy not a pointer*/
-		return ContainerHash.hash[hashIndex][offset].name;
+		int len = strlen(ContainerHash.hash[hashIndex][offset].name);
+		char *name = (char*)malloc((len+1)*sizeof(char));
+		strcpy(name,ContainerHash.hash[hashIndex][offset].name);
+		return name;
 	}
 	return NULL;
 }
 
 /*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
-BYTE * MT2D_Container_Get_Data(int ID, bool needDecryption) {
+BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	/*TODO: FINISh*/
-	BYTE *buffer = 0;
-	if (ID < MT2D_GlobalContainer.Files){
-		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)MT2D_GlobalContainer.FilePath[MT2D_GlobalContainer.DataFileId[ID]], "rb");
-		MT2D_FILE_SEEK(file, MT2D_GlobalContainer.DataOffset[ID], SEEK_SET);
-		/*
-			*Load all the required bytes;
-			*if decrypt required
-				*return decrypted bytes
-			*return bytes;
-		*/
+	int hashIndex = get_Hash_Index(id);
+	int hashOffset = get_Hash_File_Index(id);
+	int length = ContainerHash.hash[hashIndex][hashOffset].length;
+	int offset = ContainerHash.hash[hashIndex][hashOffset].offset;
+	int padding = ContainerHash.hash[hashIndex][hashOffset].xpadding;
+	BYTE *data = NULL;
+	if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == -1){
+			//Data is in memory
+			data = clone_data((BYTE*)ContainerHash.hash[hashIndex][offset].DataFileId->file, length);
+
 	}
-	return buffer;
+	else {
+		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)ContainerHash.hash[hashIndex][offset].DataFileId->file, "rb");
+		MT2D_FILE_SEEK(file, offset, SEEK_SET);
+		data = (BYTE*)malloc((offset + padding)*sizeof(BYTE));
+		MT2D_FILE_READ(file, data, offset + padding, 1);
+		if(decrypt){
+				decryptAes(data,length,padding);
+		}
+	}
+	return data;
+}
+
+BYTE* clone_data(BYTE* data, int length)
+{
+	BYTE *clonedData = NULL;
+	if(data){
+		clonedData = (BYTE*)malloc(length*sizeof(BYTE));
+		memcpy(clonedData,data,length);
+	}
+	return clonedData;
+}
+
+BYTE *decryptAes(BYTE *data, int length, int padding){
+		struct AES_ctx ctx;
+		AES_init_ctx_iv(&ctx, MT2D_ContainerKey, iv);
+		if (length % 16 == 0) {
+			//It doesn't matter in this case if we're  encoding\decoding
+			AES_CTR_xcrypt_buffer(&ctx, data, length);
+		}
+		else {
+			if (padding > 0) {
+				//The file is encoded so we're going to encode
+				AES_CTR_xcrypt_buffer(&ctx, data, length);
+				//remove the padding memory
+				data = (BYTE*)realloc(data, (length - padding) * sizeof(BYTE));
+			}
+			else
+			{
+				//the file is decoded so we're going to encode
+				padding = 16 - (length % 16);
+				int i = 1;
+
+				data = (BYTE*)realloc(data, (length + padding + 1) * sizeof(BYTE));
+				while (i <= padding) {
+					data[length + i] = (i % 2 == 0 ? 255 : 0);
+					i++;
+				}
+				AES_CTR_xcrypt_buffer(&ctx, data, length + padding);
+			}
+		}
+	return data;
 }
 
 
