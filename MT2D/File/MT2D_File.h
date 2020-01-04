@@ -91,6 +91,10 @@ forceinline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
 	return fopen(fileName, mode);
 }
 
+forceinline MT2D_FILE *MT2D_FILE_OPEN_TEMP() {
+	return tmpfile();
+}
+
 forceinline int MT2D_FILE_CLOSE(MT2D_FILE *file) {
 	return fclose(file);
 }
