@@ -21,8 +21,12 @@
 #define xb00001111 15
 #define xb00000001 01
 
-#define MT2D_MEMORY_CONTAINER -1
-
+enum MT2D_Container_DataStore_Type
+{
+	MT2D_CONT_DATATYPE_MEM = -1,
+	MT2D_CONT_DATATYPE_CONT,
+	MT2D_CONT_DATATYPE_FILE
+};
 /*REFACTORY VARS*/
 #pragma region  Container Struct
 
@@ -68,70 +72,7 @@ BYTE iv[16]; /* { 0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0x
 
 #pragma endregion Container Global Vars
 
-/*Refactored*/
-void remove_Node(MT2D_ContainerFilePath *node){
-		/*Edit the ListFilePaths in case this node is the first or the last node*/
-	if(node->prev != NULL){
-		node->prev->next = node->next;
-	}
-	else{
-		ListFilePaths.start = node->next;
-	}
-	if(node->next != NULL){
-		node->next->prev = node->prev;
-	}
-	else{
-		ListFilePaths.end = node->prev;
-	}
-	free(node->file);
-	free(node);
-}
-
-/*Refactored*/
-void add_Node(MT2D_ContainerFilePath *node){
-	/*Always add the node to the end*/
-	if(ListFilePaths.start == NULL){
-		ListFilePaths.start = node;
-		ListFilePaths.end = node;		
-	}
-	else if(ListFilePaths.start == ListFilePaths.end){
-		ListFilePaths.end = node;
-		node->prev = ListFilePaths.start;
-		ListFilePaths.start->next = node;
-	}
-	else{
-		ListFilePaths.end->next = node;
-		node->prev = ListFilePaths.end;
-		ListFilePaths.end = node;
-	}
-}
-
-/*
-  return an empty FilePath
-	path: pointer copy, doesn't clone the path
-*/
-MT2D_ContainerFilePath *create_MT2D_ContainerFilePath(char * path, bool fromMemory){
-	MT2D_ContainerFilePath *filePath = (MT2D_ContainerFilePath*)malloc(sizeof(MT2D_ContainerFilePath));
-	filePath->file = path;
-	filePath->next = NULL;
-	filePath->prev = NULL;
-	filePath->refCount = fromMemory ? -1 : 0;
-	add_Node(filePath);
-	return filePath;
-}
-
-/*Refactored*/
-int get_Hash_Index(int id){
-	return id & xb00001111;
-}
-
-/*Refactored*/
-int get_Hash_File_Index(int id){
-	return id >> 4;
-}
-
 /**
- *  Refactored
  * 	Return the index of the container file found with the given name.
 	-If failed the function returns -1
 **/
@@ -157,7 +98,6 @@ int MT2D_Container_Get_FileId(char *name) {
 	return -1;
 }
 
-/*Refactored*/
 int MT2D_Container_Get_FileLength(int id) {
 	int hashIndex  =get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
@@ -168,7 +108,6 @@ int MT2D_Container_Get_FileLength(int id) {
 	return -1;
 }
 
-/*Refactored*/
 int MT2D_Container_Get_FilePadding(int id) {
 	int hashIndex  =get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
@@ -179,20 +118,38 @@ int MT2D_Container_Get_FilePadding(int id) {
 	return -1;
 }
 
+
+MT2D_Container_DataStore_Type MT2D_GetFile_StoreType(int id){
+	int hashIndex  =get_Hash_Index(id);
+	int offset = get_Hash_File_Index(id);
+	if(ContainerHash.hash[hashIndex][offset].fileDataOffset == 0){
+		return MT2D_CONT_DATATYPE_FILE;
+	}
+	else if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
+		return MT2D_CONT_DATATYPE_MEM;
+	}
+	return MT2D_CONT_DATATYPE_CONT;
+}
+
 /*
 	Update the container disk file withe the new data.
 	WARNING: this operation may take a long time if you have alot of loaded files
 	data is not cloned but copied the reference
 */
 bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
-	/*TODO: Implement*/
 	int hashIndex  =get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
 	int oldLength = ContainerHash.hash[hashIndex][offset].length;
 	ContainerHash.hash[hashIndex][offset].length = length;
-	if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == MT2D_MEMORY_CONTAINER){
+	if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
 		free(ContainerHash.hash[hashIndex][offset].DataFileId->file);
 		ContainerHash.hash[hashIndex][offset].DataFileId->file = (char*)data;
+	}
+	else if(ContainerHash.hash[hashIndex][offset].fileDataOffset == 0){
+		//the updated data is inside of a file and not a container
+		MT2D_FILE *file = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"w");
+		MT2D_FILE_WRITE(file,data,length,1);
+		MT2D_FILE_CLOSE(file);
 	}
 	else{
 /*
@@ -208,8 +165,7 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		MT2D_FILE *old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"r");
 		int initialDataOffset;//where the name of the file is located at
 		int nameSize;
-		int copyBlock = 5000;
-		char * block = (char*)malloc(5000*sizeof(char));
+		BYTE* buffer = (BYTE*)malloc(5000*sizeof(BYTE));
 		//get the initialDataOffset;
 		nameSize = strlen(ContainerHash.hash[hashIndex][offset].name);
 		initialDataOffset = oldLength 
@@ -218,16 +174,8 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 							- oldLength >> 3;// the real initial data offset pointing to the name
 
 		//start transfering the file before the updated file to a new file
-		while(copyBlock < initialDataOffset){
-			MT2D_FILE_READ(old,block,5000,1);
-			MT2D_FILE_WRITE(tmp,block,5000,1);
-			copyBlock += 5000;
-		}
-		copyBlock = copyBlock - initialDataOffset;// copy the remaining of the file
-		if(copyBlock > 0){
-			MT2D_FILE_READ(old,block,copyBlock,1);
-			MT2D_FILE_WRITE(tmp,block,copyBlock,1);
-		}
+		transfer_file_data(old,tmp,0,initialDataOffset,5000,buffer);
+
 		//PART 1.2: update the desired file into the temporary file.
 		unsigned char oldPadding = ContainerHash.hash[hashIndex][offset].xpadding;
 		if(encrypt){
@@ -238,24 +186,7 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		unsigned char *name = read_Hidden_Name(&pos,old);// no need to be decoded
 		MT2D_FILE_WRITE(tmp,name,nameSize,1);
 		MT2D_FILE_WRITE_BYTE(tmp,'\n');
-		int j = nameSize;
-		MT2D_FILE_WRITE_BYTE(tmp, ContainerHash.hash[hashIndex][offset].xpadding);
-		unsigned char FileLength = 0;
-		int Len = 1;
-		unsigned char k = 0;
-		while (j > 0) {
-			if (k == 8) {	//FileLength is full, put it under the file and clear it on the memory
-				Len++;
-				MT2D_FILE_WRITE_BYTE(tmp, FileLength);
-				FileLength = 0;
-				k = 0;
-			}
-			FileLength = FileLength | ( (j & 1) << (k)); //add bit a bit into FileLength
-			j = j >> 1;
-			k++;
-		}
-		MT2D_FILE_WRITE_BYTE(tmp, FileLength);//it'll not hurt if FileLength is zero at the end because the software will ignore it
-		MT2D_FILE_WRITE_BYTE(tmp,'\n');
+	    write_padding_length(tmp,ContainerHash.hash[hashIndex][offset].xpadding, length);
 
 		MT2D_FILE_SEEK(old,oldLength + oldPadding + initialDataOffset,SEEK_SET);// skip the old updated file
 
@@ -268,21 +199,11 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		while(file->next != NULL){
 			file = file->next;
 		}
-		//get the difference of data offset
-		copyBlock = MT2D_FILE_TELL(old);
-		int offsetDiff = MT2D_FILE_TELL(tmp) - copyBlock;
-		copyBlock += 5000;
+		int offsetDiff = MT2D_FILE_TELL(old);
 		initialDataOffset = file->fileDataOffset + file->length;
-		while(copyBlock < initialDataOffset){
-			MT2D_FILE_READ(old,block,5000,1);
-			MT2D_FILE_WRITE(tmp,block,5000,1);
-			copyBlock += 5000;
-		}
-		copyBlock = copyBlock - initialDataOffset;// copy the remaining of the file
-		if(copyBlock > 0){
-			MT2D_FILE_READ(old,block,copyBlock,1);
-			MT2D_FILE_WRITE(tmp,block,copyBlock,1);
-		}
+		transfer_file_data(old,tmp,offsetDiff,initialDataOffset,5000,buffer);
+		offsetDiff = MT2D_FILE_TELL(tmp) - offsetDiff;
+
 		//now update the foward files offsets from the updated one 
 		file = &ContainerHash.hash[hashIndex][offset];
 		while(file->next != NULL){
@@ -290,20 +211,11 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 			file->fileDataOffset += offsetDiff;
 		}
 		MT2D_FILE_CLOSE(old);
-		MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"w");
+		old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"w");
 		initialDataOffset = MT2D_FILE_TELL(tmp);
 		MT2D_FILE_SEEK(tmp,0,SEEK_SET);
-		copyBlock = 5000;
-		while(copyBlock < initialDataOffset){
-			MT2D_FILE_READ(old,block,5000,1);
-			MT2D_FILE_WRITE(tmp,block,5000,1);
-			copyBlock += 5000;
-		}
-		copyBlock = copyBlock - initialDataOffset;// copy the remaining of the file
-		if(copyBlock > 0){
-			MT2D_FILE_READ(old,block,copyBlock,1);
-			MT2D_FILE_WRITE(tmp,block,copyBlock,1);
-		}
+		transfer_file_data(tmp,old,0,initialDataOffset,5000,buffer);
+
 		MT2D_FILE_CLOSE(tmp);
 		MT2D_FILE_CLOSE(old);
 	}
@@ -550,8 +462,7 @@ bool MT2D_Container_Save(char *NameAndPath) {
 -Path: Where it's going to save the data
 -Decrypt: if the file needs to be decrypted
 **/
-bool MT2D_Container_Export_as_File(char *Name, char * NewName, char *Path, bool decrypt) {
-	int Index = MT2D_Container_Get_FileId(Name);
+bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool decrypt) {
 	int OffsetSaved;
 	char *Filename;
 	bool Saved = false;
@@ -560,9 +471,9 @@ bool MT2D_Container_Export_as_File(char *Name, char * NewName, char *Path, bool 
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Filename, "wb");
 	if (Destination) {
 		free(Filename);
-		BYTE *data = MT2D_Container_Get_Data(Index,decrypt);
-		int length = MT2D_Container_Get_FileLength(Index);
-		int xpadding = MT2D_Container_Get_FilePadding(Index);
+		BYTE *data = MT2D_Container_Get_Data(index,decrypt);
+		int length = MT2D_Container_Get_FileLength(index);
+		int xpadding = MT2D_Container_Get_FilePadding(index);
 		//PART 3: SAVE THE DATA
 		MT2D_FILE_WRITE(Destination,data, length + xpadding, 1);
 		free(data);
@@ -638,6 +549,8 @@ BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	return data;
 }
 
+#pragma region Internal Helpers
+
 BYTE* clone_data(BYTE* data, int length)
 {
 	BYTE *clonedData = NULL;
@@ -697,8 +610,98 @@ unsigned char *read_Hidden_Name(int *Len, MT2D_FILE *openedFile){
 	return HiddenFileName;
 }
 
+void write_padding_length(MT2D_FILE *openedFile, unsigned char padding, int length){
+	MT2D_FILE_WRITE_BYTE(openedFile, padding);
+	unsigned char FileLength = 0;
+	unsigned char k = 0;
+	while (length > 0) {
+		if (k == 8) {	//FileLength is full, put it under the file and clear it on the memory
+			MT2D_FILE_WRITE_BYTE(openedFile, FileLength);
+			FileLength = 0;
+			k = 0;
+		}
+		FileLength = FileLength | ( (length & 1) << (k)); //add bit a bit into FileLength
+		length = length >> 1;
+		k++;
+	}
+	MT2D_FILE_WRITE_BYTE(openedFile, FileLength);//it'll not hurt if FileLength is zero at the end because the software will ignore it
+	MT2D_FILE_WRITE_BYTE(openedFile,'\n');
+}
 
+void transfer_file_data(MT2D_FILE *source, MT2D_FILE *destination, unsigned int initOffset, unsigned int finalOffset, unsigned int bufferSize, BYTE* buffer){
+	unsigned int copybuffer = initOffset + bufferSize;
+		while(copybuffer < finalOffset){
+			MT2D_FILE_READ(source,buffer,bufferSize,1);
+			MT2D_FILE_WRITE(destination,buffer,bufferSize,1);
+			copybuffer += bufferSize;
+		}
+		copybuffer = copybuffer - finalOffset;// copy the remaining of the file
+		if(copybuffer > 0){
+			MT2D_FILE_READ(source,buffer,copybuffer,1);
+			MT2D_FILE_WRITE(destination,buffer,copybuffer,1);
+		}
+}
 
+/*Refactored*/
+void remove_Node(MT2D_ContainerFilePath *node){
+		/*Edit the ListFilePaths in case this node is the first or the last node*/
+	if(node->prev != NULL){
+		node->prev->next = node->next;
+	}
+	else{
+		ListFilePaths.start = node->next;
+	}
+	if(node->next != NULL){
+		node->next->prev = node->prev;
+	}
+	else{
+		ListFilePaths.end = node->prev;
+	}
+	free(node->file);
+	free(node);
+}
 
+/*Refactored*/
+void add_Node(MT2D_ContainerFilePath *node){
+	/*Always add the node to the end*/
+	if(ListFilePaths.start == NULL){
+		ListFilePaths.start = node;
+		ListFilePaths.end = node;		
+	}
+	else if(ListFilePaths.start == ListFilePaths.end){
+		ListFilePaths.end = node;
+		node->prev = ListFilePaths.start;
+		ListFilePaths.start->next = node;
+	}
+	else{
+		ListFilePaths.end->next = node;
+		node->prev = ListFilePaths.end;
+		ListFilePaths.end = node;
+	}
+}
 
+/*
+  return an empty FilePath
+	path: pointer copy, doesn't clone the path
+*/
+MT2D_ContainerFilePath *create_MT2D_ContainerFilePath(char * path, bool fromMemory){
+	MT2D_ContainerFilePath *filePath = (MT2D_ContainerFilePath*)malloc(sizeof(MT2D_ContainerFilePath));
+	filePath->file = path;
+	filePath->next = NULL;
+	filePath->prev = NULL;
+	filePath->refCount = fromMemory ? MT2D_CONT_DATATYPE_MEM : 0;
+	add_Node(filePath);
+	return filePath;
+}
 
+/*Refactored*/
+int get_Hash_Index(int id){
+	return id & xb00001111;
+}
+
+/*Refactored*/
+int get_Hash_File_Index(int id){
+	return id >> 4;
+}
+
+#pragma endregion
