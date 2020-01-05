@@ -261,33 +261,11 @@ void MT2D_Container_Clear() {
 		free(filePointer);
 		filePointer = ListFilePaths.start;
 	}
-	ListFilePaths.end = 0;
-	ListFilePaths.start = 0;
+	ListFilePaths.end = NULL;
+	ListFilePaths.start = NULL;
 }
 
-/**
-	-Name is not cloned here, we reuse the pointer that u sent to us, so look out if you're going to use that pointer later.
-	-Note: this function doesn't close the MT2D_FILE
-	-offset: Where the data is located in the file 
-	Refactored
-**/
-void container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding, int offset, char *name) {
-	int hash = get_Hash_Index(name[0]);
-	int count = ContainerHash.count[hash]; 
-	if (count == 0) {
-		ContainerHash.hash[hash] = (MT2D_ContainerFile*)malloc(sizeof(MT2D_ContainerFile));
-	}
-	else
-	{
-		ContainerHash.hash[hash] = (MT2D_ContainerFile*)realloc(ContainerHash.hash[hash],(count + 1)*sizeof(MT2D_ContainerFile));
-	}
-	ContainerHash.hash[hash][count].name = name;
-	ContainerHash.hash[hash][count].length = length;
-	ContainerHash.hash[hash][count].xpadding = padding;
-	ContainerHash.hash[hash][count].fileDataOffset = offset;
-	ContainerHash.hash[hash][count].DataFileId = file;
-	ContainerHash.count[hash]++;
-}
+
 
 
 /**
@@ -483,6 +461,60 @@ bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool d
 	return Saved;
 }
 
+/**
+ * Copy the data loaded in MT2D_Container into an existing container.
+ * -containerName: the valid name of the container file
+ * -dataId: the id to be copied
+ * -encrypt: if the copied file is going to be encrypted (mark as false if the copied file is already encrypted)
+ * return false if the container wasn't found
+ **/
+bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool encrypt){
+	if(ListFilePaths.start != NULL){
+		MT2D_ContainerFilePath *cont = ListFilePaths.start;
+		bool found = false;
+		while(cont->next != NULL && !found){
+			if(cont->refCount == MT2D_CONT_DATATYPE_MEM){
+				cont = cont->next;
+			}
+			if(strcmp(cont->file,containerName) == 0){
+				found = true;
+			}
+			else{
+				cont = cont->next;
+			}
+		}
+		if(found){
+			MT2D_FILE *contFile = MT2D_FILE_OPEN(cont->file,"a");
+
+			int hashIndex  =get_Hash_Index(dataId);
+			int offset = get_Hash_File_Index(dataId);
+			
+			write_Name(contFile,ContainerHash.hash[hashIndex][offset].name);
+
+			unsigned char* data = MT2D_Container_Get_Data(dataId,false);
+			unsigned int length = ContainerHash.hash[hashIndex][offset].length;
+			unsigned char padding = ContainerHash.hash[hashIndex][offset].xpadding;
+
+			if(encrypt){
+				data = decryptAes(data,length,&padding);
+			}
+
+			write_padding_length(contFile,padding,length);
+
+			unsigned int originalNamelen = strlen(ContainerHash.hash[hashIndex][offset].name);
+			char *originalName = (char*)malloc((originalNamelen + 1) * sizeof(char));
+			strcpy(originalName,ContainerHash.hash[hashIndex][offset].name);
+
+			container_LoadBuffer(cont, length, padding, MT2D_FILE_TELL(contFile), originalName);
+			
+			MT2D_FILE_WRITE(contFile,data,length + padding,1);
+			MT2D_FILE_CLOSE(contFile);
+			return true;
+		}
+	}
+	return false;
+}
+
 /*Refactored*/
 void MT2D_Container_Password_Init() {
 	int i = 0;
@@ -592,6 +624,26 @@ BYTE *decryptAes(BYTE *data, int length, unsigned char *padding){
 	return data;
 }
 
+void write_Name(MT2D_FILE *openFile, char* name){
+	int Len = strlen(name);
+	unsigned char *HiddenFileName = (unsigned char*)malloc((Len+1) * sizeof(unsigned char));
+	strcpy((char*)HiddenFileName, name);
+	unsigned int j = 0;
+	unsigned char BitPrevious = HiddenFileName[j] & (1<<7);
+	unsigned char BitActual;
+	while (j < Len){ 
+		BitActual = HiddenFileName[j] & 1;
+		HiddenFileName[j] = HiddenFileName[j] >> 1;
+		HiddenFileName[j] = HiddenFileName[j] | BitPrevious << 7;
+		BitPrevious = BitActual;
+		j++;
+	}
+	HiddenFileName[0] = HiddenFileName[0] | BitPrevious << 7;
+	MT2D_FILE_WRITE(openFile,HiddenFileName,Len,1);
+	free(HiddenFileName);
+	MT2D_FILE_WRITE_BYTE(openFile,'\n');
+}
+
 unsigned char *read_Hidden_Name(int *Len, MT2D_FILE *openedFile){
 	Len = 0;
 	unsigned char *HiddenFileName = (unsigned  char*)malloc(sizeof(unsigned  char));
@@ -692,6 +744,31 @@ MT2D_ContainerFilePath *create_MT2D_ContainerFilePath(char * path, bool fromMemo
 	filePath->refCount = fromMemory ? MT2D_CONT_DATATYPE_MEM : 0;
 	add_Node(filePath);
 	return filePath;
+}
+
+/**
+	-Name is not cloned here, we reuse the pointer that u sent to us, so look out if you're going to use that pointer later.
+	-Note: this function doesn't close the MT2D_FILE
+	-offset: Where the data is located in the file 
+	Refactored
+**/
+void container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding, int offset, char *name) {
+	int hash = get_Hash_Index(name[0]);
+	int count = ContainerHash.count[hash]; 
+	if (count == 0) {
+		ContainerHash.hash[hash] = (MT2D_ContainerFile*)malloc(sizeof(MT2D_ContainerFile));
+	}
+	else
+	{
+		ContainerHash.hash[hash] = (MT2D_ContainerFile*)realloc(ContainerHash.hash[hash],(count + 1)*sizeof(MT2D_ContainerFile));
+	}
+	ContainerHash.hash[hash][count].name = name;
+	ContainerHash.hash[hash][count].length = length;
+	ContainerHash.hash[hash][count].xpadding = padding;
+	ContainerHash.hash[hash][count].fileDataOffset = offset;
+	ContainerHash.hash[hash][count].DataFileId = file;
+	ContainerHash.count[hash]++;
+	file->refCount++;
 }
 
 /*Refactored*/
