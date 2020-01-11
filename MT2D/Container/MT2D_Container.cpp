@@ -33,12 +33,13 @@ enum MT2D_Container_DataStore_Type
 typedef struct {
 	char *file;//if refCount is -1 it points to a memory address
 	unsigned int refCount;// if -1 it represents a memory data and not a container
+	MT2D_ContainerFile *firstData;
 	MT2D_ContainerFilePath *prev;
 	MT2D_ContainerFilePath *next;
 }MT2D_ContainerFilePath;
 
 typedef struct {
-	/*minimal struct whitch represents the a reference from the file to be stored*/
+	/*minimal struct which represents the a reference from the file to be stored*/
 	char *name;
 	unsigned int length; //in bytes
 	unsigned char xpadding;//the number of bytes that were added to make this file to be multiple of X
@@ -56,7 +57,7 @@ typedef struct{
 }MT2D_ContainerList;
 
 typedef struct{
-	MT2D_ContainerFile *hash[15];
+	MT2D_ContainerFile **hash[15];
 	int count[15];
 }MT2D_ContainerHash;
 
@@ -83,13 +84,13 @@ int MT2D_Container_Get_FileId(char *name) {
 		j = 0;
 		/*hand made strcmp*/
 		while ( name[j] != '\0' && 
-				ContainerHash.hash[hashIndex][i].name[j] != '\0' && 
-				name[j] == ContainerHash.hash[hashIndex][i].name[j]
+				ContainerHash.hash[hashIndex][i]->name[j] != '\0' && 
+				name[j] == ContainerHash.hash[hashIndex][i]->name[j]
 			  ) {
 			j++;
 		}
 		if (name[j] == '\0') {
-			if (ContainerHash.hash[hashIndex][i].name[j] == '\0') {
+			if (ContainerHash.hash[hashIndex][i]->name[j] == '\0') {
 				//found the file
 				return (i << 4) | hashIndex;
 			}
@@ -103,7 +104,7 @@ int MT2D_Container_Get_FileLength(int id) {
 	int offset = get_Hash_File_Index(id);
 	if(ContainerHash.count[hashIndex] < offset)
 	{
-		return ContainerHash.hash[hashIndex][offset].length;
+		return ContainerHash.hash[hashIndex][offset]->length;
 	}
 	return -1;
 }
@@ -113,7 +114,7 @@ int MT2D_Container_Get_FilePadding(int id) {
 	int offset = get_Hash_File_Index(id);
 	if(ContainerHash.count[hashIndex] < offset)
 	{
-		return ContainerHash.hash[hashIndex][offset].xpadding;
+		return ContainerHash.hash[hashIndex][offset]->xpadding;
 	}
 	return -1;
 }
@@ -122,10 +123,10 @@ int MT2D_Container_Get_FilePadding(int id) {
 MT2D_Container_DataStore_Type MT2D_GetFile_StoreType(int id){
 	int hashIndex  =get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
-	if(ContainerHash.hash[hashIndex][offset].fileDataOffset == 0){
+	if(ContainerHash.hash[hashIndex][offset]->fileDataOffset == 0){
 		return MT2D_CONT_DATATYPE_FILE;
 	}
-	else if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
+	else if(ContainerHash.hash[hashIndex][offset]->DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
 		return MT2D_CONT_DATATYPE_MEM;
 	}
 	return MT2D_CONT_DATATYPE_CONT;
@@ -139,15 +140,15 @@ MT2D_Container_DataStore_Type MT2D_GetFile_StoreType(int id){
 bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 	int hashIndex  =get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
-	int oldLength = ContainerHash.hash[hashIndex][offset].length;
-	ContainerHash.hash[hashIndex][offset].length = length;
-	if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
-		free(ContainerHash.hash[hashIndex][offset].DataFileId->file);
-		ContainerHash.hash[hashIndex][offset].DataFileId->file = (char*)data;
+	int oldLength = ContainerHash.hash[hashIndex][offset]->length;
+	ContainerHash.hash[hashIndex][offset]->length = length;
+	if(ContainerHash.hash[hashIndex][offset]->DataFileId->refCount == MT2D_CONT_DATATYPE_MEM){
+		free(ContainerHash.hash[hashIndex][offset]->DataFileId->file);
+		ContainerHash.hash[hashIndex][offset]->DataFileId->file = (char*)data;
 	}
-	else if(ContainerHash.hash[hashIndex][offset].fileDataOffset == 0){
+	else if(ContainerHash.hash[hashIndex][offset]->fileDataOffset == 0){
 		//the updated data is inside of a file and not a container
-		MT2D_FILE *file = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"w");
+		MT2D_FILE *file = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset]->DataFileId->file,"w");
 		MT2D_FILE_WRITE(file,data,length,1);
 		MT2D_FILE_CLOSE(file);
 	}
@@ -162,12 +163,12 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 */
 		//PART 1: copy all the content to a temp file, first the content before the updated file will get updated
 		MT2D_FILE *tmp = MT2D_FILE_OPEN_TEMP();
-		MT2D_FILE *old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"r");
+		MT2D_FILE *old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset]->DataFileId->file,"r");
 		int initialDataOffset;//where the name of the file is located at
 		int nameSize;
 		BYTE* buffer = (BYTE*)malloc(5000*sizeof(BYTE));
 		//get the initialDataOffset;
-		nameSize = strlen(ContainerHash.hash[hashIndex][offset].name);
+		nameSize = strlen(ContainerHash.hash[hashIndex][offset]->name);
 		initialDataOffset = oldLength 
 							- nameSize
 							- 4 /*the \n ,padding byte, length remaining dirt, last \n*/
@@ -177,25 +178,25 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		transfer_file_data(old,tmp,0,initialDataOffset,5000,buffer);
 
 		//PART 1.2: update the desired file into the temporary file.
-		unsigned char oldPadding = ContainerHash.hash[hashIndex][offset].xpadding;
+		unsigned char oldPadding = ContainerHash.hash[hashIndex][offset]->xpadding;
 		if(encrypt){
-			ContainerHash.hash[hashIndex][offset].xpadding = 0;
-			data = decryptAes(data, length,&ContainerHash.hash[hashIndex][offset].xpadding);			
+			ContainerHash.hash[hashIndex][offset]->xpadding = 0;
+			data = decryptAes(data, length,&ContainerHash.hash[hashIndex][offset]->xpadding);			
 		}
 		int pos=0;
 		unsigned char *name = read_Hidden_Name(&pos,old);// no need to be decoded
 		MT2D_FILE_WRITE(tmp,name,nameSize,1);
 		MT2D_FILE_WRITE_BYTE(tmp,'\n');
-	    write_padding_length(tmp,ContainerHash.hash[hashIndex][offset].xpadding, length);
+	    write_padding_length(tmp,ContainerHash.hash[hashIndex][offset]->xpadding, length);
 
 		MT2D_FILE_SEEK(old,oldLength + oldPadding + initialDataOffset,SEEK_SET);// skip the old updated file
 
-		initialDataOffset = ContainerHash.hash[hashIndex][offset].fileDataOffset;// reusing the var to point to the old offset
-		ContainerHash.hash[hashIndex][offset].fileDataOffset = MT2D_FILE_TELL(tmp); // update the data offset
-		MT2D_FILE_WRITE(tmp,data,length + ContainerHash.hash[hashIndex][offset].xpadding, 1);
+		initialDataOffset = ContainerHash.hash[hashIndex][offset]->fileDataOffset;// reusing the var to point to the old offset
+		ContainerHash.hash[hashIndex][offset]->fileDataOffset = MT2D_FILE_TELL(tmp); // update the data offset
+		MT2D_FILE_WRITE(tmp,data,length + ContainerHash.hash[hashIndex][offset]->xpadding, 1);
 		//PART 1.3:
 		//get the last offset from the old file
-		MT2D_ContainerFile *file = &ContainerHash.hash[hashIndex][offset];
+		MT2D_ContainerFile *file = ContainerHash.hash[hashIndex][offset];
 		while(file->next != NULL){
 			file = file->next;
 		}
@@ -205,21 +206,31 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		offsetDiff = MT2D_FILE_TELL(tmp) - offsetDiff;
 
 		//now update the foward files offsets from the updated one 
-		file = &ContainerHash.hash[hashIndex][offset];
+		file = ContainerHash.hash[hashIndex][offset];
 		while(file->next != NULL){
 			file = file->next;
 			file->fileDataOffset += offsetDiff;
 		}
 		MT2D_FILE_CLOSE(old);
-		old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset].DataFileId->file,"w");
+		old = MT2D_FILE_OPEN(ContainerHash.hash[hashIndex][offset]->DataFileId->file,"w");
 		initialDataOffset = MT2D_FILE_TELL(tmp);
 		MT2D_FILE_SEEK(tmp,0,SEEK_SET);
 		transfer_file_data(tmp,old,0,initialDataOffset,5000,buffer);
 
 		MT2D_FILE_CLOSE(tmp);
 		MT2D_FILE_CLOSE(old);
+		free(buffer);
 	}
 	return false;
+}
+
+/*
+ * Delete the referenced id from the disc or memory
+*/
+void MT2D_Container_Delete_Data(int id){
+	int hashIndex = get_Hash_Index(id);
+	int offset = get_Hash_File_Index(id);
+	delete_data_from_file(offset,hashIndex);
 }
 
 /*Refactored*/
@@ -248,21 +259,16 @@ void MT2D_Container_Clear() {
 	//Clear the hash
 	for(i = 0; i < 15; i++){
 		for(j = 0; j < ContainerHash.count[i]; j++){
-			free(ContainerHash.hash[i][j].name);
+			free_MT2D_ContainerFile(ContainerHash.hash[i][j]);
 		}
 		free(ContainerHash.hash[i]);
 		ContainerHash.count[i] = 0;
 	}
 	//Clear the files
     filePointer = ListFilePaths.start;
-	while(filePointer != NULL){
-		free(filePointer->file);
-		ListFilePaths.start = filePointer->next;
-		free(filePointer);
-		filePointer = ListFilePaths.start;
+	while(ListFilePaths.start != NULL){
+		try_remove_container(filePointer);
 	}
-	ListFilePaths.end = NULL;
-	ListFilePaths.start = NULL;
 }
 
 
@@ -281,6 +287,7 @@ bool MT2D_Container_Load(char *Path) {
 	unsigned char Padding;
 	unsigned char *SmartPointer;
 	MT2D_ContainerFilePath *filePath;
+	MT2D_ContainerFile *previousData = NULL;
 	int i = 0, k;
 	int Len;
 	int j;
@@ -321,7 +328,7 @@ bool MT2D_Container_Load(char *Path) {
 					}
 				}
 				//PART 3: LOAD THE DATA
-				container_LoadBuffer(filePath, FileLength, Padding, MT2D_FILE_TELL(Destination), (char*)HiddenFileName);
+				previousData = container_LoadBuffer(filePath, FileLength, Padding, MT2D_FILE_TELL(Destination), (char*)HiddenFileName, previousData);
 				MT2D_FILE_READ_BYTE(Destination);//Jump the \n
 			}
 			else {
@@ -343,7 +350,6 @@ bool MT2D_Container_Load_File(char *Path) {
 	bool loaded = false;
 	MT2D_FILE *file = MT2D_FILE_OPEN(Path, "rb");
 	if (file) {
-
 		loaded = true;
 	}
 	int length = strlen(Path) +1;
@@ -363,7 +369,7 @@ bool MT2D_Container_Load_File(char *Path) {
 
 void MT2D_Container_Load_File_From_Memory(char *Name, BYTE *Data, int Length) {
 	MT2D_ContainerFilePath* path = create_MT2D_ContainerFilePath((char*)Data,true);
-	container_LoadBuffer(path,Length,0,0,Name);
+	container_LoadBuffer(path,Length,0,0,Name,  NULL);
 }
 /**
 Save all the loaded files in the container for an external file
@@ -476,7 +482,7 @@ bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool 
 			if(cont->refCount == MT2D_CONT_DATATYPE_MEM){
 				cont = cont->next;
 			}
-			if(strcmp(cont->file,containerName) == 0){
+			else if(strcmp(cont->file,containerName) == 0){//TODO: check this part
 				found = true;
 			}
 			else{
@@ -489,11 +495,11 @@ bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool 
 			int hashIndex  =get_Hash_Index(dataId);
 			int offset = get_Hash_File_Index(dataId);
 			
-			write_Name(contFile,ContainerHash.hash[hashIndex][offset].name);
+			write_Name(contFile,ContainerHash.hash[hashIndex][offset]->name);
 
 			unsigned char* data = MT2D_Container_Get_Data(dataId,false);
-			unsigned int length = ContainerHash.hash[hashIndex][offset].length;
-			unsigned char padding = ContainerHash.hash[hashIndex][offset].xpadding;
+			unsigned int length = ContainerHash.hash[hashIndex][offset]->length;
+			unsigned char padding = ContainerHash.hash[hashIndex][offset]->xpadding;
 
 			if(encrypt){
 				data = decryptAes(data,length,&padding);
@@ -501,11 +507,11 @@ bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool 
 
 			write_padding_length(contFile,padding,length);
 
-			unsigned int originalNamelen = strlen(ContainerHash.hash[hashIndex][offset].name);
+			unsigned int originalNamelen = strlen(ContainerHash.hash[hashIndex][offset]->name);
 			char *originalName = (char*)malloc((originalNamelen + 1) * sizeof(char));
-			strcpy(originalName,ContainerHash.hash[hashIndex][offset].name);
+			strcpy(originalName,ContainerHash.hash[hashIndex][offset]->name);
 
-			container_LoadBuffer(cont, length, padding, MT2D_FILE_TELL(contFile), originalName);
+			container_LoadBuffer(cont, length, padding, MT2D_FILE_TELL(contFile), originalName,get_last_file_from_container(cont));
 			
 			MT2D_FILE_WRITE(contFile,data,length + padding,1);
 			MT2D_FILE_CLOSE(contFile);
@@ -548,9 +554,9 @@ char *MT2D_Container_Get_FileName_By_ID(int id) {
 	int hashIndex = get_Hash_Index(id);
 	int offset = get_Hash_File_Index(id);
 	if (offset < ContainerHash.count[hashIndex]) {
-		int len = strlen(ContainerHash.hash[hashIndex][offset].name);
+		int len = strlen(ContainerHash.hash[hashIndex][offset]->name);
 		char *name = (char*)malloc((len+1)*sizeof(char));
-		strcpy(name,ContainerHash.hash[hashIndex][offset].name);
+		strcpy(name,ContainerHash.hash[hashIndex][offset]->name);
 		return name;
 	}
 	return NULL;
@@ -564,13 +570,13 @@ BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	int offset = ContainerHash.hash[hashIndex][hashOffset].fileDataOffset;
 	unsigned char padding = ContainerHash.hash[hashIndex][hashOffset].xpadding;
 	BYTE *data = NULL;
-	if(ContainerHash.hash[hashIndex][offset].DataFileId->refCount == -1){
+	if(ContainerHash.hash[hashIndex][offset]->DataFileId->refCount == -1){
 			//Data is in memory
-			data = clone_data((BYTE*)ContainerHash.hash[hashIndex][offset].DataFileId->file, length);
+			data = clone_data((BYTE*)ContainerHash.hash[hashIndex][offset]->DataFileId->file, length);
 
 	}
 	else {
-		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)ContainerHash.hash[hashIndex][offset].DataFileId->file, "rb");
+		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)ContainerHash.hash[hashIndex][offset]->DataFileId->file, "rb");
 		MT2D_FILE_SEEK(file, offset, SEEK_SET);
 		data = (BYTE*)malloc((offset + padding)*sizeof(BYTE));
 		MT2D_FILE_READ(file, data, offset + padding, 1);
@@ -752,23 +758,34 @@ MT2D_ContainerFilePath *create_MT2D_ContainerFilePath(char * path, bool fromMemo
 	-offset: Where the data is located in the file 
 	Refactored
 **/
-void container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding, int offset, char *name) {
+MT2D_ContainerFile* container_LoadBuffer(MT2D_ContainerFilePath  *file, int length, int padding, int offset, char *name, MT2D_ContainerFile *previousData) {
 	int hash = get_Hash_Index(name[0]);
 	int count = ContainerHash.count[hash]; 
 	if (count == 0) {
-		ContainerHash.hash[hash] = (MT2D_ContainerFile*)malloc(sizeof(MT2D_ContainerFile));
+		ContainerHash.hash[hash] = (MT2D_ContainerFile**)malloc(sizeof(MT2D_ContainerFile*));
 	}
 	else
 	{
-		ContainerHash.hash[hash] = (MT2D_ContainerFile*)realloc(ContainerHash.hash[hash],(count + 1)*sizeof(MT2D_ContainerFile));
+		ContainerHash.hash[hash] = (MT2D_ContainerFile**)realloc(ContainerHash.hash[hash],(count + 1)*sizeof(MT2D_ContainerFile*));
 	}
-	ContainerHash.hash[hash][count].name = name;
-	ContainerHash.hash[hash][count].length = length;
-	ContainerHash.hash[hash][count].xpadding = padding;
-	ContainerHash.hash[hash][count].fileDataOffset = offset;
-	ContainerHash.hash[hash][count].DataFileId = file;
+	MT2D_ContainerFile *data = (MT2D_ContainerFile*)malloc(sizeof(MT2D_ContainerFile));
+	data->name = name;
+	data->length = length;
+	data->xpadding = padding;
+	data->fileDataOffset = offset;
+	data->DataFileId = file;
+	data->next = NULL;
+	ContainerHash.hash[hash][count] = data;
 	ContainerHash.count[hash]++;
 	file->refCount++;
+	if(file->refCount == 1){
+		file->firstData = data; 
+	}
+	else
+	{
+		previousData->next = data;
+	}
+	return data;
 }
 
 /*Refactored*/
@@ -779,6 +796,124 @@ int get_Hash_Index(int id){
 /*Refactored*/
 int get_Hash_File_Index(int id){
 	return id >> 4;
+}
+
+/*
+* deleted the data from the physical disc or memory if it's a memory container.
+* if it's a container with more than one file, the desired data will be removed
+* and the next datas will get rearranged
+*/
+void delete_data_from_file(int offset, int index){
+	if (ContainerHash.hash[index][offset]->DataFileId == NULL); //Already deleted
+	else{
+		ContainerHash.hash[index][offset]->DataFileId->refCount--;
+		
+		if(ContainerHash.hash[index][offset]->fileDataOffset == 0 || ContainerHash.hash[index][offset]->DataFileId->refCount == 0)
+		{
+			MT2D_FILE_DELETE(ContainerHash.hash[index][offset]->DataFileId->file);
+		}
+		else if(ContainerHash.hash[index][offset]->DataFileId->refCount == MT2D_CONT_DATATYPE_CONT){
+			//PART 1: copy all the content to a temp file, first the content before the updated file will get updated
+			MT2D_FILE *tmp = MT2D_FILE_OPEN_TEMP();
+			MT2D_FILE *old = MT2D_FILE_OPEN(ContainerHash.hash[index][offset]->DataFileId->file,"r");
+			int initialDataOffset;//where the name of the file is located at
+			int nameSize;
+			unsigned int oldLength = ContainerHash.hash[index][offset]->length;
+			unsigned int oldPadding = ContainerHash.hash[index][offset]->xpadding;
+			BYTE* buffer = (BYTE*)malloc(5000*sizeof(BYTE));
+			//get the initialDataOffset;
+			nameSize = strlen(ContainerHash.hash[index][offset]->name);
+			initialDataOffset = oldLength 
+								- nameSize
+								- 4 /*the \n ,padding byte, length remaining dirt, last \n*/
+								- oldLength >> 3;// the real initial data offset pointing to the name
+
+			//start transfering the file before the updated file to a new file
+			transfer_file_data(old,tmp,0,initialDataOffset,5000,buffer);
+			MT2D_FILE_SEEK(old,oldLength + oldPadding + initialDataOffset,SEEK_SET);// skip the old updated file
+
+			initialDataOffset = ContainerHash.hash[index][offset]->fileDataOffset;// reusing the var to point to the old offset
+			//PART 1.3:
+			//get the last offset from the old file
+			MT2D_ContainerFile *file = ContainerHash.hash[index][offset];
+			while(file->next != NULL){				
+				file = file->next;
+			}
+			int offsetDiff = MT2D_FILE_TELL(old);
+			initialDataOffset = file->fileDataOffset + file->length;
+			transfer_file_data(old,tmp,offsetDiff,initialDataOffset,5000,buffer);
+			offsetDiff = MT2D_FILE_TELL(tmp) - offsetDiff;
+
+			remove_filedata_node(ContainerHash.hash[index][offset]);
+			//now update the foward files offsets from the updated one 
+			file = ContainerHash.hash[index][offset];
+			while(file->next != NULL){
+				file = file->next;
+				file->fileDataOffset += offsetDiff;
+			}
+			MT2D_FILE_CLOSE(old);
+			old = MT2D_FILE_OPEN(ContainerHash.hash[index][offset]->DataFileId->file,"w");
+			initialDataOffset = MT2D_FILE_TELL(tmp);
+			MT2D_FILE_SEEK(tmp,0,SEEK_SET);
+			transfer_file_data(tmp,old,0,initialDataOffset,5000,buffer);
+
+			MT2D_FILE_CLOSE(tmp);
+			MT2D_FILE_CLOSE(old);
+			free(buffer);
+		}
+		free(ContainerHash.hash[index][offset]->name);
+		try_remove_container(ContainerHash.hash[index][offset]->DataFileId);
+		ContainerHash.hash[index][offset]->DataFileId = NULL;// This looks so wrong but I blame vscode for nagging
+	}
+}
+/*
+	Doesn't update the reference count
+*/
+void free_MT2D_ContainerFile(MT2D_ContainerFile *file)
+{
+	free(file->name);
+	free(file);
+}
+
+bool try_remove_container(MT2D_ContainerFilePath *file){
+	if(file->refCount == 0){
+		if(file->prev != NULL)
+		{
+			file->prev->next = file->next;
+		}
+		if(file->next != NULL){
+			file->next->prev = file->prev;
+		}
+		free(file->file);
+		free(file);
+		return true;
+	}
+	return false;
+}
+
+void remove_filedata_node(MT2D_ContainerFile *data)
+{
+	MT2D_ContainerFile* first = data->DataFileId->firstData;
+	//
+	while(first->next != data)
+	{
+		first = first->next;
+	}
+	first->next = first->next->next;
+}
+
+MT2D_ContainerFile* get_last_file_from_container(MT2D_ContainerFilePath *container)
+{
+	MT2D_ContainerFile *file = container->firstData;
+	if(container->refCount == MT2D_CONT_DATATYPE_MEM){
+		free(container->file);//TODO: check
+		return file;
+	}
+	while(file->next != NULL)
+	{
+		file = file->next;
+	}
+	return file;
 }
 
 #pragma endregion

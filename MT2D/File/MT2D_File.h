@@ -127,5 +127,9 @@ forceinline long int MT2D_FILE_TELL(MT2D_FILE *file) {
 forceinline int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
 	return fputc(data, file);
 }
+
+forceinline int MT2D_FILE_DELETE(char *name){
+	return remove(name);
+}
 #endif
 #endif
