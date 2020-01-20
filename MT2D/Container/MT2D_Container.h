@@ -30,84 +30,106 @@ Line X+3,...,Y: Data
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "MT2D_ContainerFile.h"
+#include "MT2D_ContainerFilePath.h"
 
 #define BYTE unsigned char
 
-typedef struct {
-	BYTE **Data;
-	char **Names;
-	unsigned int *Length; //in bytes
-	unsigned char *Xpadding;//the number of bytes that were added to make this file to be multiple of X
-	int Files;
+#pragma region  Container Struct
 
-	/**/
-	unsigned char **FilePath;
-	unsigned int FilePtrCount;
-	unsigned int *DataOffset;
-	unsigned int *DataFileId;
-}MT2D_Container;
+enum MT2D_Container_DataStore_Type
+{
+	MT2D_CONT_DATATYPE_MEM = -1,
+	MT2D_CONT_DATATYPE_CONT = 0,
+	MT2D_CONT_DATATYPE_FILE
+};
 
-/**
-Return the index of the first file found with the given name.
--If failed the function returns -1
-**/
-int MT2D_Container_Get_FileId(char *Name);
 
-int MT2D_Container_Get_FileLength(int Id);
-int MT2D_Container_Get_FilePadding(int Id);
-BYTE *MT2D_Container_Get_FileData(int Id);
-/*Return the pointer of the name of a file form the given ID*/
-char *MT2D_Container_Get_FileName_By_ID(int ID);
 
+typedef struct MT2D_ContainerFilePath {
+	char* file;//if refCount is -1 it points to a memory address
+	int refCount;// if -1 it represents a memory data and not a container
+	void* firstData;
+	MT2D_ContainerFilePath* prev;
+	MT2D_ContainerFilePath* next;
+};
+
+typedef struct MT2D_ContainerFile {
+	/*minimal struct which represents the a reference from the file to be stored*/
+	char* name;
+	unsigned int length; //in bytes
+	unsigned char xpadding;//the number of bytes that were added to make this file to be multiple of X
+	unsigned int fileDataOffset;//coordinate where the data is located in the file, not counting where the name of the file is located at
+	MT2D_ContainerFilePath* DataFileId;
+	MT2D_ContainerFile* next;
+};
+
+typedef struct{ 
+	MT2D_ContainerFilePath *start;
+	MT2D_ContainerFilePath *end;
+}MT2D_ContainerList;
+
+typedef struct{
+	MT2D_ContainerFile **hash[15];
+	int count[15];
+}MT2D_ContainerHash;
+
+#pragma endregion Container Struct 
+
+int MT2D_Container_Get_FileId(char *name);
+int MT2D_Container_Get_FileLength(int id);
+int MT2D_Container_Get_FilePadding(int id);
+MT2D_Container_DataStore_Type MT2D_GetFile_StoreType(int id);
+/*
+	Update the container disk file withe the new data.
+	WARNING: this operation may take a long time if you have alot of loaded files
+	data is not cloned but copied the reference
+*/
+bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt);
+/*
+ * Delete the referenced id from the disc or memory
+*/
+void MT2D_Container_Delete_Data(int id);
 void MT2D_Container_Init();
-
 /**
 Free the loaded files
 **/
 void MT2D_Container_Clear();
-
 /**
 Can load one or more Containers under the main container struct
 **/
-bool  MT2D_Container_Load(char *Path);
-
+bool MT2D_Container_Load(char *Path);
 /**
-Save all the loaded files in the container for an external file
-**/
-
-/**
-Load a normal file under the container
+Load a normal file under the container | Path char data cloned and not reused.
+-the data will be cloned inside of the memory and it'll not support encryption.
 -WARNING: remember to add the '\0' at the end of a raw text file in case you want to use the plain text file from a file
 **/
 bool MT2D_Container_Load_File(char *Path);
 
 void MT2D_Container_Load_File_From_Memory(char *Name, BYTE *Data, int Length);
-
-bool MT2D_Container_Save(char *NameAndPath);
-
 /**
--Save the loaded file under a specific file.
--Warning: You may get some trouble saving encrypted files
+-Export the loaded data.
+-Name: name of the loaded data
+-FileName: name of the file
+-Path: Where it's going to save the data
+-Decrypt: if the file needs to be decrypted
 **/
-bool MT2D_Container_Save_File(char *Name, char * NewName, char *Path);
-
-
+bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool decrypt);
 /**
-Decode a file inside the Container
--Thread Safe
-**/
-void MT2D_Container_Decode_File(char *Name);
-
-
+ * Copy the data loaded in MT2D_Container into an existing container.
+ * -containerName: the valid name of the container file
+ * -dataId: the id to be copied
+ * -encrypt: if the copied file is going to be encrypted (mark as false if the copied file is already encrypted)
+ * return false if the container wasn't found
+ **/
+bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool encrypt);
 void MT2D_Container_Password_Init();
-
-#define  MT2D_Container_Password_Reset MT2D_Container_Password_Init
-
 void MT2D_Container_Password_AddKey(unsigned char Key);
-
-
 int MT2D_Container_Count_Files();
-
+/*Return a new filename string*/
+char *MT2D_Container_Get_FileName_By_ID(int id);
+/*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
+BYTE * MT2D_Container_Get_Data(int id, bool decrypt);
 
 
 #endif

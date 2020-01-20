@@ -113,7 +113,7 @@ forceinline unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
 }
 
 forceinline size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
-	return fread(outBufferPtr, size, count, file);
+	return fwrite(outBufferPtr, size, count, file);
 }
 
 forceinline int MT2D_FILE_EOF(MT2D_FILE *file) {
