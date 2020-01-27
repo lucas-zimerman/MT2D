@@ -50,6 +50,7 @@ void Object_Private_Run_Function(Object *O) {
 	if (O->State[O->ActualState]->Functions == 0) {
 
 	}
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame] == NULL);
  	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj) {
 		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj(O);
 	}
@@ -138,6 +139,7 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 		Object_Goto_NextStep(Scene->ObjectGroup[i]);
 //		printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
 		if (Scene->ObjectGroup[i]->CanDelete == true) {
+			Object_Delete(Scene->ObjectGroup[i]);
 			for (j = i; j < Scene->Count -1; j++) {
 				Scene->ObjectGroup[j] = Scene->ObjectGroup[j + 1];
 			}

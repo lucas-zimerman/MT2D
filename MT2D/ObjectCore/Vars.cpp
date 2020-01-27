@@ -187,7 +187,7 @@ MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error()
 	return MT2D_VAR_ERROR();
 }
 
-MT2D_VAR * MT2D_Object_Create_Var_Int(char * Name, int InitialData)
+MT2D_VAR * MT2D_Object_Create_Var_Int(const char * Name, int InitialData)
 {
 	int *Data = (int*)malloc(sizeof(int));
 	Data[0] = InitialData;
@@ -196,7 +196,7 @@ MT2D_VAR * MT2D_Object_Create_Var_Int(char * Name, int InitialData)
 	return out;
 }
 
-MT2D_VAR * MT2D_Object_Create_Var_Char(char * Name, char InitialData)
+MT2D_VAR * MT2D_Object_Create_Var_Char(const char * Name, char InitialData)
 {
 	char *Data = (char*)malloc(sizeof(char));
 	Data[0] = InitialData;
@@ -205,7 +205,7 @@ MT2D_VAR * MT2D_Object_Create_Var_Char(char * Name, char InitialData)
 	return out;
 }
 
-MT2D_VAR * MT2D_Object_Create_Var_Pointer(char * Name)
+MT2D_VAR * MT2D_Object_Create_Var_Pointer(const char * Name)
 {
 	//the only important data is the Name
 	//Check ObjectCore_Get_Object_Internal_Data for looking to what Names are allowed to use.
@@ -219,7 +219,7 @@ MT2D_VAR * MT2D_Object_Create_Var_Pointer(char * Name)
 /*
 	Generic Function
 */
-MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * InitialData)
+MT2D_VAR * MT2D_Object_Create_Var(const char * Name, MT2D_VAR_TYPE Type, void * InitialData)
 {
 	MT2D_VAR *V = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
 	if (V)
@@ -233,7 +233,8 @@ MT2D_VAR * MT2D_Object_Create_Var(char * Name, MT2D_VAR_TYPE Type, void * Initia
 		}
 		else
 		{
-			V->Name = Name;
+			V->Name = (char*)malloc((strlen(Name) + 1) * sizeof(char));
+			strcpy(V->Name, Name);
 			if (Name == NULL)
 			{
 				MT2D_Var_Last_Error = Var_Null_Name;

@@ -63,7 +63,7 @@ void SDL_Start_Sound_System()
         if(SDL_Init(SDL_INIT_AUDIO) < 0){
             exit(1);
         }else{
-            Mix_OpenAudio(22050,AUDIO_S16SYS,2,640);
+            Mix_OpenAudio(44100,AUDIO_S16SYS,2,640);
             SDL_PauseAudio(0);
         }
     }

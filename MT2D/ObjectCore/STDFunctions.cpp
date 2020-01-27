@@ -476,6 +476,26 @@ void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars) {
 	}
 }
 
+/**
+This function will check if a hit happened on a given object inside the objectscene
+pointed by this object.
+VARS[0] = the state to jump
+**/
+void Object_GotoState_IfHitObject(Object* Caller, Object* Target, MT2D_VAR** Vars)
+{
+	if (Target->Solid == true) {
+		if (Caller->SpacePosition.X <= Target->SpacePosition.X + Target->Size.X) {
+			if (Caller->SpacePosition.X + Caller->Size.X >= Target->SpacePosition.X) {
+				if (Caller->SpacePosition.Y <= Target->SpacePosition.Y + Target->Size.Y) {
+					if (Caller->SpacePosition.Y + Caller->Size.Y >= Target->SpacePosition.Y) {
+						Cscript_Object_SetState(Caller, Vars);
+					}
+				}
+			}
+		}
+	}
+}
+
 #pragma endregion FUNCTIONS
 
 
