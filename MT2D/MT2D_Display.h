@@ -5,7 +5,7 @@
 #endif
 
 #if defined(SDL_USE)
-#include "SDL/Render/MT2D_SDL_Render.h"
+#include <MT2D/SDL/Render/MT2D_SDL_Render.h>
 #define MT2D_Clear_Main_Window MT2D_SDL_Clear_Main_Window
 #define MT2D_Draw_Window MT2D_SDL_Draw_Window
 #elif defined(_WIN32)

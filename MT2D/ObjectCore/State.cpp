@@ -21,7 +21,12 @@ ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName)
 	return State;
 }
 
-
+/*
+	Crash Tips:
+	 Check State->Count to see the count that broke
+	 Check State->Name to see the state that broke
+	 Check if you tried to load more sprites than you told the code to reserve in the memory.
+*/
 void MT2D_OBJECT_ADD_STATE(ObjectState *State, Sprite *sprite, int Wait, Cscript *Function) {
 	if (State) {
 		if (State->Count == 0) {

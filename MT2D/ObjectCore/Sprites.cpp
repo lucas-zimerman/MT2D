@@ -33,6 +33,7 @@
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
+#include <MT2D\MT2D_Debug.h>
 
 
 Sprite *Load_Sprite(char *file) {
@@ -106,6 +107,11 @@ Sprite *Load_Sprite(char *file) {
 
 Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 {
+#ifdef DEBUG_OBJECTCORE
+	char buff[200];
+	sprintf(buff, "Loading Sprite %s", file);
+	MT2D_Ide_Printf(buff);
+#endif
 #ifdef SDL_USE
 	SDL_Surface *Img = 0;
 	Sprite *S = 0;
@@ -181,13 +187,19 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 }
 #endif
 
+/*
+	Crash Tip:
+	-You heap corruption, check pos_x, pos_y to find an object that matches the image.
+		That could be caused if you tried to malloc an array of sprites smaller than the number of sprites loaded
+	- Actual Frame is outside of the sprite range loaded
+*/
  bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) {//output: out = false : invalid sprite | out = true : valid sprite
 	//to be implemented: Sprites Scale
 	 bool out = false;
 	 int x = 0, x1 = 0;//,x2; not used
 	 int y = 0, y1 = 0;//,y2; not used
 	 if (img) {
-		 if (img->type == 0) {//render as a sprite
+ 		 if (img->type == 0) {//render as a sprite
 			 out = true;
 			 x = (int)pos_x + img->size.X;
 			 y = (int)pos_y + img->size.Y;

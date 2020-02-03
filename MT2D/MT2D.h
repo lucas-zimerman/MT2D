@@ -63,7 +63,7 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
 	#ifdef WINDOWS_TARGET
 	#include <SDL.h>
-	#elif defined(linux) && !defined(__ANDROID__)
+	#elif defined(linux) || defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
     #include <SDL2/SDL.h>
 	#elif defined(linux) && defined(__ANDROID__)
     #include <SDL.h>
@@ -114,10 +114,10 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
 #elif defined(linux)
 	#include "_LINUX\MT2D_Linux_Init.h"
 	#define MT2D_Init MT2D_Linux_Init
-
+#elif defined(__EMSCRIPTEN__) && !defined(SDL_USE)
+#error "MT2D must use SDL in order to work with EMSCRIPTEN, please enable it in MT2D_Terminal_Define.h"
 #else
 #error "MT2D doesn't have code to support this operational system."
 #endif
 
 #endif
-void quack();

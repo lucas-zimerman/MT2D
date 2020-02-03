@@ -57,7 +57,7 @@ int MT2D_SDL_RenderCopyEx(MT2D_SDL_Renderer * renderer, MT2D_SDL_Texture * textu
 	GPU_BlitTransform(texture, srcrect, renderer, dstrect->x, dstrect->y, angle, dstrect->h, dstrect->w);
 	return 0;
 #else
-	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
+ 	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
 #endif
 }
 

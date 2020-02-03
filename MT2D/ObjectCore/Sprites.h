@@ -1,7 +1,7 @@
 #ifndef SPRITES_
 #define SPRITES_
 #ifndef __ANDROID__
-#include <MT2D/Objectcore/Coordinates.h>
+#include <MT2D/ObjectCore/Coordinates.h>
 #include <MT2D/MT2D_Terminal_Define.h>
 #else
 #warning  "#include \../Objectcore/Coordinates.h\ testar se funciona melhor agora"

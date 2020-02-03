@@ -35,6 +35,8 @@
     #include <SDL.h>
     #elif defined linux
     #include <SDL2/SDL.h>
+	#elif defined __EMSCRIPTEN__
+	#include <SDL2/SDL.h>
     #endif
 
     #ifdef SDL_stbimage
@@ -44,7 +46,9 @@
         #include <SDL_image.h>
         #elif defined(linux)
         #include <SDL2/SDL_image.h>
-        #endif
+		#elif defined(__EMSCRIPTEN__)
+		#include <SDL2/SDL_image.h>
+		#endif
     #endif
     #include "MT2D_SDL_Defines.h"
 #endif

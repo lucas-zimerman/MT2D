@@ -23,11 +23,11 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 ===================================================================*/
 
 #define SDL_USE_AUDIO
-
+//#define DEBUG_OBJECTCORE
 //#define MT2D_USING_CONTAINER
 #define MT2D_WINDOWED_MODE
 #define SDL_USE
-#define MT2D_SCREEN_RESIZE
+//#define MT2D_SCREEN_RESIZE
 //#define MT2D_SDL_GPU
 //#define MT2D_SDL_USING_DIRECTX_RENDER
 
@@ -56,6 +56,8 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 	#define ANDROID_TARGET
 #elif defined(linux)
 	#define LINUX_TARGET
+#elif defined(__EMSCRIPTEN__)
+	#define BROWSER_TARGET
 #endif
 #pragma endregion
 

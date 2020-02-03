@@ -242,6 +242,24 @@ void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
 		}
 	}
 }
+
+/**
+object  = caller
+VARS[0] = Total of Frames to jump, if 1 it'll jump to the next frame, 2 will skip 1 frame, -1 will go back one frame,...
+VARS[1] = ACTUAL VALUE TO SELECT (Rand()%VARS[2]  <= VARS[1])
+VARS[2] = MAX vALUe to JUMP
+Main Object
+**/
+void Cscript_JumpFramesIfRandom(Object* caller, MT2D_VAR** vars) {
+	int jump = Cscript_VAR_Get_Integer(caller, vars[0]);
+	int max = Cscript_VAR_Get_Integer(caller, vars[2]);
+	int selectRange = Cscript_VAR_Get_Integer(caller, vars[1]);
+	if (rand() % max <= selectRange) {
+		caller->ActualFrame += jump;
+//		caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[caller->ActualFrame -1];
+	}
+}
+
 /*
 Vars:
 [0] = the name of the state to be jumped
@@ -399,6 +417,69 @@ void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
 }
 
 /*TODO void Cscript_RemoveVar_FromObject(OBject *Caller, MT2D_VAR **Var);*/
+
+//Var 0 Start index of while, the value and data type does not matter.
+//Var 1 Left Compare
+//Var 2 Signal (char), should not be pointer
+//Var 3 Right
+void Cscript_While(Object* caller, MT2D_VAR** vars) {
+	int skipTo = Cscript_VAR_Get_Integer(caller, vars[0]);
+	int Left = Cscript_VAR_Get_Integer(caller, vars[1]);
+	int Right = Cscript_VAR_Get_Integer(caller, vars[3]);
+	char operation = Cscript_VAR_Get_Integer(caller, vars[2]);
+	bool skip = false;
+	switch (operation) {
+	case '>':
+		skip = Left > Right;
+		break;
+	case '<':
+		skip = Left < Right;
+		break;
+	case '=':
+		skip = Left == Right;
+		break;
+	case '!':
+		skip = Left != Right;
+		break;
+	case '>=':
+		skip = Left >= Right;
+		break;
+	case '<=':
+		skip = Left <= Right;
+		break;
+	default:
+		skip = true;
+	}
+	if (skipTo == 0) {
+		MT2D_VAR* tmp = MT2D_Object_Create_Var_Int("", caller->ActualFrame);
+		Cscript_VAR_Set_Integer(caller, vars[0], tmp);
+		MT2D_VAR_Free(tmp, 0);
+	}
+	if (!skip) {
+		int i = caller->ActualFrame + 1;
+		while (!skip)
+		{
+			if (caller->State[caller->ActualState]->Functions[i] != 0) {
+				if (caller->State[caller->ActualState]->Functions[i]->TempVars != NULL) {
+					if (caller->State[caller->ActualState]->Functions[i]->TempVars[0] == vars[0]) {
+						skip = true;
+					}
+				}
+			}
+			i++;
+		}
+
+		caller->ActualFrame = i - 1;
+//		caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i];
+	}
+}
+
+//VAR 0: Reset state to this place
+void Cscript_While_End(Object* caller, MT2D_VAR** vars) {
+	int i = Cscript_VAR_Get_Integer(caller, vars[0]) - 1;
+	caller->ActualFrame = i;
+//	caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i];
+}
 
 
 #pragma endregion FUNCTIONS

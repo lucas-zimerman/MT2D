@@ -52,6 +52,9 @@ void Cscript_Set_Var(Object *Object, MT2D_VAR **StateName);
 void Cscript_RemoveObject(Object *Caller);
 void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Vars);
 /*TODO				void Cscript_RemoveVar_FromObject(OBject *Caller, MT2D_VAR **Vars);*/
+void Cscript_While(Object* caller, MT2D_VAR** vars);
+void Cscript_While_End(Object* caller, MT2D_VAR** vars);
+void Cscript_JumpFramesIfRandom(Object* caller, MT2D_VAR** vars);
 #pragma endregion
 
 #pragma region MATH FUNCTIONS
