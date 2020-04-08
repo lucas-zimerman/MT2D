@@ -17,6 +17,7 @@ struct Sprite {
 	struct Coord size;//The size of the sprite
 	struct Coord scale;//the scale of the image applied to a 320x240 screen
 	char type;/* ASCII image = 0, Image = 1*/
+	unsigned int refCount;//used for memory management
 };
 
 /**

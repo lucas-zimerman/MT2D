@@ -346,6 +346,28 @@ int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
 
 }
 
+bool MT2D_Object_VAR_GetBool(MT2D_VAR* Var) {
+	bool output = false;
+	if (Var->Type == VAR_CHAR) {
+		output = *(char*)Var->Data > 0;
+	}
+	else if (Var->Type == VAR_INT) {
+		output = *(int*)Var->Data > 0;
+	}
+	else if (Var->Type == VAR_FLOAT) {
+		output = *(float*)Var->Data > 0;
+
+	}
+	else if (Var->Type == VAR_BOOL) {
+		output = *(bool*)Var->Data;
+	}
+
+	else {
+		MT2D_Var_Last_Error = Var_Type_Not_Supported;
+	}
+	return output;
+
+}
 
 
 void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
@@ -462,10 +484,14 @@ MT2D_VAR **MT2D_VAR_Create_MatrixN(int amount, ...) {
 
 void MT2D_VAR_Free(MT2D_VAR *var, int constName) {
 	if (var->Type != VAR_POINTER) {
+		free(var->Name);
 		free(var->Data);
 	}
 	if (constName == 0) {
-		free(var->Name);
+ 		free(var->Name);
+		if (var->Data != NULL) {
+			free(var->Data);
+		}
 	}
 	free(var);
 }

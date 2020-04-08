@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <MT2D/MT2D_Debug.h>
 #include "MT2D_Container.h"
 #include "../File/MT2D_File.h"
 #include "aes.h"
@@ -161,23 +162,15 @@ unsigned char* read_Hidden_Name(int* Len, MT2D_FILE* openedFile) {
 	}
 	return HiddenFileName;
 }
-
 void write_padding_length(MT2D_FILE* openedFile, unsigned char padding, int length) {
-	MT2D_FILE_WRITE_BYTE(openedFile, padding);
-	unsigned char FileLength = 0;
-	unsigned char k = 0;
-	while (length > 0) {
-		if (k == 8) {	//FileLength is full, put it under the file and clear it on the memory
-			MT2D_FILE_WRITE_BYTE(openedFile, FileLength);
-			FileLength = 0;
-			k = 0;
-		}
-		FileLength = FileLength | ((length & 1) << (k)); //add bit a bit into FileLength
-		length = length >> 1;
+	unsigned char k = 1;
+	unsigned int lengthSize = length;
+	while (lengthSize > 255) {
 		k++;
+		lengthSize = lengthSize >> 8;
 	}
-	MT2D_FILE_WRITE_BYTE(openedFile, FileLength);//it'll not hurt if FileLength is zero at the end because the software will ignore it
-	MT2D_FILE_WRITE_BYTE(openedFile, '\n');
+	MT2D_FILE_WRITE_BYTE(openedFile, padding + k << 4); //Write the padding  on the right and the amount of lenght bytes on the left (max 4 bits)
+	MT2D_FILE_WRITE(openedFile, (unsigned char*)&length, k , 1);//write all the bytes of the integer length
 }
 
 void transfer_file_data(MT2D_FILE* source, MT2D_FILE* destination, unsigned int initOffset, unsigned int finalOffset, unsigned int bufferSize, BYTE* buffer) {
@@ -401,6 +394,8 @@ MT2D_ContainerFile* get_last_file_from_container(MT2D_ContainerFilePath* contain
 	-If failed the function returns -1
 **/
 int MT2D_Container_Get_FileId(char *name) {
+	MT2D_Ide_Printf("Getting Container ID FOR");
+	MT2D_Ide_Printf(name);
 	int hashIndex = name[0] & xb00001111;
 	int j;
 	for (int i = 0; i < ContainerHash.count[hashIndex]; i++) {
@@ -415,10 +410,13 @@ int MT2D_Container_Get_FileId(char *name) {
 		if (name[j] == '\0') {
 			if (ContainerHash.hash[hashIndex][i]->name[j] == '\0') {
 				//found the file
+				MT2D_Ide_Printf("data found");
 				return (i << 4) | hashIndex;
 			}
 		}
 	}
+	MT2D_Ide_Printf("data not found");
+
 	return -1;
 }
 
@@ -602,25 +600,28 @@ Can load one or more Containers under the main container struct
 **/
 bool MT2D_Container_Load(char *Path) {
 	bool Loaded = false;
-	unsigned char fbuffer=0;
 	unsigned char *HiddenFileName;
 	unsigned int  FileLength;
-	unsigned int  dataOffset;
 	unsigned char BitPrevious, BitActual;
 	unsigned char Padding;
 	unsigned char *SmartPointer;
 	MT2D_ContainerFilePath *filePath;
 	MT2D_ContainerFile *previousData = NULL;
-	int i = 0, k;
 	int Len = 0;
 	int j;
+	MT2D_Ide_Printf("Loading Contaiener");
+	MT2D_Ide_Printf(Path);
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Path, "rb");
 	if (Destination) {
+		MT2D_Ide_Printf("Container found");
 		filePath = create_MT2D_ContainerFilePath(Path, false);
+		MT2D_Ide_Printf("Container file path loaded");
 		if (!file_is_empty(Destination)) {
 			while (!MT2D_FILE_EOF(Destination)) {
 				//PART 1: READ THE NAME
 				HiddenFileName = read_Hidden_Name(&Len, Destination);
+				MT2D_Ide_Printf("Container Got Hidden Name");
+				MT2D_Ide_Printf((char*)HiddenFileName);
 				if (!MT2D_FILE_EOF(Destination)) {
 					//PART 1: DECODE THE NAME
 					j = Len - 1;
@@ -636,23 +637,25 @@ bool MT2D_Container_Load(char *Path) {
 					//PART 2: GET THE PADDING AND LENGTH FROM THE DATA
 					//PART 2.1:GET THE PADDING
 					Padding = MT2D_FILE_READ_BYTE(Destination);
-					//PART 2.2:GET THE LENGTH AND DECODE IT
+					Len = Padding >> 4;
+					Padding = Padding & 15;
+					//PART 2.2:GET THE LENGTH
 					FileLength = 0;
-					fbuffer = 0;
 					SmartPointer = (unsigned char*)&FileLength;//get the Length pointer in form of a byte
 					j = 0;
 					//Half data is inverted, so we lie to SmartPointer so he thinks its an array of chars but instead its just a an integer or "unsigned char .[2]"
 					//It might cause an error if the length is too big so the max size of a file is 256 bytes for 8 bits int, 65kb for 16 bits int and 4gb for 32 bits int
-					while (fbuffer != '\n' && !MT2D_FILE_EOF(Destination)) {
-						fbuffer = MT2D_FILE_READ_BYTE(Destination);
-						if (fbuffer != '\n') {
-							SmartPointer[j] = fbuffer;
-							Len++;
-							j++;
-						}
-					}
+					
+					MT2D_Ide_Printf("Got Padding and length reference");
+
+					MT2D_FILE_READ(Destination,SmartPointer,Len ,1);
+
+					MT2D_Ide_Printf("Got Length");
 					//PART 3: LOAD THE DATA
 					previousData = container_LoadBuffer(filePath, FileLength, Padding, MT2D_FILE_TELL(Destination), (char*)HiddenFileName, previousData);
+
+					MT2D_Ide_Printf("Data Loaded");
+
 					MT2D_FILE_SEEK(Destination, FileLength, SEEK_CUR);
 					MT2D_FILE_READ_BYTE(Destination);//Jump the \n
 				}
@@ -673,9 +676,12 @@ Load a normal file under the container | Path char data cloned and not reused.
 -WARNING: remember to add the '\0' at the end of a raw text file in case you want to use the plain text file from a file
 **/
 bool MT2D_Container_Load_File(char *Path) {
+	MT2D_Ide_Printf("Loading Container File");
+	MT2D_Ide_Printf(Path);
 	bool loaded = false;
 	MT2D_FILE *file = MT2D_FILE_OPEN(Path, "rb");
 	if (file) {
+		MT2D_Ide_Printf("Container File found");
 		loaded = true;
 	}
 	int length = strlen(Path) +1;
@@ -907,12 +913,13 @@ BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	else {
 		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)ContainerHash.hash[hashIndex][hashOffset]->DataFileId->file, "rb");
 		MT2D_FILE_SEEK(file, offset, SEEK_SET);
-		data = (BYTE*)malloc((offset + padding + 32)*sizeof(BYTE));
+		data = (BYTE*)malloc((offset + padding + length)*sizeof(BYTE));
 		MT2D_FILE_READ(file, data, padding + length, 1);
 		if(decrypt){
 			decryptAes(data,length,&padding);
 		}
 		data[padding + length] = '\0';
+		MT2D_FILE_CLOSE(file);
 	}
 	return data;
 }

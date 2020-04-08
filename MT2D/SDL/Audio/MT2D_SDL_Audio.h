@@ -18,4 +18,6 @@ SDL_MT2DAudio.h SDL_MT2DAudio.cpp created by:Lucas Zimerman Fraulob
 	void SDL_Play_Sound(char *Name);
 	void SDL_Start_Sound_System();
 	void SDL_Close_Sound_System();
+	void SDL_PlayMusicFromMemory(void* music, unsigned int size, bool free);
+	void SDL_PlaySoundFromMemory(void* memoryBlock, unsigned int size, bool free);
 #endif

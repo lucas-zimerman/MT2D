@@ -157,7 +157,7 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 		Object_Goto_NextStep(Scene->ObjectGroup[i]);
 //		printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
 		if (Scene->ObjectGroup[i]->CanDelete == true) {
-			Object_Delete(Scene->ObjectGroup[i]);
+			Object_Delete(Scene->ObjectGroup[i], false);
 			for (j = i; j < Scene->Count -1; j++) {
 				Scene->ObjectGroup[j] = Scene->ObjectGroup[j + 1];
 			}
@@ -168,13 +168,20 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 	}
 }
 
-void Object_Delete(Object *Me) {
+void Object_Delete(Object *Me, bool deleteStates) {
 	int i = 0;
 	if (Me != 0) {
 		if (Me->User_Vars_Count) {
 			for (i = 0; i < Me->User_Vars_Count; i++) {
 				free(Me->User_Vars[i].Data);
 				free(Me->User_Vars[i].Name);
+			}
+		}
+		if (deleteStates) {
+			for (i = 0; i < Me->States_Count; i++) {
+				MT2D_Ide_Printf("Erasing the state");
+				MT2D_Ide_Printf(Me->State[i]->Name);
+				MT2D_ObjectState_Delete(Me->State[i]);
 			}
 		}
 		free(Me);

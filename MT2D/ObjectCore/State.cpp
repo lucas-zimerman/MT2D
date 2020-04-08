@@ -49,6 +49,9 @@ void MT2D_OBJECT_ADD_STATE(ObjectState *State, Sprite *sprite, int Wait, Cscript
 			State->WaitSprites[State->Count] = Wait;
 			State->Count++;
 		}
+		if (sprite != NULL) {
+			sprite->refCount++;
+		}
 	}
 }
 
@@ -67,6 +70,10 @@ void MT2D_ObjectState_ADD(ObjectState *State, Sprite *sprite, int Wait, Cscript 
 	State->Sprites[State->Count] = sprite;
 	State->WaitSprites[State->Count] = Wait;
 	State->Count++;
+
+	if (sprite != NULL) {
+		sprite->refCount++;
+	}
 }
 
 void MT2D_ObjectState_Delete(ObjectState *Me) {

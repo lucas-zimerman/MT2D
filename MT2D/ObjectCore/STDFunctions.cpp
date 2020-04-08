@@ -453,7 +453,7 @@ void Cscript_While(Object* caller, MT2D_VAR** vars) {
 	if (skipTo == 0) {
 		MT2D_VAR* tmp = MT2D_Object_Create_Var_Int("", caller->ActualFrame);
 		Cscript_VAR_Set_Integer(caller, vars[0], tmp);
-		MT2D_VAR_Free(tmp, 0);
+		MT2D_VAR_Free(tmp, 1);
 	}
 	if (!skip) {
 		int i = caller->ActualFrame + 1;

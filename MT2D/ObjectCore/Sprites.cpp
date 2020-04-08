@@ -144,6 +144,7 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 	S->Data[0][1] = '!';
 	S->Data[0][2] = '>';
 	S->type = 0;
+	S->refCount = 0;
 	return S;
 #endif
  }
@@ -166,6 +167,7 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 			S->scale.X = ScaleX;
 			S->scale.Y = ScaleY;
 			S->type = 1;
+			S->refCount = 0;
 			//we need to kill that surface...
 		}//else return a null sprite
 		return S;
@@ -182,6 +184,7 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 		S->Data[0][1] = '!';
 		S->Data[0][2] = '>';
 		S->type = 0;
+		S->refCount = 0;
 		return S;
 #endif
 }
@@ -253,22 +256,27 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 
  void Sprite_Delete(Sprite *Me) {
 	 if (Me) {
-		 if (Me->type == 1) {
+		 if (Me->refCount > 0) {
+			 Me->refCount--;
+		 }
+		 if (Me->refCount == 0) {
+			 if (Me->type == 1) {
 #ifdef SDL_USE
-			 if (Me->RotatedTexture) {
-				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->RotatedTexture);
-			 }
-			 if (Me->Data) {
-				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->Data);
-			 }
+				 if (Me->RotatedTexture) {
+					 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->RotatedTexture);
+				 }
+				 if (Me->Data) {
+					 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->Data);
+				 }
 #endif
-		 }
-		 else {
-			 for (int i = 0; i < Me->size.Y; i++) {
-				 free(Me->Data[i]);
 			 }
-			 free(Me->Data);
+			 else {
+				 for (int i = 0; i < Me->size.Y; i++) {
+					 free(Me->Data[i]);
+				 }
+				 free(Me->Data);
+			 }
+			 free(Me);
 		 }
-		 free(Me);
 	 }
  }

@@ -67,7 +67,7 @@ void SDL_Start_Sound_System()
 			MT2D_Ide_Printf(SDL_GetError());
 			exit(1);
         }else{	
-			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 4096) < 0) {
+			if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 4, 4096) < 0) {
 				MT2D_Ide_Printf(SDL_GetError());
 			}
 			if (Mix_Init(MIX_INIT_OGG) < 0) {
@@ -177,6 +177,47 @@ void SDL_Play_Music(char *Name){
 	}
 }
 
+void SDL_PlayMusicFromMemory(void *music, unsigned int size, bool free) {
+	MT2D_Ide_Printf("Music Loading");
+	if (SDL_SOUND_TYPE == 1) {
+		MT2D_Ide_Printf("Starting SDL Play music");
+		if (music) {
+			if (!SDL_ABuffer.music_loaded) {
+				SDL_RWops* rw = SDL_RWFromMem(music, size);
+				if (NULL == rw) {
+					MT2D_Ide_Printf(SDL_GetError());
+					return;
+				}
+
+				SDL_ABuffer.SDL_music = Mix_LoadMUS_RW(rw, 1);
+				if (!SDL_ABuffer.SDL_music) {
+					MT2D_Ide_Printf("Mix_LoadMUS Error...");
+					MT2D_Ide_Printf(Mix_GetError());
+				}
+				SDL_ABuffer.music_loaded = 1;
+				MT2D_Ide_Printf("Starting Music");
+				Mix_PlayMusic(SDL_ABuffer.SDL_music, 10);
+			}
+			else {
+				if (SDL_ABuffer.SDL_music) {
+					Mix_FreeMusic(SDL_ABuffer.SDL_music);
+				}
+				SDL_RWops* rw = SDL_RWFromMem(music, size);
+				SDL_ABuffer.SDL_music = Mix_LoadMUS_RW(rw, 1);
+				if (!SDL_ABuffer.SDL_music) {
+					MT2D_Ide_Printf("Mix_LoadMUS Error...");
+					MT2D_Ide_Printf(Mix_GetError());
+				}
+				SDL_ABuffer.music_loaded = 1;
+				Mix_PlayMusic(SDL_ABuffer.SDL_music, 10);
+			}
+		}
+		else {
+			MT2D_Ide_Printf("No music received");
+		}
+	}
+}
+
 void SDL_Play_Sound(char *Name){
 	MT2D_Ide_Printf("Loading sound...");
 	MT2D_Ide_Printf(Name);
@@ -207,9 +248,9 @@ void SDL_Play_Sound(char *Name){
 			Mix_Chunk *Tmp = Mix_LoadWAV(Name);
 #endif
 
-			for (i = 0; i < 8; i++) {
+  			for (i = 0; i < 8; i++) {
 				if (SDL_ABuffer.SDL_Audio[i]->volume == Tmp->volume &&
-					SDL_ABuffer.SDL_Audio[i]->alen == Tmp->alen &&
+ 					SDL_ABuffer.SDL_Audio[i]->alen == Tmp->alen &&
 					SDL_ABuffer.SDL_Audio[i]->allocated == Tmp->allocated) {
 					Mix_FreeChunk(Tmp);
 					Mix_PlayChannel(i, SDL_ABuffer.SDL_Audio[i], 0);
@@ -240,6 +281,62 @@ void SDL_Play_Sound(char *Name){
 	MT2D_Ide_Printf("audio played");
 }
 
+void SDL_PlaySoundFromMemory(void* memoryBlock, unsigned int size, bool free) {
+	MT2D_Ide_Printf("Loading sound From Container...");
+	if (SDL_SOUND_TYPE == 1) {
+		bool Played = 0;
+		int i = 0;
+		SDL_Clear_Audio_Buffer();
+		SDL_RWops* memFile = SDL_RWFromMem(memoryBlock, size);
+		for (; i < 8; i++) {
+			if (SDL_ABuffer.SDL_Audio[i] == 0) {
+				MT2D_Ide_Printf("Found channel to load");
+				SDL_ABuffer.SDL_Audio[i] = Mix_LoadWAV_RW(memFile, 1);
+				MT2D_Ide_Printf("Wav Loaded");
+				Mix_PlayChannel(i, SDL_ABuffer.SDL_Audio[i], 0);
+				SDL_ABuffer.SDL_Audio_Started[i] = clock();
+				Played = true;
+				i = 8;
+			}
+
+		}
+		if (Played == false) {
+			/*All the channels are in use so*/
+			/*first we check this audio is already being played*/
+ 			Mix_Chunk* Tmp = Mix_LoadWAV_RW(memFile, 1);
+
+			for (i = 0; i < 8; i++) {
+				if (SDL_ABuffer.SDL_Audio[i]->volume == Tmp->volume &&
+ 					SDL_ABuffer.SDL_Audio[i]->alen == Tmp->alen &&
+					SDL_ABuffer.SDL_Audio[i]->allocated == Tmp->allocated) {
+					Mix_FreeChunk(Tmp);
+					Mix_PlayChannel(i, SDL_ABuffer.SDL_Audio[i], 0);
+					SDL_ABuffer.SDL_Audio_Started[i] = clock();
+					i = 8;
+					Played = true;
+				}
+			}
+			if (Played == false) {
+				/*this file isnt being played, so lets replace the sound that were being played that is near to finish*/
+				int IdChannel = 0;
+				time_t NOW = clock();
+				int ShortestTime = SDL_ABuffer.SDL_Audio[0]->alen - (NOW - SDL_ABuffer.SDL_Audio_Started[0]);
+				for (i = 1; i < 8; i++) {
+					if (SDL_ABuffer.SDL_Audio[i]->alen - (NOW - SDL_ABuffer.SDL_Audio_Started[i]) < ShortestTime)
+					{
+						IdChannel = i;
+						ShortestTime = SDL_ABuffer.SDL_Audio[i]->alen - (NOW - SDL_ABuffer.SDL_Audio_Started[i]);
+					}
+				}
+				Mix_FreeChunk(SDL_ABuffer.SDL_Audio[IdChannel]);
+				SDL_ABuffer.SDL_Audio[IdChannel] = Tmp;
+				Mix_PlayChannel(IdChannel, SDL_ABuffer.SDL_Audio[IdChannel], 0);
+				SDL_ABuffer.SDL_Audio_Started[IdChannel] = clock();
+			}
+		}
+	}
+	MT2D_Ide_Printf("audio played");
+}
 
 #else
 //#warning define "SDL_USE_AUDIO" must be declared to use the SDL audio code

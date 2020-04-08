@@ -5,7 +5,7 @@
 
 enum MT2D_VAR_TYPE
 {
-//	VAR_BOOL,
+	VAR_BOOL,
 	VAR_CHAR = 1,
 	VAR_INT,
 	VAR_FLOAT,
@@ -58,6 +58,7 @@ MT2D_VAR * MT2D_Object_Create_Var_Pointer(const char * Name);
 
 void MT2D_Object_VAR_SetVar(MT2D_VAR *Var, MT2D_VAR *New);
 int MT2D_Object_VAR_GetInt(MT2D_VAR *Var);
+bool MT2D_Object_VAR_GetBool(MT2D_VAR* Var);
 MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR);
 
 

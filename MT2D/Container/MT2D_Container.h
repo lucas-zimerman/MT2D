@@ -76,6 +76,16 @@ typedef struct{
 
 #pragma endregion Container Struct 
 
+#pragma region Container User Struct
+typedef struct ContainerData
+{
+	unsigned char* Data;
+	int Length;
+	int Id;
+};
+#pragma endregion Container User Struct
+
+
 int MT2D_Container_Get_FileId(char *name);
 int MT2D_Container_Get_FileLength(int id);
 int MT2D_Container_Get_FilePadding(int id);
