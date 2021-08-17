@@ -37,7 +37,7 @@ Line X+3,...,Y: Data
 
 #pragma region  Container Struct
 
-enum MT2D_Container_DataStore_Type
+enum _DataStore_Type
 {
 	MT2D_CONT_DATATYPE_MEM = -1,
 	MT2D_CONT_DATATYPE_CONT = 0,
@@ -100,6 +100,7 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt);
  * Delete the referenced id from the disc or memory
 */
 void MT2D_Container_Delete_Data(int id);
+
 void MT2D_Container_Init();
 /**
 Free the loaded files

@@ -71,4 +71,14 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #endif
 #pragma endregion
 
+#pragma region Portable_Inline
+#ifdef _MSC_VER
+#define forceinline __forceinline
+#elif defined(__GNUC__)
+#define forceinline __attribute__((always_inline)) inline
+#else
+#define forceinline inline
+#endif
+#pragma endregion
+
 #endif 

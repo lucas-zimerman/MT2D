@@ -5,7 +5,6 @@
 
 enum MT2D_VAR_TYPE
 {
-	VAR_BOOL,
 	VAR_CHAR = 1,
 	VAR_INT,
 	VAR_FLOAT,
