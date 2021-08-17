@@ -24,20 +24,42 @@ void Object_Render(Object *obj) {
 		//Decrement the frame counter
 		//Check if the frame tic has expired, if yes select the next frame
 		//Render the frame
-		Sprite_Render_on_Window(obj->State[obj->ActualState]->Sprites[obj->ActualFrame],DISPLAY_WINDOW1, obj->SpacePosition.X, obj->SpacePosition.Y);
+		Sprite_Render_on_Window(
+			obj->State[obj->ActualState]->Sprites[obj->ActualFrame],
+			DISPLAY_WINDOW1,
+			*(int*)obj->User_Vars[Object_PosX_Var_Index].Data,
+			*(int*)obj->User_Vars[Object_PosY_Var_Index].Data
+		);
 	}
+}
+
+void Object_Add_Variable(Object* object, MT2D_VAR* variable)
+{
+	object->User_Vars_Count++;
+	object->User_Vars = (MT2D_VAR*)realloc(object->User_Vars, (object->User_Vars_Count + 1) * sizeof(MT2D_VAR));
+	object->User_Vars[object->User_Vars_Count - 1] = *variable;
+}
+
+void Object_Add_Variables(Object* object, MT2D_VAR* variables, int total)
+{
+	int newSize = object->User_Vars_Count + total;
+	object->User_Vars_Count;
+	object->User_Vars = (MT2D_VAR*)realloc(object->User_Vars, (newSize + 1) * sizeof(MT2D_VAR));
+	for (int i = 0; object->User_Vars_Count < newSize; i++, object->User_Vars_Count++)
+	{
+		object->User_Vars[object->User_Vars_Count] = variables[i];
+	}
+	object->User_Vars_Count = newSize;
+
 }
 
 Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int PosX, int PosY,ObjectState **_States, int States_Count ) {
 	Object *Obj;
+	MT2D_VAR* ref;
 	Obj = (Object*)malloc(sizeof(Object));
 
 	Obj->Solid = Solid;
 	Obj->RenderOnly = RenderOnly;
-	Obj->Size.X = sizeX;
-	Obj->Size.Y = sizeY;
-	Obj->SpacePosition.X = PosX;
-	Obj->SpacePosition.Y = PosY;
 	Obj->ActualFrame = 0;
 	Obj->ActualFrameWait = _States[0]->WaitSprites[0];
 	Obj->ActualState = 0;
@@ -46,10 +68,16 @@ Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int Pos
 	Obj->Enabled = true;
 	Obj->CanDelete = false;
 	Obj->MyScene = 0;
-	Obj->Aceleration.X = 0;
-	Obj->Aceleration.Y = 0;
+
+	Obj->User_Vars = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
 	Obj->User_Vars_Count = 0;
-	Obj->User_Vars = 0;
+//	ref = ;
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Pos_X", PosX));
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Pos_Y", PosY));
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Size_X", sizeX));
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Size_Y", sizeY));
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Acel_X", 0));
+	Object_Add_Variable(Obj, MT2D_Object_Create_Var_Int("Acel_Y", 0));
 	return Obj;
 }
 
