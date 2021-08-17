@@ -144,7 +144,7 @@ void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 	if (Var->Type == VAR_POINTER) {
 		Var->Data = object;
 		if (NewData->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_Get_Object_Internal_Data(NewData));
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_Get_Object_Internal_Data(NewData));
 			Cscript_Set_Object_Internal_Data(object, Var, Tmp);
 			MT2D_VAR_Free(Tmp,1);
 		}
@@ -153,7 +153,7 @@ void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 		}
 	}
 	else if (NewData->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_Get_Object_Internal_Data(NewData));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_Get_Object_Internal_Data(NewData));
 		MT2D_Object_VAR_SetVar(Var, NewData);
 		MT2D_VAR_Free(Tmp,1);
 
@@ -209,7 +209,7 @@ void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
 		}
 	}
 	else if (VARS[1]->Type == VAR_POINTER) {
-		tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(Object, VARS[1]));
+		tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(Object, VARS[1]));
 		MT2D_Object_VAR_SetVar(VARS[0], tmp);
 		MT2D_VAR_Free(tmp,1);
 	}
@@ -488,9 +488,9 @@ VARS[1] the amount to increase
 void Cscript_VAR_ADD(Object *object, MT2D_VAR **VARS) {
 	int i = 0;
 	if (VARS[0]->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int((char*)"Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_ADD(Tmp, Tmp2);
 			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			MT2D_VAR_Free(Tmp2,1);
@@ -503,7 +503,7 @@ void Cscript_VAR_ADD(Object *object, MT2D_VAR **VARS) {
 	}
 	else {
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_ADD(VARS[0], Tmp);
 			MT2D_VAR_Free(Tmp,1);
 		}
@@ -520,9 +520,9 @@ VARS[1] the amount to decrease
 void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS) {
 	int i = 0;
 	if (VARS[0]->Type == VAR_POINTER) {
-		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
+		MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VARS[0]));
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int("Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp2 = MT2D_Object_Create_Var_Int((char*)"Tmp2", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_SUB(Tmp, Tmp2);
 			Cscript_VAR_Set_Integer(object, VARS[0], Tmp);
 			MT2D_VAR_Free(Tmp2,1);
@@ -535,7 +535,7 @@ void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS) {
 	}
 	else {
 		if (VARS[1]->Type == VAR_POINTER) {
-			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
+			MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VARS[1]));
 			MT2D_Object_SUB(VARS[0], Tmp);
 			MT2D_VAR_Free(Tmp,1);
 		}
@@ -551,9 +551,9 @@ void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS) {
 	VAR[0] = pointer. (always)
 **/
 void Cscript_VAR_INC(Object *object, MT2D_VAR **VAR) {
- MT2D_VAR *One = MT2D_Object_Create_Var_Char("One", 1);
+ MT2D_VAR *One = MT2D_Object_Create_Var_Char((char*)"One", 1);
 	if (VAR[0]->Type == VAR_POINTER) {
-		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
+		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
 		MT2D_Object_ADD(tmp, One);
 		Cscript_VAR_Set_Integer(object, VAR[0], tmp);
 		MT2D_VAR_Free(tmp,1);
@@ -569,9 +569,9 @@ object = caller
 VAR[0] = pointer. (always)
 **/
 void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
- 	MT2D_VAR *One = MT2D_Object_Create_Var_Char("One", 1);
+ 	MT2D_VAR *One = MT2D_Object_Create_Var_Char((char*)"One", 1);
 	if (VAR[0]->Type == VAR_POINTER) {
-		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int("Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
+		MT2D_VAR * tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_VAR_Get_Integer(object, VAR[0]));
 		MT2D_Object_SUB(tmp, One);
 		Cscript_VAR_Set_Integer(object, VAR[0], tmp);
 		MT2D_VAR_Free(tmp, 1);

@@ -300,12 +300,12 @@ bool loadMedia()
 	//Loading success flag
 	bool success = true;
 #ifdef _DEBUG
-	MT2D_Ide_Printf("MT2D: SDL Load tilemap char - ");
+	MT2D_Ide_Printf((char*)"MT2D: SDL Load tilemap char - ");
 #endif;
-	success = NewLoadFromFile("msdos_fnt.png");
+	success = NewLoadFromFile((char*)"msdos_fnt.png");
 	//Load sprite sheet texture
 	if (!success) {
-		success = NewLoadFromFile("../../MT2D/SDL_MT2D/msdos_fnt.png");
+		success = NewLoadFromFile((char*)"../../MT2D/SDL_MT2D/msdos_fnt.png");
 	}
 	if (success)
 	{
@@ -327,12 +327,12 @@ bool loadMedia()
 
 		}
 #ifdef _DEBUG
-		MT2D_Ide_Printf("Success\n");
+		MT2D_Ide_Printf((char*)"Success\n");
 #endif
 	}
 	else {
 #ifdef _DEBUG
-		MT2D_Ide_Printf("Failed\n");
+		MT2D_Ide_Printf((char*)"Failed\n");
 #endif
 	}
 	return success;
@@ -354,7 +354,7 @@ void MT2D_SDL_Init()
 	MainEvents.Keyboard_Buffer = 0;
 	MainEvents.Keyboard_Buffer_Count = 0;
 
-	MT2D_Ide_Printf("MT2D: Starting SDL\n");
+	MT2D_Ide_Printf((char*)"MT2D: Starting SDL\n");
 
 	//Initialize SDL
 	if(SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -379,6 +379,7 @@ void MT2D_SDL_Init()
  //           SCREEN_HEIGHT = mode.h;
 		#endif
 
+		SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "1");
 		//Set texture filtering to linear
 		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0" ) )
 		{
