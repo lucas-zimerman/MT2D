@@ -91,6 +91,10 @@ forceinline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
 	return fopen(fileName, mode);
 }
 
+forceinline MT2D_FILE *MT2D_FILE_OPEN_TEMP() {
+	return tmpfile();
+}
+
 forceinline int MT2D_FILE_CLOSE(MT2D_FILE *file) {
 	return fclose(file);
 }
@@ -109,7 +113,7 @@ forceinline unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
 }
 
 forceinline size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
-	return fread(outBufferPtr, size, count, file);
+	return fwrite(outBufferPtr, size, count, file);
 }
 
 forceinline int MT2D_FILE_EOF(MT2D_FILE *file) {
@@ -122,6 +126,10 @@ forceinline long int MT2D_FILE_TELL(MT2D_FILE *file) {
 
 forceinline int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
 	return fputc(data, file);
+}
+
+forceinline int MT2D_FILE_DELETE(char *name){
+	return remove(name);
 }
 #endif
 #endif

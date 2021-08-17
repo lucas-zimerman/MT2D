@@ -20,7 +20,9 @@
 #if defined(SDL_USE_AUDIO)
 #include "../SDL/Audio/MT2D_SDL_Audio.h"
 #define MT2D_Play_Audio SDL_Play_Sound
+#define MT2D_PlayAudioFromMemory SDL_PlaySoundFromMemory
 #define MT2D_Play_Music SDL_Play_Music
+#define MT2D_PlayMusicFromMemory SDL_PlayMusicFromMemory
 #define MT2D_Audio_Init() SDL_Start_Sound_System()
 #define MT2D_Audio_Close SDL_Close_Sound_System
 #else
@@ -33,4 +35,6 @@ void MT2D_Audio_Init();
 void MT2D_Audio_Close();
 void MT2D_Play_Audio(char *Name);
 void MT2D_Play_Music(char *Name);
+void SDL_PlayMusicFromMemory(void* music, unsigned int size, bool free);
+void SDL_PlaySoundFromMemory(void* memoryBlock, unsigned int size, bool free);
 #endif

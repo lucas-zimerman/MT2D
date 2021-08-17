@@ -5,6 +5,7 @@
 #include <MT2D/MT2D.h>
 #include <MT2D/Objectcore/Object.h>
 #include <MT2D/Objectcore/Sprites.h>
+#include <MT2D/MT2D_Debug.h>
 #else
 #include "../MT2D.h"
 #include "../Objectcore/Object.h"
@@ -14,6 +15,12 @@
 #include <stdio.h>
 void Object_Render(Object *obj) {
 	if (obj->Enabled) {//RENDER ONLY IF THE OBJECT IS ENABLED
+#ifdef DEBUG_OBJECTCORE
+		char buff[300];
+		sprintf(buff, "Rendering object %p, coord X %d Y %d State %d Frame %d has sprite? %d", obj, obj->SpacePosition.X, obj->SpacePosition.Y, obj->ActualState, obj->ActualFrame, obj->State[obj->ActualState]->Sprites[obj->ActualFrame] == NULL ? 0 : 1);
+		MT2D_Ide_Printf(buff);
+#endif
+
 		//Decrement the frame counter
 		//Check if the frame tic has expired, if yes select the next frame
 		//Render the frame
@@ -50,6 +57,7 @@ void Object_Private_Run_Function(Object *O) {
 	if (O->State[O->ActualState]->Functions == 0) {
 
 	}
+	else if (O->State[O->ActualState]->Functions[O->ActualFrame] == NULL);
  	else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj) {
 		O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj(O);
 	}
@@ -78,8 +86,17 @@ void Object_Private_Run_Function(Object *O) {
 	Consume the next state of the Object
 **/
 void Object_Goto_NextStep(Object *O) {
+#ifdef DEBUG_OBJECTCORE
+	char debugbuff[200];
+	sprintf(debugbuff,"Consuming object %p next step", O);
+	MT2D_Ide_Printf(debugbuff);
+#endif
 	if (O->ActualFrameWait > 0) {
 		O->ActualFrameWait--;
+#ifdef DEBUG_OBJECTCORE
+		MT2D_Ide_Printf("There are frames to wait, do nothing");
+#endif
+
 	}
 	else {
 		while (O->ActualFrameWait == 0) {
@@ -88,10 +105,12 @@ void Object_Goto_NextStep(Object *O) {
 				O = O;
 			}
 			if(O->User_Vars != 0){
-				printf("function Object tank Timeout %d State [%s] Frame %d\n", *(int*)O->User_Vars[0].Data, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
+				sprintf(debugbuff,"function Object %p Timeout %d State [%s] Frame %d\n",O, *(int*)O->User_Vars[0].Data, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
+				MT2D_Ide_Printf(debugbuff);
 			}
 			else {
-				printf("function Object projectile State [%s] Frame %d pos X %d speed X %d\n",(O->ActualState == 0 ? "spawn" : "dead"), O->ActualFrame,O->SpacePosition.X,O->Aceleration.X);
+				sprintf(debugbuff,"function Object %p State [%s] Frame %d pos X %d speed X %d\n",(O, O->ActualState == 0 ? "spawn" : "dead"), O->ActualFrame,O->SpacePosition.X,O->Aceleration.X);
+				MT2D_Ide_Printf(debugbuff);
 			}
 #endif
 			Object_Private_Run_Function(O);
@@ -138,6 +157,7 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 		Object_Goto_NextStep(Scene->ObjectGroup[i]);
 //		printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
 		if (Scene->ObjectGroup[i]->CanDelete == true) {
+			Object_Delete(Scene->ObjectGroup[i], false);
 			for (j = i; j < Scene->Count -1; j++) {
 				Scene->ObjectGroup[j] = Scene->ObjectGroup[j + 1];
 			}
@@ -148,13 +168,20 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
 	}
 }
 
-void Object_Delete(Object *Me) {
+void Object_Delete(Object *Me, bool deleteStates) {
 	int i = 0;
 	if (Me != 0) {
 		if (Me->User_Vars_Count) {
 			for (i = 0; i < Me->User_Vars_Count; i++) {
 				free(Me->User_Vars[i].Data);
 				free(Me->User_Vars[i].Name);
+			}
+		}
+		if (deleteStates) {
+			for (i = 0; i < Me->States_Count; i++) {
+				MT2D_Ide_Printf("Erasing the state");
+				MT2D_Ide_Printf(Me->State[i]->Name);
+				MT2D_ObjectState_Delete(Me->State[i]);
 			}
 		}
 		free(Me);

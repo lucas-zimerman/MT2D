@@ -33,6 +33,7 @@
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
+#include <MT2D\MT2D_Debug.h>
 
 
 Sprite *Load_Sprite(char *file) {
@@ -106,6 +107,11 @@ Sprite *Load_Sprite(char *file) {
 
 Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 {
+#ifdef DEBUG_OBJECTCORE
+	char buff[200];
+	sprintf(buff, "Loading Sprite %s", file);
+	MT2D_Ide_Printf(buff);
+#endif
 #ifdef SDL_USE
 	SDL_Surface *Img = 0;
 	Sprite *S = 0;
@@ -138,6 +144,7 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 	S->Data[0][1] = '!';
 	S->Data[0][2] = '>';
 	S->type = 0;
+	S->refCount = 0;
 	return S;
 #endif
  }
@@ -160,6 +167,7 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 			S->scale.X = ScaleX;
 			S->scale.Y = ScaleY;
 			S->type = 1;
+			S->refCount = 0;
 			//we need to kill that surface...
 		}//else return a null sprite
 		return S;
@@ -176,18 +184,25 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 		S->Data[0][1] = '!';
 		S->Data[0][2] = '>';
 		S->type = 0;
+		S->refCount = 0;
 		return S;
 #endif
 }
 #endif
 
+/*
+	Crash Tip:
+	-You heap corruption, check pos_x, pos_y to find an object that matches the image.
+		That could be caused if you tried to malloc an array of sprites smaller than the number of sprites loaded
+	- Actual Frame is outside of the sprite range loaded
+*/
  bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) {//output: out = false : invalid sprite | out = true : valid sprite
 	//to be implemented: Sprites Scale
 	 bool out = false;
 	 int x = 0, x1 = 0;//,x2; not used
 	 int y = 0, y1 = 0;//,y2; not used
 	 if (img) {
-		 if (img->type == 0) {//render as a sprite
+ 		 if (img->type == 0) {//render as a sprite
 			 out = true;
 			 x = (int)pos_x + img->size.X;
 			 y = (int)pos_y + img->size.Y;
@@ -241,22 +256,27 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 
  void Sprite_Delete(Sprite *Me) {
 	 if (Me) {
-		 if (Me->type == 1) {
+		 if (Me->refCount > 0) {
+			 Me->refCount--;
+		 }
+		 if (Me->refCount == 0) {
+			 if (Me->type == 1) {
 #ifdef SDL_USE
-			 if (Me->RotatedTexture) {
-				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->RotatedTexture);
-			 }
-			 if (Me->Data) {
-				 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->Data);
-			 }
+				 if (Me->RotatedTexture) {
+					 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->RotatedTexture);
+				 }
+				 if (Me->Data) {
+					 MT2D_SDL_DestroyTexture((MT2D_SDL_Texture*)Me->Data);
+				 }
 #endif
-		 }
-		 else {
-			 for (int i = 0; i < Me->size.Y; i++) {
-				 free(Me->Data[i]);
 			 }
-			 free(Me->Data);
+			 else {
+				 for (int i = 0; i < Me->size.Y; i++) {
+					 free(Me->Data[i]);
+				 }
+				 free(Me->Data);
+			 }
+			 free(Me);
 		 }
-		 free(Me);
 	 }
  }

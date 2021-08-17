@@ -6,6 +6,7 @@
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
+#include <MT2D\MT2D_Debug.h>
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 #if  !defined(MT2D_SDL_GPU) && !defined(__ANDROID__)
@@ -22,9 +23,19 @@ SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 
 #if defined(MT2D_USING_CONTAINER)
 SDL_Surface *MT2D_SDL_Load_Image_From_Container(int Id) {
-	SDL_RWops *file = SDL_RWFromMem(MT2D_Container_Get_FileData(Id), MT2D_Container_Get_FileLength(Id));
+	int len = MT2D_Container_Get_FileLength(Id);
+	MT2D_Ide_Printf("Got Length");
+	unsigned char* data = MT2D_Container_Get_Data(Id, false);
+	MT2D_Ide_Printf("Got Data");
+	SDL_RWops *file = SDL_RWFromMem(data, len);
+	MT2D_Ide_Printf("Got Pointer");
 	SDL_Surface *tmp = IMG_Load_RW(file, 1);
-	SDL_RWclose(file);
+	MT2D_Ide_Printf("Got Image Loaded");
+	MT2D_Ide_Printf("a");
+//	SDL_RWclose(file); 
+	MT2D_Ide_Printf("b");
+	free(data);
+	MT2D_Ide_Printf("Released");
 	return tmp;
 }
 #endif
@@ -57,7 +68,7 @@ int MT2D_SDL_RenderCopyEx(MT2D_SDL_Renderer * renderer, MT2D_SDL_Texture * textu
 	GPU_BlitTransform(texture, srcrect, renderer, dstrect->x, dstrect->y, angle, dstrect->h, dstrect->w);
 	return 0;
 #else
-	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
+ 	return SDL_RenderCopyEx(renderer, texture, srcrect, dstrect, angle, center, flip);
 #endif
 }
 

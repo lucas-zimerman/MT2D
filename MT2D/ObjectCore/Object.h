@@ -51,5 +51,5 @@ ObjectScene *ObjectScene_CreateEmpty();
 void ObjectScene_Add(ObjectScene *Scene, Object *New);
 void ObjectScene_Render(ObjectScene *Scene);
 void ObjectScene_Goto_NextSteps(ObjectScene *Scene);
-void Object_Delete(Object *Me);
+void Object_Delete(Object *Me, bool deleteStates);
 #endif
