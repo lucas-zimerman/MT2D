@@ -29,9 +29,6 @@ struct ObjectScene;
 struct Object{
 	bool RenderOnly;
 	bool Solid;
-//	Coord SpacePosition;
-//	Coord Size;
-//	Coord Aceleration;
 	Object *Target;
 	ObjectScene *MyScene;
 	ObjectState **State; /*The first state is the initial state where the object is going to be initiated*/
