@@ -37,7 +37,7 @@ Line X+3,...,Y: Data
 
 #pragma region  Container Struct
 
-enum _DataStore_Type
+enum MT2D_Container_DataStore_Type
 {
 	MT2D_CONT_DATATYPE_MEM = -1,
 	MT2D_CONT_DATATYPE_CONT = 0,

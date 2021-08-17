@@ -358,9 +358,6 @@ bool MT2D_Object_VAR_GetBool(MT2D_VAR* Var) {
 		output = *(float*)Var->Data > 0;
 
 	}
-	else if (Var->Type == VAR_BOOL) {
-		output = *(bool*)Var->Data;
-	}
 
 	else {
 		MT2D_Var_Last_Error = Var_Type_Not_Supported;

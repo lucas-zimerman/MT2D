@@ -590,12 +590,6 @@ void MT2D_Container_Clear() {
 	while(ListFilePaths.start != NULL){
 		try_remove_container(ListFilePaths.start);
 	}
-	MT2D_GlobalContainer.Names[MT2D_GlobalContainer.Files] = Name;
-	MT2D_GlobalContainer.Length[MT2D_GlobalContainer.Files] = Length;
-	MT2D_GlobalContainer.Xpadding[MT2D_GlobalContainer.Files] = Padding;
-	MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files] = (BYTE*)malloc((Length+Padding) * sizeof(BYTE));
-	MT2D_FILE_READ(file, MT2D_GlobalContainer.Data[MT2D_GlobalContainer.Files], Length + Padding, 1);
-	MT2D_GlobalContainer.Files++;
 }
 
 

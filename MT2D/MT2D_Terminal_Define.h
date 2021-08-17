@@ -24,7 +24,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 
 #define SDL_USE_AUDIO
 //#define DEBUG_OBJECTCORE
-//#define MT2D_USING_CONTAINER
+#define MT2D_USING_CONTAINER
 #define MT2D_WINDOWED_MODE
 #define SDL_USE
 //#define MT2D_SCREEN_RESIZE
