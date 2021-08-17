@@ -32,7 +32,7 @@ struct Sprite *Load_Sprite_Image(char *file,int ScaleX,int ScaleY);
 struct Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY);
 #else
 #define Load_Sprite_Image_From_Container null
-khk
+
 #endif
 bool Sprite_Render_on_Window(struct Sprite *img, int witch_window, int pos_x, int pos_y);
 void Sprite_Delete(struct Sprite *Me);
