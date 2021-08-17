@@ -43,32 +43,11 @@ int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
 	Object *O = (Object*)Var->Data;
 	int Return = 0;
 	if (O) {
-		if (strcmp(Var->Name, "Acel_X") == 0) {
-			Return = O->Aceleration.X;
-		}
-		else if (strcmp(Var->Name, "Acel_Y") == 0) {
-			Return = O->Aceleration.Y;
-		}
-		else if (strcmp(Var->Name, "Pos_X") == 0) {
-			Return = O->SpacePosition.X;
-		}
-		else if (strcmp(Var->Name, "Pos_Y") == 0) {
-			Return = O->SpacePosition.Y;
-		}
-		else if (strcmp(Var->Name, "Size_X") == 0) {
-			Return = O->Size.X;
-		}
-		else if (strcmp(Var->Name, "Size_Y") == 0) {
-			Return = O->Size.Y;
-		}
-		else {
-			//check vars
-			int i = 0;
-			for (i < 0; i < O->User_Vars_Count; i++) {
-				if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
-					Return = MT2D_Object_VAR_GetInt(&O->User_Vars[i]);
-					i = O->User_Vars_Count;
-				}
+		int i = 0;
+		for (i < 0; i < O->User_Vars_Count; i++) {
+			if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+				Return = MT2D_Object_VAR_GetInt(&O->User_Vars[i]);
+				i = O->User_Vars_Count;
 			}
 		}
 	}
@@ -87,37 +66,16 @@ void Cscript_Set_Object_Internal_Data(Object *Caller, MT2D_VAR *Var, MT2D_VAR *N
 	Object *O = (Object*)Var->Data;
 	int Return = 0;
 	if (O) {
-		if (strcmp(Var->Name, "Acel_X") == 0) {
-			O->Aceleration.X = Cscript_VAR_Get_Integer(Caller, NewVar);
-		}
-		else if (strcmp(Var->Name, "Acel_Y") == 0) {
-			O->Aceleration.Y = Cscript_VAR_Get_Integer(Caller, NewVar);
-		}
-		else if (strcmp(Var->Name, "Pos_X") == 0) {
-			O->SpacePosition.X = Cscript_VAR_Get_Integer(Caller, NewVar);
-		}
-		else if (strcmp(Var->Name, "Pos_Y") == 0) {
-			O->SpacePosition.Y = Cscript_VAR_Get_Integer(Caller, NewVar);;
-		}
-		else if (strcmp(Var->Name, "Size_X") == 0) {
-			O->Size.X = Cscript_VAR_Get_Integer(Caller, NewVar);;
-		}
-		else if (strcmp(Var->Name, "Size_Y") == 0) {
-			O->Size.Y = Cscript_VAR_Get_Integer(Caller, NewVar);;
-		}
-		else {
-			//check vars
-			int i = 0;
-			for (i < 0; i < O->User_Vars_Count; i++) {
-				if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
-					MT2D_Object_VAR_SetVar(&O->User_Vars[i], NewVar);
-					i = O->User_Vars_Count;
-				}
+		//check vars
+		int i = 0;
+		for (i < 0; i < O->User_Vars_Count; i++) {
+			if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+				MT2D_Object_VAR_SetVar(&O->User_Vars[i], NewVar);
+				i = O->User_Vars_Count;
 			}
 		}
 	}
 }
-
 
 /**
 gets an integer representation of the data pointed in MT2D_VAR.
@@ -167,7 +125,6 @@ void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
 
 #pragma region LOGIC
 
-
 /**
 VARS[0] = State Name
 **/
@@ -183,7 +140,6 @@ void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName) {
 		i++;
 	}
 }
-
 
 /**
 VARS[0] = Pointer
@@ -217,7 +173,6 @@ void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
 		MT2D_Object_VAR_SetVar(VARS[0], VARS[1]);
 	}
 }
-
 
 /**
 object  = caller
@@ -304,7 +259,6 @@ void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
 	}
 }
 
-
 /*
 Vars:
 [0] = the name of the state to be jumped
@@ -384,9 +338,6 @@ void Cscript_JumpNextFrameIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
 	}
 }
 
-
-
-
 /**
 It'll only mark that this object wants to be deleted, so you can manually do that or let
 the Scenecontrol to do that automatically.
@@ -409,10 +360,8 @@ void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
 		i++;		
 	}		
 	if(i ==  Caller->User_Vars_Count){
-		/*We didn't found a duplicated*/
-		Caller->User_Vars_Count++;
-		Caller->User_Vars = (MT2D_VAR*)realloc(Caller->User_Vars,Caller->User_Vars_Count*sizeof(MT2D_VAR));
-		Caller->User_Vars[i] = *MT2D_VAR_CLONE(Var[0]);
+		/* Skip duplicated var */
+		Object_Add_Variable(Caller, MT2D_VAR_CLONE(Var[0]));
 	}
 }
 
@@ -481,23 +430,22 @@ void Cscript_While_End(Object* caller, MT2D_VAR** vars) {
 //	caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i];
 }
 
-
 #pragma endregion FUNCTIONS
-
 
 #pragma region AI
 
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y) {
-	int X = Cscript_VAR_Get_Integer(object, X_Y[0]);
-	int Y = Cscript_VAR_Get_Integer(object, X_Y[1]);
-	object->SpacePosition.X = X;
-	object->SpacePosition.Y = Y;
+	int x = Cscript_VAR_Get_Integer(object, X_Y[0]);
+	int y = Cscript_VAR_Get_Integer(object, X_Y[1]);
+	*(int*)object->User_Vars[Object_PosX_Var_Index].Data = x;
+	*(int*)object->User_Vars[Object_PosY_Var_Index].Data = x;
 }
 
 void Cscript_Move(Object *object) {
-	object->SpacePosition.X += object->Aceleration.X;
-	object->SpacePosition.Y += object->Aceleration.Y;
+	*(int*)object->User_Vars[Object_PosX_Var_Index].Data += *(int*)object->User_Vars[Object_AcelX_Var_Index].Data;
+	*(int*)object->User_Vars[Object_PosY_Var_Index].Data += *(int*)object->User_Vars[Object_AcelY_Var_Index].Data;
 }
+
 /**
 Vars[0] = Pos X
 Vars[1] = Pos Y
@@ -508,21 +456,46 @@ void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
 	Object *NewObject;
 	int X[2] = { Cscript_VAR_Get_Integer(Caller,Vars[0]),Cscript_VAR_Get_Integer(Caller,Vars[2]) };
 	int Y[2] = { Cscript_VAR_Get_Integer(Caller,Vars[1]),Cscript_VAR_Get_Integer(Caller,Vars[3]) };
-	NewObject = Object_Create(NewModel->Solid, NewModel->RenderOnly, NewModel->Size.X, NewModel->Size.X, X[0], Y[0], NewModel->State, NewModel->States_Count);
-	NewObject->Aceleration.X = X[1];
-	NewObject->Aceleration.Y = Y[1];
-	if (NewModel->User_Vars_Count > 0) {
+	NewObject = Object_Create(
+		NewModel->Solid, 
+		NewModel->RenderOnly, 
+		*(int*)NewModel->User_Vars[Object_SizeX_Var_Index].Data,
+		*(int*)NewModel->User_Vars[Object_SizeY_Var_Index].Data,
+		X[0], 
+		Y[0], 
+		NewModel->State, 
+		NewModel->States_Count
+	);
+	*(int*)NewObject->User_Vars[Object_AcelX_Var_Index].Data = X[1];
+	*(int*)NewObject->User_Vars[Object_AcelY_Var_Index].Data = Y[1];
+	if (NewModel->User_Vars_Count > 0) 
+	{
 		MT2D_VAR *NewVars = (MT2D_VAR*)malloc(NewModel->User_Vars_Count * sizeof(MT2D_VAR));
-		for (int i = 0; i < NewModel->User_Vars_Count; i++) {
-			NewVars[i] = *MT2D_VAR_CLONE(&NewModel->User_Vars[i]);
+		for (int i = Object_First_User_Var_Index; i < NewModel->User_Vars_Count; i++)
+		{
+			Object_Add_Variable(NewObject, MT2D_VAR_CLONE(&NewModel->User_Vars[i]));
 		}
-
-		NewObject->User_Vars = NewVars;
-		NewObject->User_Vars_Count = NewModel->User_Vars_Count;
 	}
 	ObjectScene_Add(Caller->MyScene, NewObject);
 }
 
+bool Object_Hit_Object(Object* Caller, Object* Target)
+{
+	if (*(int*)Caller->User_Vars[Object_PosX_Var_Index].Data <= *(int*)Target->User_Vars[Object_PosX_Var_Index].Data + *(int*)Target->User_Vars[Object_SizeX_Var_Index].Data)
+	{
+		if (*(int*)Caller->User_Vars[Object_PosX_Var_Index].Data + *(int*)Caller->User_Vars[Object_SizeX_Var_Index].Data >= *(int*)Target->User_Vars[Object_PosX_Var_Index].Data)
+		{
+			if (*(int*)Caller->User_Vars[Object_PosY_Var_Index].Data <= *(int*)Target->User_Vars[Object_PosY_Var_Index].Data + *(int*)Target->User_Vars[Object_SizeY_Var_Index].Data)
+			{
+				if (*(int*)Caller->User_Vars[Object_PosY_Var_Index].Data + *(int*)Caller->User_Vars[Object_SizeY_Var_Index].Data >= *(int*)Target->User_Vars[Object_PosY_Var_Index].Data)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	return false;
+}
 
 /**
 This function will check if a hit happened in every object inside the objectscene
@@ -534,24 +507,17 @@ VARS[2] = The index of the var that's used to represent the health on the other 
 void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars) {
 	int i = 0;
 	int ObjVarInded = 0;
-	while (i < Caller->MyScene->Count) {
-		if (Caller->MyScene->ObjectGroup[i]->Solid == true) {
-			if (Caller->SpacePosition.X <= Caller->MyScene->ObjectGroup[i]->SpacePosition.X + Caller->MyScene->ObjectGroup[i]->Size.X) {
-				if (Caller->SpacePosition.X + Caller->Size.X >= Caller->MyScene->ObjectGroup[i]->SpacePosition.X) {
-					if (Caller->SpacePosition.Y <= Caller->MyScene->ObjectGroup[i]->SpacePosition.Y + Caller->MyScene->ObjectGroup[i]->Size.Y) {
-						if (Caller->SpacePosition.Y + Caller->Size.Y >= Caller->MyScene->ObjectGroup[i]->SpacePosition.Y) {
-							//there's indeed a hit
-							//so lets do some dmg in this object.
-							Vars[2]->Data = Caller->MyScene->ObjectGroup[i];
-							ObjVarInded = Cscript_Get_Object_VarIndex(Vars[2]);
-							Vars[2]->Data = 0;
-							MT2D_Object_SUB(&Caller->MyScene->ObjectGroup[i]->User_Vars[ObjVarInded], Vars[1]);
-							i = Caller->MyScene->Count;
-							Cscript_Object_SetState(Caller, Vars);
-						}
-					}
-				}
-			}
+	while (i < Caller->MyScene->Count)
+	{
+		if (Caller->MyScene->ObjectGroup[i]->Solid && Object_Hit_Object(Caller, Caller->MyScene->ObjectGroup[i]))
+		{
+			// Object collided.
+			Vars[2]->Data = Caller->MyScene->ObjectGroup[i];
+			ObjVarInded = Cscript_Get_Object_VarIndex(Vars[2]);
+			Vars[2]->Data = 0;
+			MT2D_Object_SUB(&Caller->MyScene->ObjectGroup[i]->User_Vars[ObjVarInded], Vars[1]);
+			i = Caller->MyScene->Count;
+			Cscript_Object_SetState(Caller, Vars);
 		}
 		i++;
 	}
@@ -564,21 +530,13 @@ VARS[0] = the state to jump
 **/
 void Object_GotoState_IfHitObject(Object* Caller, Object* Target, MT2D_VAR** Vars)
 {
-	if (Target->Solid == true) {
-		if (Caller->SpacePosition.X <= Target->SpacePosition.X + Target->Size.X) {
-			if (Caller->SpacePosition.X + Caller->Size.X >= Target->SpacePosition.X) {
-				if (Caller->SpacePosition.Y <= Target->SpacePosition.Y + Target->Size.Y) {
-					if (Caller->SpacePosition.Y + Caller->Size.Y >= Target->SpacePosition.Y) {
-						Cscript_Object_SetState(Caller, Vars);
-					}
-				}
-			}
-		}
+	if (Target->Solid && Object_Hit_Object(Caller, Target))
+	{
+		Cscript_Object_SetState(Caller, Vars);
 	}
 }
 
 #pragma endregion FUNCTIONS
-
 
 #pragma region MATH
 
@@ -646,7 +604,6 @@ void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS) {
 	}
 }
 
-
 /**
 	object = caller
 	VAR[0] = pointer. (always)
@@ -682,7 +639,6 @@ void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
 	}
 	MT2D_VAR_Free(One,1);
 }
-
 
 #pragma endregion FUNCTIONS
 
