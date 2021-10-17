@@ -780,8 +780,8 @@ bool MT2D_Container_Save(char *NameAndPath) {
 bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool decrypt) {
 	char *Filename;
 	bool Saved = false;
-	Filename = (char*)malloc(strlen(NewName) + strlen(Path) + 1);
-	sprintf(Filename, "%s%s\0",Path, NewName);
+	Filename = (char*)malloc(strlen(NewName) + strlen(Path) + 2);
+	sprintf(Filename, "%s/%s\0",Path, NewName);
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Filename, "wb");
 	if (Destination) {
 		free(Filename);
