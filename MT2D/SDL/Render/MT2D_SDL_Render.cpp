@@ -1,6 +1,4 @@
-#ifndef __MSDOS__
-#include "../../MT2D_Terminal_Define.h"
-#endif
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #if defined(SDL_USE)
 
@@ -58,9 +56,9 @@ void CheckASCIIbelowSprites() {
 	int X;
 	for (int i = 0; i < MainEvents.SpriteBuffer_Count; i++) {
 		Xstart = (MAX_HOR * (MainEvents.SpriteBufferX[i]-1)) / 320;
-		Xend = (MAX_HOR * (MainEvents.SpriteBufferX[i] + MainEvents.SpriteBuffer[i].scale.X +1)) / 320;
+		Xend = (MAX_HOR * (MainEvents.SpriteBufferX[i] + MainEvents.SpriteBuffer[i].ScaleX +1)) / 320;
 		Ystart = (MAX_VER * (MainEvents.SpriteBufferY[i]-1)) / 240;
-		Yend = (MAX_VER * (MainEvents.SpriteBufferY[i] + MainEvents.SpriteBuffer[i].scale.Y + 1)) / 240;
+		Yend = (MAX_VER * (MainEvents.SpriteBufferY[i] + MainEvents.SpriteBuffer[i].ScaleY + 1)) / 240;
 		//now we clear the BUFFER behind the sprites
 		for (; Ystart <= Yend && Ystart < MAX_VER; Ystart++) {
 			for (X = Xstart; X <= Xend && X < MAX_HOR; X++) {
@@ -314,28 +312,28 @@ void SDL_Render_Sprites() {
 	int angle = 0;
 	while (i < MainEvents.SpriteBuffer_Count) {
 		if (mode.h >= mode.w) {
-			Original.h = MainEvents.SpriteBuffer[i].size.X;
-			Original.w = MainEvents.SpriteBuffer[i].size.Y;
+			Original.h = MainEvents.SpriteBuffer[i].SizeX;
+			Original.w = MainEvents.SpriteBuffer[i].SizeY;
 			Original.x = 0;
 			Original.y = 0;
 			//90�
-			renderQuad.x = (( 320*(240 - MainEvents.SpriteBuffer[i].scale.Y - MainEvents.SpriteBufferY[i])/240 ) * mode.w) / 320;
+			renderQuad.x = (( 320*(240 - MainEvents.SpriteBuffer[i].ScaleY - MainEvents.SpriteBufferY[i])/240 ) * mode.w) / 320;
 			renderQuad.y = ( (240*MainEvents.SpriteBufferX[i])/ 320  * mode.h) / 240;
 
-//			renderQuad.y = MainEvents.SpriteBuffer[i].scale.X /2  +((MainEvents.SpriteBufferX[i] + 0) * mode.h) / 240;
-			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.X * mode.h ) / 320;
-			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.Y * mode.w ) / 240;
+//			renderQuad.y = MainEvents.SpriteBuffer[i].ScaleX /2  +((MainEvents.SpriteBufferX[i] + 0) * mode.h) / 240;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].ScaleX * mode.h ) / 320;
+			renderQuad.w = (MainEvents.SpriteBuffer[i].ScaleY * mode.w ) / 240;
 			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_HORIZONTAL);
 		}
  		else {
-			Original.h = MainEvents.SpriteBuffer[i].size.Y;
-			Original.w = MainEvents.SpriteBuffer[i].size.X;
+			Original.h = MainEvents.SpriteBuffer[i].SizeY;
+			Original.w = MainEvents.SpriteBuffer[i].SizeX;
 			Original.x = 0;
 			Original.y = 0;
 			renderQuad.x = (MainEvents.SpriteBufferX[i] * mode.w) / 320;
 			renderQuad.y = (MainEvents.SpriteBufferY[i] * mode.h) / 240;
-			renderQuad.w = (MainEvents.SpriteBuffer[i].scale.X * mode.w ) / 320;
-			renderQuad.h = (MainEvents.SpriteBuffer[i].scale.Y * mode.h) / 240;
+			renderQuad.w = (MainEvents.SpriteBuffer[i].ScaleX * mode.w ) / 320;
+			renderQuad.h = (MainEvents.SpriteBuffer[i].ScaleY * mode.h) / 240;
 			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, 0, NULL, SDL_FLIP_NONE);
 		}
 		i++;

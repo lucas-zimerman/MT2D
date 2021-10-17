@@ -1,4 +1,5 @@
-#include "../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
+
 #if defined(SDL_USE)
 #include <SDL_timer.h>
 #include "Audio\MT2D_SDL_Beep.h"

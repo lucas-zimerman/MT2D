@@ -1,11 +1,7 @@
 #ifndef _SDLBEEP
 #define _SDLBEEP
 
-#ifndef __ANDROID__
 #include <MT2D/MT2D_Terminal_Define.h>
-#else
-#include "../../MT2D_Terminal_Define.h"
-#endif
 
 #ifdef _DEBUG
 #include <stdio.h>

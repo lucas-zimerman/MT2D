@@ -600,7 +600,7 @@ Can load one or more Containers under the main container struct
 bool MT2D_Container_Load(char *Path) {
 	bool Loaded = false;
 	unsigned char *HiddenFileName;
-	unsigned int  FileLength;
+	long  FileLength;
 	unsigned char BitPrevious, BitActual;
 	unsigned char Padding;
 	unsigned char *SmartPointer;
@@ -656,7 +656,7 @@ bool MT2D_Container_Load(char *Path) {
 					MT2D_Ide_Printf("Data Loaded");
 
 					MT2D_FILE_SEEK(Destination, FileLength, SEEK_CUR);
-					MT2D_FILE_READ_BYTE(Destination);//Jump the \n
+ 					MT2D_FILE_READ_BYTE(Destination);//Jump the \n
 				}
 				else {
 					free(HiddenFileName);
