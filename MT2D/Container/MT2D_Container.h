@@ -30,8 +30,8 @@ Line X+3,...,Y: Data
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "MT2D_ContainerFile.h"
-#include "MT2D_ContainerFilePath.h"
+#include <MT2D/Container/MT2D_ContainerFile.h>
+#include <MT2D/Container/MT2D_ContainerFilePath.h>
 
 #define BYTE unsigned char
 
@@ -46,7 +46,7 @@ enum MT2D_Container_DataStore_Type
 
 
 
-typedef struct MT2D_ContainerFilePath {
+struct MT2D_ContainerFilePath{
 	char* file;//if refCount is -1 it points to a memory address
 	int refCount;// if -1 it represents a memory data and not a container
 	void* firstData;
@@ -54,12 +54,12 @@ typedef struct MT2D_ContainerFilePath {
 	MT2D_ContainerFilePath* next;
 };
 
-typedef struct MT2D_ContainerFile {
+struct MT2D_ContainerFile{
 	/*minimal struct which represents the a reference from the file to be stored*/
 	char* name;
 	unsigned int length; //in bytes
 	unsigned char xpadding;//the number of bytes that were added to make this file to be multiple of X
-	unsigned int fileDataOffset;//coordinate where the data is located in the file, not counting where the name of the file is located at
+	long fileDataOffset;//coordinate where the data is located in the file, not counting where the name of the file is located at
 	MT2D_ContainerFilePath* DataFileId;
 	MT2D_ContainerFile* next;
 };
@@ -77,7 +77,7 @@ typedef struct{
 #pragma endregion Container Struct 
 
 #pragma region Container User Struct
-typedef struct ContainerData
+struct ContainerData
 {
 	unsigned char* Data;
 	int Length;
@@ -141,6 +141,5 @@ int MT2D_Container_Count_Files();
 char *MT2D_Container_Get_FileName_By_ID(int id);
 /*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
 BYTE * MT2D_Container_Get_Data(int id, bool decrypt);
-
 
 #endif

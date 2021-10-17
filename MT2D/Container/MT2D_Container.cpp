@@ -14,9 +14,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <MT2D/MT2D_Debug.h>
-#include "MT2D_Container.h"
-#include "../File/MT2D_File.h"
-#include "aes.h"
+#include <MT2D/Container/MT2D_Container.h>
+#include <MT2D/File/MT2D_File.h>
+#include <MT2D/Container/aes.h>
 
 #define xb10000000 128
 #define xb00001111 15
@@ -135,11 +135,11 @@ void write_Name(MT2D_FILE* openFile, char* name) {
 	while ((int)j < Len) {
 		BitActual = HiddenFileName[j] & 1;
 		HiddenFileName[j] = HiddenFileName[j] >> 1;
-		HiddenFileName[j] = HiddenFileName[j] | BitPrevious << 7;
+		HiddenFileName[j] = (HiddenFileName[j] | BitPrevious) << 7;//Validate?
 		BitPrevious = BitActual;
 		j++;
 	}
-	HiddenFileName[0] = HiddenFileName[0] | BitPrevious << 7;
+	HiddenFileName[0] = (HiddenFileName[0] | BitPrevious) << 7;
 	MT2D_FILE_WRITE(openFile, HiddenFileName, Len, 1);
 	free(HiddenFileName);
 	MT2D_FILE_WRITE_BYTE(openFile, '\n');
@@ -169,7 +169,7 @@ void write_padding_length(MT2D_FILE* openedFile, unsigned char padding, int leng
 		k++;
 		lengthSize = lengthSize >> 8;
 	}
-	MT2D_FILE_WRITE_BYTE(openedFile, padding + k << 4); //Write the padding  on the right and the amount of lenght bytes on the left (max 4 bits)
+	MT2D_FILE_WRITE_BYTE(openedFile, (padding + k) << 4); //Write the padding  on the right and the amount of lenght bytes on the left (max 4 bits)
 	MT2D_FILE_WRITE(openedFile, (unsigned char*)&length, k , 1);//write all the bytes of the integer length
 }
 
@@ -575,7 +575,6 @@ void MT2D_Container_Init() {
 Free the loaded files
 **/
 void MT2D_Container_Clear() {
-	MT2D_ContainerFilePath *filePointer;
 	int i,j;
 	//Clear the hash
 	for(i = 0; i < 15; i++){
@@ -779,7 +778,6 @@ bool MT2D_Container_Save(char *NameAndPath) {
 -Decrypt: if the file needs to be decrypted
 **/
 bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool decrypt) {
-	int OffsetSaved;
 	char *Filename;
 	bool Saved = false;
 	Filename = (char*)malloc(strlen(NewName) + strlen(Path) + 1);

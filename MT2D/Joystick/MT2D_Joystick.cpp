@@ -1,11 +1,9 @@
-#include "../MT2D_Terminal_Define.h"
-#include "../Joystick/MT2D_Joystick.h"
-#include <cstdlib>
-#include <cstdio>
+#include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/Joystick/MT2D_Joystick.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 MT2D_Joystick *GlobalJoystickHandler;
-
-
 
 bool MT2D_Joystick_Touched() {
 	return GlobalJoystickHandler->Touched;

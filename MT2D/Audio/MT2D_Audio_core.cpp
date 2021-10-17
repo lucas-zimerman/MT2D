@@ -1,4 +1,4 @@
-#include "../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #ifndef SDL_USE_AUDIO
 void MT2D_Audio_Init() {}

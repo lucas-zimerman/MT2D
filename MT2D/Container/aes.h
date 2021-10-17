@@ -3,7 +3,13 @@
 
 #define CBC 1
 
+#if __MSDOS__
+#define uint8_t unsigned char
+#define uint32_t unsigned int
+#define uintptr_t unsigned int*
+#else
 #include <stdint.h>
+#endif
 
 // #define the macros below to 1/0 to enable/disable the mode of operation.
 //

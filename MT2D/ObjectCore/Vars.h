@@ -1,37 +1,35 @@
 #ifndef VAR_HEADER
 #define VAR_HEADER
 
-
-
 enum MT2D_VAR_TYPE
 {
-	VAR_CHAR = 1,
-	VAR_INT,
-	VAR_FLOAT,
-	VAR_POINTER = -1,
-	VAR_STRING = -2
+        VAR_CHAR = 1,
+        VAR_INT,
+        VAR_FLOAT,
+        VAR_POINTER = -1,
+        VAR_STRING = -2
 };
 
 enum MT2D_VAR_ERROR
 {
-	 Var_No_Error,
-	 Var_Wrong_Type, //set int into char var
-	 Var_Divide_By_Zero,
-	 Var_Not_Found,
-	 Var_Type_Not_Supported, // check MT2D_VAR_TYPE for supported types.
-	 Var_Null_Data,
-	 Var_Null_Name,
-	 Var_Out_Of_Memory_To_Create_New_Var
+         Var_No_Error,
+         Var_Wrong_Type, //set int into char var
+         Var_Divide_By_Zero,
+         Var_Not_Found,
+         Var_Type_Not_Supported, // check MT2D_VAR_TYPE for supported types.
+         Var_Null_Data,
+         Var_Null_Name,
+         Var_Out_Of_Memory_To_Create_New_Var
 };
 
 extern MT2D_VAR_ERROR MT2D_Var_Last_Error;
 
 
-struct MT2D_VAR {
-	void *Data;
-	MT2D_VAR_TYPE Type;
-	char *Name;
-};
+typedef struct {
+        void *Data;
+        MT2D_VAR_TYPE Type;
+        char *Name;
+} MT2D_VAR;
 
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data);
