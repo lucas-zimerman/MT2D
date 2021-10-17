@@ -83,12 +83,12 @@ void MT2D_SDL_Event_Handler() {
 			MainEvents.Keyboard.keysym.sym = 32;
 		}
 		else if (Events.type == SDL_FINGERUP) {
-			MT2D_Ide_Printf("Touch Up");
+			MT2D_Ide_Printf((char*)"Touch Up");
 			MT2D_SDL_REMOVE_Key_Buffer(32);
 		}
 
 		else if (Events.type == SDL_JOYAXISMOTION) {
-			MT2D_Ide_Printf("Joystick Motion");
+			MT2D_Ide_Printf((char*)"Joystick Motion");
 			if (GlobalJoystickHandler) {
 				if (Events.jaxis.axis == 0) {
 					// X axis

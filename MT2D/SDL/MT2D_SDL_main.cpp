@@ -6,10 +6,10 @@
 
 #ifdef SDL_USE
  */
-#include "MT2D_SDL_Defines.h"
+#include <MT2D/SDL/MT2D_SDL_Defines.h>
 #include <MT2D/SDL/MT2D_SDL_Redefine.h>
-#include "MT2D_SDL_Event_Handler.h"
-#include "../MT2D_Debug.h"
+#include <MT2D/SDL/MT2D_SDL_Event_Handler.h>
+#include <MT2D/MT2D_Debug.h>
 
 /*GLOBAL VARS*/
 int FRAMEBUFFER[MAX_VER][MAX_HOR]; //used to store what was draw under the screen, (it should avoid overdrawn)
@@ -300,12 +300,16 @@ bool loadMedia()
 	//Loading success flag
 	bool success = true;
 #ifdef _DEBUG
-	MT2D_Ide_Printf("MT2D: SDL Load tilemap char - ");
+	MT2D_Ide_Printf((char*)"MT2D: SDL Load tilemap char - ");
 #endif;
-	success = NewLoadFromFile("msdos_fnt.png");
+#if defined(__EMSCRIPTEN__)
+	success = NewLoadFromFile((char*)"assets/msdos_fnt.png");
+#else
+	success = NewLoadFromFile((char*)"msdos_fnt.png");
+#endif
 	//Load sprite sheet texture
 	if (!success) {
-		success = NewLoadFromFile("../../MT2D/SDL_MT2D/msdos_fnt.png");
+		success = NewLoadFromFile((char*)"../../MT2D/SDL_MT2D/msdos_fnt.png");
 	}
 	if (success)
 	{
@@ -327,12 +331,12 @@ bool loadMedia()
 
 		}
 #ifdef _DEBUG
-		MT2D_Ide_Printf("Success\n");
+		MT2D_Ide_Printf((char*)"Success\n");
 #endif
 	}
 	else {
 #ifdef _DEBUG
-		MT2D_Ide_Printf("Failed\n");
+		MT2D_Ide_Printf((char*)"Failed\n");
 #endif
 	}
 	return success;
@@ -354,11 +358,12 @@ void MT2D_SDL_Init()
 	MainEvents.Keyboard_Buffer = 0;
 	MainEvents.Keyboard_Buffer_Count = 0;
 
-	MT2D_Ide_Printf("MT2D: Starting SDL\n");
+	MT2D_Ide_Printf((char*)"MT2D: Starting SDL\n");
 
 	//Initialize SDL
 	if(SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
+		MT2D_Ide_Printf(SDL_GetError());
 		//printf( "SDL could not initialize! SDL Error: %s\n", SDL_GetError() );
 		success = false;
 	}
@@ -375,10 +380,11 @@ void MT2D_SDL_Init()
 			return;
 		}
 		#if  !defined(MT2D_WINDOWED_MODE) || defined(MT2D_SCREEN_RESIZE) //set the screen size as the size of the screen in case of fullscreen.
-//            SCREEN_WIDTH = mode.w;
- //           SCREEN_HEIGHT = mode.h;
+            SCREEN_WIDTH = mode.w;
+            SCREEN_HEIGHT = mode.h;
 		#endif
 
+		SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "1");
 		//Set texture filtering to linear
 		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0" ) )
 		{
@@ -391,7 +397,7 @@ void MT2D_SDL_Init()
 		#else
             gWindow = MT2D_SDL_CreateWindow( "MT2D SDL", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
 		#endif
-			MainEvents.Render = MT2D_SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+			MainEvents.Render = MT2D_SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 		if( gWindow == NULL )
 		{
 			//printf( "Window could not be created! SDL Error: %s\n", SDL_GetError() );

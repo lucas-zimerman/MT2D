@@ -1,17 +1,13 @@
 #ifndef _SDLBEEP
 #define _SDLBEEP
 
-#ifndef __ANDROID__
 #include <MT2D/MT2D_Terminal_Define.h>
-#else
-#include "../../MT2D_Terminal_Define.h"
-#endif
 
 #ifdef _DEBUG
 #include <stdio.h>
 #endif
 #ifdef SDL_USE_AUDIO
-#if defined(linux) && !defined(__ANDROID__)
+#if defined(linux) || defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_audio.h>
 #elif defined(__ANDROID__)

@@ -47,3 +47,5 @@ Temporary Items
 .apdisk
 /ms-dos tile render.xlsx
 /performance_msdos.xlsx
+*.bak
+**/_short/*/*.cpp

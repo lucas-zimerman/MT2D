@@ -8,7 +8,7 @@ engine.
 
 
 
-#if defined(__MSDOS__) && !defined(MT2DDOS_INIT_H)
+#if defined(__MSDOS__) || defined(__DOS__) && !defined(MT2DDOS_INIT_H)
 #define MT2DDOS_INIT_H
 
 bool MT2D_Dos_Init();

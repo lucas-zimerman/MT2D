@@ -1,12 +1,12 @@
 /**
-	Created by: Lucas Zimerman Fraulob
-	This code deals with joystick and also with keyboard where you can read multiple keys at once.
-	This code may affect the MT2D_Keyboard code, so you better not use both at the same time.
+        Created by: Lucas Zimerman Fraulob
+        This code deals with joystick and also with keyboard where you can read multiple keys at once.
+        This code may affect the MT2D_Keyboard code, so you better not use both at the same time.
 **/
 
 
 /**
-	X/Y axis goes from -32768 to 32767
+        X/Y axis goes from -32768 to 32767
 **/
 #ifndef MTJOY_H
 #define MTJOY_H
@@ -17,18 +17,18 @@
 #endif
 
 typedef struct{
-	int Left_X_axis;
-	int Left_Y_axis;
-	bool Left_Modified;
-	int Right_X_axis;
-	int Right_Y_axis;
-	bool Right_Modified;
-	bool Button_Pressed[4];
-	int Mapped_Button[4];// return as a normal keyboard button
-	bool Touched;
-	int DeadZoneAxis;
+        int Left_X_axis;
+        int Left_Y_axis;
+        bool Left_Modified;
+        int Right_X_axis;
+        int Right_Y_axis;
+        bool Right_Modified;
+        bool Button_Pressed[4];
+        int Mapped_Button[4];// return as a normal keyboard button
+        bool Touched;
+        int DeadZoneAxis;
 #ifdef SDL_USE
-	SDL_Joystick* gGameController;
+        SDL_Joystick* gGameController;
 #endif
 }MT2D_Joystick;
 
@@ -38,8 +38,8 @@ typedef struct{
 #define MT2D_Joystick_Init MT2D_Win_Joystick_Init
 #define MT2D_Joystick_Close  MT2D_Win_Joystick_Close
 #define MT2D_Joystick_Update MT2D_Win_Joystick_Update
-#elif defined(__MSDOS__)
-#include "../_MSDOS/IO/MT2D_Dos_Joystick.h"
+#elif defined(__MSDOS__) || defined(__DOS__)
+#include <MT2D/_MSDOS/IO/MT2D_Dos_Joystick.h>
 #define MT2D_Joystick_Init MT2D_Dos_Joystick_Init
 #define MT2D_Joystick_Close MT2D_Dos_Joystick_Close
 #define MT2D_Joystick_Update MT2D_Dos_Joystick_Update
@@ -48,6 +48,12 @@ typedef struct{
 #define MT2D_Joystick_Init MT2D_Droid_Joystick_Init
 #define MT2D_Joystick_Close MT2D_Droid_Joystick_Close
 #define MT2D_Joystick_Update MT2D_Droid_Joystick_Update
+#elif defined(__EMSCRIPTEN__)
+#include <MT2D/_EMNISCRIPT/IO/MT2D_Emni_Joystick.h>
+#define MT2D_Joystick_Init MT2D_Ems_Joystick_Init
+#define MT2D_Joystick_Close MT2D_Ems_Joystick_Close
+#define MT2D_Joystick_Update MT2D_Ems_Joystick_Update
+
 #else
 #error "No code was done for this platform"
 #endif

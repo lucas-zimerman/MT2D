@@ -133,6 +133,15 @@ void MT2D_Win_Joystick_Init() {
 void MT2D_Win_Joystick_Close() {
 #ifdef SDL_USE
 	if (GlobalJoystickHandler->gGameController != 0) {
+		MT2D_SDL_Update_Keys(GlobalJoystickHandler);
+		GlobalJoystickHandler->Button_Pressed[0] = false;
+		GlobalJoystickHandler->Button_Pressed[1] = false;
+		GlobalJoystickHandler->Button_Pressed[2] = false;
+		GlobalJoystickHandler->Button_Pressed[3] = false;
+		GlobalJoystickHandler->Right_Modified = false;
+		GlobalJoystickHandler->Left_Modified = false;
+		GlobalJoystickHandler->Right_X_axis = 0;
+		GlobalJoystickHandler->Right_Y_axis = 0;
 		SDL_JoystickClose(GlobalJoystickHandler->gGameController);
 	}
 #endif

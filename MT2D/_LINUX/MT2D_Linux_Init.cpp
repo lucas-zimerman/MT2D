@@ -16,3 +16,5 @@ bool MT2D_Linux_Init() {// Return: true - it started without any kind of problem
 	bool output = true;
 	return output;
 }
+
+#endif

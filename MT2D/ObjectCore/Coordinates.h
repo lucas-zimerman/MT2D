@@ -1,9 +1,8 @@
 #ifndef COORDINATES_
 #define  COORDINATES_
 
-struct Coord {
-	int X;
-	int Y;
-};
+typedef struct{
+        int X, Y;
+}Coord;
 
 #endif
