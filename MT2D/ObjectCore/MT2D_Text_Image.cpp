@@ -8,6 +8,7 @@ static unsigned long layout_size(unsigned long height, unsigned long sliceCount,
 
 MT2D_Text_Image *MT2D_Text_Image_Create(int width, int height, const char *cells) {
         unsigned long slices = 0, data = 0;
+        int deliberately_unused;
         int x, y;
         MT2D_Text_Image *img;
         MT2D_U8 *block;
