@@ -65,8 +65,8 @@ TEST(global_objects_add_find_remove) {
 
 TEST(global_functions_keep_their_signature) {
     CHECK(ObjectCore_AddGlobalCScript("One", f_obj));
-    CHECK(ObjectCore_AddGlobalCScript("Two", f_vars, 3));
-    CHECK(ObjectCore_AddGlobalCScript("Three", f_objobj));
+    CHECK(ObjectCore_AddGlobalCScriptVars("Two", f_vars, 3));
+    CHECK(ObjectCore_AddGlobalCScriptObjVars("Three", f_objobj, -1));
     ObjectCore_CscriptEntry e;
     CHECK(ObjectCore_FindGlobalCScript("One", &e));
     CHECK_EQ(e.Kind, CSCRIPT_KIND_OBJ);

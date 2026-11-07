@@ -20,8 +20,11 @@
 #ifndef MT2D_OBJECT_GLOBALS_H
 #define MT2D_OBJECT_GLOBALS_H
 
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/ObjectCore/Vars.h>
+
+MT2D_C_BEGIN
 
 /* The var is not copied, the name is Var->Name. Int, char and float vars are read and written by
    the Cscript functions as they are. Returns false for a duplicate or a bad name. */
@@ -35,33 +38,35 @@ bool ObjectCore_RemoveGlobalObject(const char *Name);
 
 /* Your own Cscript functions. ArgCount is how many arguments a script has to write (for the
    Object* + vars signature the object counts as the first one), -1 accepts any amount. */
-bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *));
-bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *, MT2D_VAR **), int ArgCount = -1);
-bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *, Object *, MT2D_VAR **), int ArgCount = -1);
+bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *));                                    /* void f(Object*) */
+bool ObjectCore_AddGlobalCScriptVars(const char *Name, void (*Fn)(Object *, MT2D_VAR **), int ArgCount);     /* void f(Object*, MT2D_VAR**) */
+bool ObjectCore_AddGlobalCScriptObjVars(const char *Name, void (*Fn)(Object *, Object *, MT2D_VAR **), int ArgCount); /* void f(Object*, Object*, MT2D_VAR**) */
 bool ObjectCore_RemoveGlobalCScript(const char *Name);
 
 /* Why the last ObjectCore_Load/ObjectCore_Clone failed ("" when it worked). */
-const char *ObjectCore_GetLastError();
+const char *ObjectCore_GetLastError(void);
 
 /* ---- used by the loader ---------------------------------------------------- */
-enum MT2D_CSCRIPT_KIND {
+typedef enum MT2D_CSCRIPT_KIND {
         CSCRIPT_KIND_OBJ = 0,          /* void f(Object*) */
         CSCRIPT_KIND_VARS = 1,         /* void f(Object*, MT2D_VAR**) */
         CSCRIPT_KIND_OBJ_OBJ_VARS = 2  /* void f(Object*, Object*, MT2D_VAR**) */
-};
+} MT2D_CSCRIPT_KIND;
 
-struct ObjectCore_CscriptEntry {
+typedef struct ObjectCore_CscriptEntry {
         int Kind;
         int ArgCount; /* -1 = any */
         void (*Obj)(Object *);
         void (*Vars)(Object *, MT2D_VAR **);
         void (*ObjObj)(Object *, Object *, MT2D_VAR **);
-};
+} ObjectCore_CscriptEntry;
 
 MT2D_VAR *ObjectCore_FindGlobalVar(const char *Name);
 Object *ObjectCore_FindGlobalObject(const char *Name);
 bool ObjectCore_FindGlobalCScript(const char *Name, ObjectCore_CscriptEntry *Out);
 void ObjectCore_SetLastError(const char *What, const char *Name);
-void ObjectCore_ClearLastError();
+void ObjectCore_ClearLastError(void);
+
+MT2D_C_END
 
 #endif

@@ -1,4 +1,4 @@
-/* ObjectGlobals.cpp, see ObjectGlobals.h */
+/* ObjectGlobals.c, see ObjectGlobals.h */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,8 +6,8 @@
 
 #define GLOBAL_NAME_MAX (MT2D_VAR_NAME_MAX - 1)
 
-struct ObjSlot { char Name[MT2D_VAR_NAME_MAX]; Object *Obj; };
-struct FnSlot { char Name[MT2D_VAR_NAME_MAX]; ObjectCore_CscriptEntry Entry; };
+typedef struct { char Name[MT2D_VAR_NAME_MAX]; Object *Obj; } ObjSlot;
+typedef struct { char Name[MT2D_VAR_NAME_MAX]; ObjectCore_CscriptEntry Entry; } FnSlot;
 
 static MT2D_VAR **Global_Vars = 0;
 static int Global_VarCount = 0;
@@ -17,13 +17,13 @@ static FnSlot *Global_Functions = 0;
 static int Global_FunctionCount = 0;
 static char Global_LastError[96] = "";
 
-void ObjectCore_ClearLastError() { Global_LastError[0] = 0; }
+void ObjectCore_ClearLastError(void) { Global_LastError[0] = 0; }
 
 void ObjectCore_SetLastError(const char *What, const char *Name) {
         snprintf(Global_LastError, sizeof(Global_LastError), "%s '%s'", What, Name ? Name : "");
 }
 
-const char *ObjectCore_GetLastError() { return Global_LastError; }
+const char *ObjectCore_GetLastError(void) { return Global_LastError; }
 
 static bool Global_NameOk(const char *Name) {
         size_t n = Name ? strlen(Name) : 0;
@@ -108,30 +108,30 @@ bool ObjectCore_FindGlobalCScript(const char *Name, ObjectCore_CscriptEntry *Out
         return false;
 }
 
-static bool Global_AddFunction(const char *Name, const ObjectCore_CscriptEntry &Entry) {
+static bool Global_AddFunction(const char *Name, const ObjectCore_CscriptEntry *Entry) {
         if (!Global_NameOk(Name) || ObjectCore_FindGlobalCScript(Name, 0)) return false;
         FnSlot *grown = (FnSlot*)realloc(Global_Functions, (Global_FunctionCount + 1) * sizeof(FnSlot));
         if (!grown) return false;
         Global_Functions = grown;
         Global_CopyName(Global_Functions[Global_FunctionCount].Name, Name);
-        Global_Functions[Global_FunctionCount].Entry = Entry;
+        Global_Functions[Global_FunctionCount].Entry = *Entry;
         Global_FunctionCount++;
         return true;
 }
 
 bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *)) {
         ObjectCore_CscriptEntry e = { CSCRIPT_KIND_OBJ, 0, Fn, 0, 0 };
-        return Fn != 0 && Global_AddFunction(Name, e);
+        return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
-bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *, MT2D_VAR **), int ArgCount) {
+bool ObjectCore_AddGlobalCScriptVars(const char *Name, void (*Fn)(Object *, MT2D_VAR **), int ArgCount) {
         ObjectCore_CscriptEntry e = { CSCRIPT_KIND_VARS, ArgCount, 0, Fn, 0 };
-        return Fn != 0 && Global_AddFunction(Name, e);
+        return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
-bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *, Object *, MT2D_VAR **), int ArgCount) {
+bool ObjectCore_AddGlobalCScriptObjVars(const char *Name, void (*Fn)(Object *, Object *, MT2D_VAR **), int ArgCount) {
         ObjectCore_CscriptEntry e = { CSCRIPT_KIND_OBJ_OBJ_VARS, ArgCount, 0, 0, Fn };
-        return Fn != 0 && Global_AddFunction(Name, e);
+        return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
 bool ObjectCore_RemoveGlobalCScript(const char *Name) {

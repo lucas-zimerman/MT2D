@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/STDFunctions.h> /* declares the functions with C linkage */
 #include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Vars.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>

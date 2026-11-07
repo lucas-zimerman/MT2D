@@ -29,6 +29,8 @@ Sprite0 0 Goto "Spawn1"
 
 */
 
+MT2D_C_BEGIN
+
 #pragma region AI FUNCTIONS
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y);
 void Cscript_Move(Object *object);
@@ -78,3 +80,5 @@ void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS);
 void Cscript_PlaySound(Object *object,MT2D_VAR **SoundName);
 void Cscript_PlayMusic(Object *object,MT2D_VAR **MusicName);
 #pragma endregion
+
+MT2D_C_END

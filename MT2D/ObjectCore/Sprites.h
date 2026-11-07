@@ -1,9 +1,12 @@
 #ifndef SPRITES_
 #define SPRITES_
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Coordinates.h>
 #include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/MT2D_Text_Image.h>
 #include <MT2D/ObjectCore/MT2D_Internal_Image.h>
+
+MT2D_C_BEGIN
 
 struct Sprite{
         union {
@@ -45,4 +48,5 @@ Sprite *Sprite_Create_Ascii_From_Cells(int SizeX, int SizeY, const char *cells);
 char Sprite_Get_Char(const Sprite *Me, int x, int y);
 bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y);
 void Sprite_Delete(Sprite *Me);
+MT2D_C_END
 #endif  

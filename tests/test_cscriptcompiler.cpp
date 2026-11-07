@@ -560,7 +560,7 @@ TEST(global_names_are_checked_when_the_object_is_loaded) {
     CHECK(ObjectCore_AddGlobalVar(health));
     CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
     CHECK_STR_EQ(ObjectCore_GetLastError(), "global function is not registered: 'Spawn'");
-    CHECK(ObjectCore_AddGlobalCScript("Spawn", fn_add, 2));
+    CHECK(ObjectCore_AddGlobalCScriptVars("Spawn", fn_add, 2));
     CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
     CHECK_STR_EQ(ObjectCore_GetLastError(), "global var is not registered: 'Speed'");
     CHECK(ObjectCore_AddGlobalVar(speed));

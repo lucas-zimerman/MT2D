@@ -310,7 +310,7 @@ TEST(global_var_is_the_registered_var) {
 
 TEST(global_function_runs_with_its_arguments) {
     CHECK(ObjectCore_AddGlobalCScript("Counter", count_call));
-    CHECK(ObjectCore_AddGlobalCScript("AddToCalls", add_to_first, 1));
+    CHECK(ObjectCore_AddGlobalCScriptVars("AddToCalls", add_to_first, 1));
     Bin b;
     b.magic().u16(0).u16(1).str("Idle").u16(2);
     b.u16(0xFFFF).u16(1).u16(0xFFFE).str("Counter").u8(0).u16(0);
@@ -351,7 +351,7 @@ TEST(global_object_is_the_first_argument_of_object_functions) {
     CHECK(target != 0);
     if (!target) return;
     CHECK(ObjectCore_AddGlobalObject("Doggo", target));
-    CHECK(ObjectCore_AddGlobalCScript("Remember", remember_target, 2));
+    CHECK(ObjectCore_AddGlobalCScriptObjVars("Remember", remember_target, 2));
     Bin b;
     b.magic().u16(0).u16(1).str("Idle").u16(2);
     b.u16(0xFFFF).u16(1).u16(0xFFFE).str("Remember").u8(2).u16(0).u8(3).str("Doggo").u8(1).str("hit");

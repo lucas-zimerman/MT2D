@@ -111,8 +111,8 @@ set(MT2D_COMMON_SOURCES
     ObjectCore/Cscript.cpp
     ObjectCore/MT2D_Text_Image.cpp
     ObjectCore/Object.cpp
-    ObjectCore/ObjectGlobals.cpp
-    ObjectCore/ObjectLoader.cpp
+    ObjectCore/ObjectGlobals.c
+    ObjectCore/ObjectLoader.c
     ObjectCore/SpriteBlock.cpp
     ObjectCore/Sprites.cpp
     ObjectCore/State.cpp
@@ -123,6 +123,8 @@ set(MT2D_COMMON_SOURCES
     Tools/Video/MT2D_Generic_Line.cpp
 )
 
+# New engine code is C (ObjectLoader, ObjectGlobals), the example projects only declare CXX.
+enable_language(C)
 include(CheckCXXCompilerFlag)
 
 function(mt2d_engine_target target backend)
@@ -184,6 +186,8 @@ function(mt2d_engine_target target backend)
     # "${MT2D_REPO_DIR}" makes <MT2D/...> includes work.
     target_include_directories(${target} PUBLIC "${MT2D_REPO_DIR}")
     set_target_properties(${target} PROPERTIES
+        C_STANDARD 99
+        C_EXTENSIONS ON
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS ON
@@ -254,6 +258,8 @@ function(mt2d_add_example name)
     target_link_libraries(${name} PRIVATE ${lib})
     target_include_directories(${name} PRIVATE "${MT2D_EXAMPLES_DIR}/common")
     set_target_properties(${name} PROPERTIES
+        C_STANDARD 99
+        C_EXTENSIONS ON
         CXX_STANDARD 11
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS ON

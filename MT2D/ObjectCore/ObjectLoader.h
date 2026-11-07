@@ -42,8 +42,11 @@
 #ifndef MT2D_OBJECT_LOADER_H
 #define MT2D_OBJECT_LOADER_H
 
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/ObjectCore/ObjectGlobals.h>
+
+MT2D_C_BEGIN
 
 /* Returns NULL when the file is missing, truncated or invalid (nothing is leaked). */
 Object *ObjectCore_Load(const char *file);
@@ -57,5 +60,7 @@ void ObjectCore_Unload(Object *Model);
    acceleration and user vars (with their current values), placed at x, y. Delete it with
    Object_Delete(o, false), the states belong to the model. */
 Object *ObjectCore_Clone(Object *Model, int x, int y);
+
+MT2D_C_END
 
 #endif
