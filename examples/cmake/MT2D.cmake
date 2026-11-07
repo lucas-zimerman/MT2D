@@ -45,6 +45,11 @@ macro(mt2d_find_sdl)
         find_package(SDL2_mixer CONFIG QUIET)
         if(TARGET SDL2::SDL2 AND TARGET SDL2_image::SDL2_image)
             list(APPEND MT2D_SDL_LIBS SDL2::SDL2 SDL2_image::SDL2_image)
+            if(WIN32 AND TARGET SDL2::SDL2main)
+                # MT2D.h asks for SDL2main.lib with a #pragma comment(lib), vcpkg keeps it in a
+                # separate folder, linking the target by path makes the linker find it.
+                list(APPEND MT2D_SDL_LIBS SDL2::SDL2main)
+            endif()
             if(TARGET SDL2_mixer::SDL2_mixer)
                 list(APPEND MT2D_SDL_LIBS SDL2_mixer::SDL2_mixer)
                 set(MT2D_HAS_MIXER TRUE)
