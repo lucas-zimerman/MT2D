@@ -6,20 +6,14 @@
 // int X = 5;
 // -MT2D_Object_Set_Var(Var, X);
 // -MT2D_Object_Set_Var(Var, 5);
-// -MT2D_Object_Set_Var(Var, "Dog");
 // -MT2D_Object_Set_Var(Var, 1.01);
-// int *X2 = (int*)malloc(sizeof(int));
-// X2[0] = 6;
-// -MT2D_Object_Set_Var(Var, X2[0]); or MT2D_Object_Set_Var(Var, (void*)X2,VAR_INT);
+// -MT2D_Object_Set_Var(Var, (void*)&X, VAR_INT);   (the value is copied)
 //
 // How to get data from a var?
 //
-// int X;
-// X = *(int*)MT2D_Object_Get_Var_Data(var);
-//
-// on a char* case, you just need to call MT2D_Object_Get_Var_Data(var); without the *(char*) part.
-// like: 
-// printf("%s\n",MT2D_Object_Get_Var_Data(var));
+// The value is stored inline in the var (union Data), pick the member by Type:
+// int X = var->Data.i;   // VAR_INT      (Data.c for VAR_CHAR, Data.f for VAR_FLOAT)
+// void *P = var->Data.p; // VAR_POINTER  (not owned by the var)
 //
 // Check the supported var types under the MT2D_VAR_TYPE enum
 //
@@ -37,68 +31,106 @@
 
 MT2D_VAR_ERROR MT2D_Var_Last_Error = Var_No_Error;
 
-
-void Private_Free_Data(void *Data,MT2D_VAR_TYPE Type)
+static void Private_Set_Error(MT2D_VAR_ERROR e, const char *msg)
 {
-        if (Type == VAR_CHAR)
-        {
-                //free((char*)Var->Data);
-        }
-        else if (Type == VAR_INT)
-        {
-                free((int*)Data);
-        }
-        else if (Type == VAR_FLOAT)
-        {
-                free((float*)Data);
-        }
-
+        MT2D_Var_Last_Error = e;
+#ifdef _DEBUG
+        printf("MT2D: %s\n", msg);
+#else
+        (void)msg;
+#endif
 }
 
-
-/*
-        Should only be called by Set and Delete calls from this file.
-*/
-void Private_Free_Var_Data(MT2D_VAR *Var)
+/* Numeric view of any numeric var. */
+static inline float Private_To_Float(const MT2D_VAR *v)
 {
-        Private_Free_Data(Var->Data,Var->Type);
-        Var->Data = NULL;
+        return v->Type == VAR_FLOAT ? v->Data.f : (v->Type == VAR_CHAR ? (float)v->Data.c : (float)v->Data.i);
 }
 
+static char *Private_Dup(const char *Text)
+{
+        size_t len = strlen(Text) + 1;
+        char *out = (char*)malloc(len);
+        if (out) memcpy(out, Text, len);
+        return out;
+}
+
+/* Fills a var in place (no allocation). One bounded pass both copies the name and detects names that don't fit. */
+static bool Private_Init(MT2D_VAR *V, const char *Name, MT2D_VAR_TYPE Type)
+{
+        int i;
+        if (Name == NULL) {
+                Private_Set_Error(Var_Null_Name, "NULL NAME RECEIVED IN VAR");
+                return false;
+        }
+        for (i = 0; i < MT2D_VAR_NAME_MAX; i++) {
+                V->Name[i] = Name[i];
+                if (Name[i] == 0) break;
+        }
+        if (i == MT2D_VAR_NAME_MAX) {
+                Private_Set_Error(Var_Name_Too_Long, "VAR NAME IS TOO LONG");
+                return false;
+        }
+        V->Type = (signed char)Type;
+        memset(&V->Data, 0, sizeof(V->Data));
+        MT2D_Var_Last_Error = Var_No_Error;
+        return true;
+}
+
+static MT2D_VAR *Private_Alloc(const char *Name, MT2D_VAR_TYPE Type)
+{
+        MT2D_VAR *V = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
+        if (V == NULL) {
+                Private_Set_Error(Var_Out_Of_Memory_To_Create_New_Var, "Out of Memory to create a new var");
+                return NULL;
+        }
+        if (!Private_Init(V, Name, Type)) {
+                free(V);
+                return NULL;
+        }
+        return V;
+}
+
+bool MT2D_VAR_Init_Int(MT2D_VAR *Var, const char *Name, int Value)
+{
+        if (!Private_Init(Var, Name, VAR_INT)) return false;
+        Var->Data.i = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Char(MT2D_VAR *Var, const char *Name, char Value)
+{
+        if (!Private_Init(Var, Name, VAR_CHAR)) return false;
+        Var->Data.c = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Float(MT2D_VAR *Var, const char *Name, float Value)
+{
+        if (!Private_Init(Var, Name, VAR_FLOAT)) return false;
+        Var->Data.f = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Pointer(MT2D_VAR *Var, const char *Name)
+{
+        return Private_Init(Var, Name, VAR_POINTER);
+}
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data)
 {
-        bool *ptr = (bool*)malloc(sizeof(bool));
-        ptr[0] = Data;
-        //MT2D_Object_Set_Var(Var, (void*)ptr);
+        int v = Data ? 1 : 0;
+        MT2D_Object_Set_Var(Var, (void*)&v, VAR_INT);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data)
 {
-        int *ptr = (int*)malloc(sizeof(int));
-        ptr[0] = Data;
-        //MT2D_Object_Set_Var(Var, (void*)ptr,VAR_INT);
-}
-
-void MT2D_Object_Set_Var(MT2D_VAR *Var, unsigned int Data)
-{
-        unsigned int *ptr = (unsigned int*)malloc(sizeof(unsigned int));
-        ptr[0] = Data;
-        //MT2D_Object_Set_Var(Var, (void*)ptr,VAR_UNSIGNED_INT);
-}
-
-void MT2D_Object_Set_Var(MT2D_VAR *Var, char *Data)
-{
-//      char *Copy = (char*)malloc(strlen(Data)*sizeof(char));
-//      strcpy(Copy,Data);
-        //MT2D_Object_Set_Var(Var, (void*)Data,VAR_CHAR);
+        MT2D_Object_Set_Var(Var, (void*)&Data, VAR_INT);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data)
 {
-        float *ptr = (float*)malloc(sizeof(float));
-        ptr[0] = Data;
-        MT2D_Object_Set_Var(Var, (void*)ptr,VAR_FLOAT);
+        MT2D_Object_Set_Var(Var, (void*)&Data, VAR_FLOAT);
 }
 
 /*
@@ -107,28 +139,32 @@ void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data)
 void MT2D_Object_Set_Var(MT2D_VAR *Var, void * Data, MT2D_VAR_TYPE Type)
 {
         MT2D_Var_Last_Error = Var_No_Error;
-        if (Var)
-        {
-                if (Var->Type == Type)
-                {
-                        Private_Free_Var_Data(Var);
-                        Var->Data = Data;
-                }
-                else
-                {
-                        MT2D_Var_Last_Error = Var_Wrong_Type;
-#ifdef _DEBUG 
-                        printf("MT2D: WRONG TYPE IN VAR %s\n",Var->Name);
-#endif
-                        Private_Free_Data(Data,Type);
-                }
+        if (Var == NULL) {
+                Private_Set_Error(Var_Not_Found, "NULL VAR");
         }
-        else
-        {
-                MT2D_Var_Last_Error = Var_Not_Found;
-#ifdef _DEBUG 
-                printf("MT2D: NULL VAR\n");
-#endif
+        else if (Var->Type != Type) {
+                Private_Set_Error(Var_Wrong_Type, "WRONG TYPE IN VAR");
+        }
+        else if (Type == VAR_POINTER) {
+                Var->Data.p = Data;
+        }
+        else if (Type == VAR_STRING) {
+                MT2D_Object_Set_Var_String(Var, (const char*)Data);
+        }
+        else if (Data == NULL) {
+                Private_Set_Error(Var_Null_Data, "NULL DATA RECEIVED IN VAR");
+        }
+        else if (Type == VAR_CHAR) {
+                Var->Data.c = *(char*)Data;
+        }
+        else if (Type == VAR_INT) {
+                Var->Data.i = *(int*)Data;
+        }
+        else if (Type == VAR_FLOAT) {
+                Var->Data.f = *(float*)Data;
+        }
+        else {
+                Private_Set_Error(Var_Type_Not_Supported, "TYPE NOT SUPPORTED");
         }
 }
 
@@ -137,15 +173,9 @@ void * MT2D_Object_Get_Var_Data(MT2D_VAR * Var)
         MT2D_Var_Last_Error = Var_No_Error;
         if (Var)
         {
-                return Var->Data;
+                return (Var->Type == VAR_POINTER || Var->Type == VAR_STRING) ? Var->Data.p : (void*)&Var->Data;
         }
-        else
-        { 
-                MT2D_Var_Last_Error = Var_Not_Found;
-#ifdef _DEBUG 
-                printf("MT2D: NULL VAR\n");
-#endif
-        }
+        Private_Set_Error(Var_Not_Found, "NULL VAR");
         return NULL;
 }
 
@@ -169,10 +199,7 @@ MT2D_VAR * MT2D_Object_Get_Var_Pointer(MT2D_VAR * ArrayVARS, char * Name)
         }
         else
         {
-                MT2D_Var_Last_Error = Var_Null_Name;
-#ifdef _DEBUG 
-                printf("MT2D: NULL NAME RECEIVED IN VAR\n");
-#endif
+                Private_Set_Error(Var_Null_Name, "NULL NAME RECEIVED IN VAR");
         }
 
         return ptr;
@@ -180,94 +207,119 @@ MT2D_VAR * MT2D_Object_Get_Var_Pointer(MT2D_VAR * ArrayVARS, char * Name)
 
 MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error()
 {
-        return MT2D_VAR_ERROR();
+        return MT2D_Var_Last_Error;
 }
 
 MT2D_VAR * MT2D_Object_Create_Var_Int(const char * Name, int InitialData)
 {
-        int *Data = (int*)malloc(sizeof(int));
-        Data[0] = InitialData;
-        MT2D_VAR *out =  MT2D_Object_Create_Var(Name, VAR_INT, (void*)Data);
-        free(Data);
-        return out;
+        MT2D_VAR *V = Private_Alloc(Name, VAR_INT);
+        if (V) V->Data.i = InitialData;
+        return V;
 }
 
 MT2D_VAR * MT2D_Object_Create_Var_Char(const char * Name, char InitialData)
 {
-        char *Data = (char*)malloc(sizeof(char));
-        Data[0] = InitialData;
-        MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_CHAR, (void*)Data);
-        free(Data);
-        return out;
+        MT2D_VAR *V = Private_Alloc(Name, VAR_CHAR);
+        if (V) V->Data.c = InitialData;
+        return V;
+}
+
+MT2D_VAR * MT2D_Object_Create_Var_Float(const char * Name, float InitialData)
+{
+        MT2D_VAR *V = Private_Alloc(Name, VAR_FLOAT);
+        if (V) V->Data.f = InitialData;
+        return V;
 }
 
 MT2D_VAR * MT2D_Object_Create_Var_Pointer(const char * Name)
 {
         //the only important data is the Name
         //Check ObjectCore_Get_Object_Internal_Data for looking to what Names are allowed to use.
-        unsigned char *Data = (unsigned char*)malloc(sizeof(unsigned char));
-        Data[0] = 0;
-        MT2D_VAR *out = MT2D_Object_Create_Var(Name, VAR_POINTER, (void*)Data);
-        free(Data);
-        return out;
+        return Private_Alloc(Name, VAR_POINTER);
+}
+
+MT2D_VAR * MT2D_Object_Create_Var_String(const char * Name, const char * Text)
+{
+        MT2D_VAR *V;
+        if (Text == NULL) {
+                Private_Set_Error(Var_Null_Data, "NULL DATA RECEIVED IN VAR");
+                return NULL;
+        }
+        V = Private_Alloc(Name, VAR_STRING);
+        if (V) {
+                V->Data.p = Private_Dup(Text);
+                if (V->Data.p == NULL) {
+                        free(V);
+                        Private_Set_Error(Var_Out_Of_Memory_To_Create_New_Var, "Out of Memory to create a new var");
+                        return NULL;
+                }
+        }
+        return V;
+}
+
+void MT2D_Object_Set_Var_String(MT2D_VAR *Var, const char *Text)
+{
+        char *copy;
+        MT2D_Var_Last_Error = Var_No_Error;
+        if (Var == NULL) {
+                Private_Set_Error(Var_Not_Found, "NULL VAR");
+        }
+        else if (Var->Type != VAR_STRING) {
+                Private_Set_Error(Var_Wrong_Type, "WRONG TYPE IN VAR");
+        }
+        else if (Text == NULL) {
+                Private_Set_Error(Var_Null_Data, "NULL DATA RECEIVED IN VAR");
+        }
+        else {
+                copy = Private_Dup(Text); /* before the release: Text may point inside the old text */
+                if (copy == NULL) {
+                        Private_Set_Error(Var_Out_Of_Memory_To_Create_New_Var, "Out of Memory to create a new var");
+                } else {
+                        free(Var->Data.p);
+                        Var->Data.p = copy;
+                }
+        }
+}
+
+const char *MT2D_Object_Get_Var_String(MT2D_VAR *Var)
+{
+        MT2D_Var_Last_Error = Var_No_Error;
+        if (Var == NULL) {
+                Private_Set_Error(Var_Not_Found, "NULL VAR");
+                return NULL;
+        }
+        if (Var->Type != VAR_STRING) {
+                Private_Set_Error(Var_Wrong_Type, "WRONG TYPE IN VAR");
+                return NULL;
+        }
+        return (const char*)Var->Data.p;
 }
 
 /*
-        Generic Function
+        Generic Function, InitialData is read (copied) according to Type: a char*, int*, float*,
+        or a const char* text for VAR_STRING. It is ignored for VAR_POINTER.
 */
 MT2D_VAR * MT2D_Object_Create_Var(const char * Name, MT2D_VAR_TYPE Type, void * InitialData)
 {
-        MT2D_VAR *V = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
-        if (V)
-        {
-                if (InitialData == NULL)
-                {
-                        MT2D_Var_Last_Error = Var_Null_Data;
-#ifdef _DEBUG 
-                        printf("MT2D: NULL DATA RECEIVED IN VAR\n");
-#endif
+        MT2D_VAR *V;
+        if (Type == VAR_STRING) {
+                return MT2D_Object_Create_Var_String(Name, (const char*)InitialData);
+        }
+        if (Type != VAR_POINTER) {
+                if (Type != VAR_CHAR && Type != VAR_INT && Type != VAR_FLOAT) {
+                        Private_Set_Error(Var_Type_Not_Supported, "TYPE NOT SUPPORTED");
+                        return NULL;
                 }
-                else
-                {
-                        V->Name = (char*)malloc((strlen(Name) + 1) * sizeof(char));
-                        strcpy(V->Name, Name);
-                        if (Name == NULL)
-                        {
-                                MT2D_Var_Last_Error = Var_Null_Name;
-#ifdef _DEBUG 
-                                printf("MT2D: NULL NAME RECEIVED IN VAR\n");
-#endif
-                        }
-                        else
-                        {
-                                V->Type = Type;
-                                switch (Type)
-                                {
-                                case VAR_CHAR:
-                                        V->Data = (char*)malloc(sizeof(char));
-                                        *(char*)V->Data = *(char*)InitialData;
-                                        break;
-                                case VAR_INT:
-                                        V->Data = (int*)malloc(sizeof(int));
-                                        *(int*)V->Data = *(int*)InitialData;
-                                        break;
-                                case VAR_FLOAT:
-                                        V->Data = (float*)malloc(sizeof(float));
-                                        *(float*)V->Data = *(float*)InitialData;
-                                        break;
-                                case VAR_POINTER:
-                                        V->Data = 0;
-                                        break;
-                                }
-                        }
+                if (InitialData == NULL) {
+                        Private_Set_Error(Var_Null_Data, "NULL DATA RECEIVED IN VAR");
+                        return NULL;
                 }
         }
-        else
-        {
-                MT2D_Var_Last_Error = Var_Out_Of_Memory_To_Create_New_Var;
-#ifdef _DEBUG 
-                printf("MT2D: Out of Memory to create a new var\n");
-#endif
+        V = Private_Alloc(Name, Type);
+        if (V) {
+                if (Type == VAR_CHAR)       V->Data.c = *(char*)InitialData;
+                else if (Type == VAR_INT)   V->Data.i = *(int*)InitialData;
+                else if (Type == VAR_FLOAT) V->Data.f = *(float*)InitialData;
         }
         return V;
 }
@@ -277,153 +329,68 @@ MT2D_VAR * MT2D_Object_Create_Var(const char * Name, MT2D_VAR_TYPE Type, void * 
         does not change the original object type
 **/
 void MT2D_Object_VAR_SetVar(MT2D_VAR *Var, MT2D_VAR *New) {
-        if (Var->Type == VAR_CHAR) {
-                switch (New->Type) {
-                case VAR_CHAR:
-                        *(char*)Var->Data = *(char*)New->Data;
-                        break;
-                case VAR_INT:
-                        *(char*)Var->Data = *(int*)New->Data;
-                        break;
-                case VAR_FLOAT:
-                        *(char*)Var->Data = *(float*)New->Data;
-                        break;
-                }
+        if (New->Type != VAR_CHAR && New->Type != VAR_INT && New->Type != VAR_FLOAT) {
+                if (Var->Type != VAR_CHAR && Var->Type != VAR_INT && Var->Type != VAR_FLOAT)
+                        MT2D_Var_Last_Error = Var_Type_Not_Supported;
+                return;
         }
-        else if (Var->Type == VAR_INT) {
-                switch (New->Type) {
-                case VAR_CHAR:
-                        *(int*)Var->Data = *(char*)New->Data;
-                        break;
-                case VAR_INT:
-                        *(int*)Var->Data = *(int*)New->Data;
-                        break;
-                case VAR_FLOAT:
-                        *(int*)Var->Data = *(float*)New->Data;
-                        break;
-                }
+        switch (Var->Type) {
+        case VAR_CHAR:  Var->Data.c = New->Type == VAR_FLOAT ? (char)New->Data.f  : (char)MT2D_Object_VAR_GetInt(New); break;
+        case VAR_INT:   Var->Data.i = MT2D_Object_VAR_GetInt(New); break;
+        case VAR_FLOAT: Var->Data.f = Private_To_Float(New); break;
+        default:        MT2D_Var_Last_Error = Var_Type_Not_Supported; break;
         }
-        else if (Var->Type == VAR_FLOAT) {
-                switch (New->Type) {
-                case VAR_CHAR:
-                        *(float*)Var->Data = *(char*)New->Data;
-                        break;
-                case VAR_INT:
-                        *(float*)Var->Data = *(int*)New->Data;
-                        break;
-                case VAR_FLOAT:
-                        *(float*)Var->Data = *(float*)New->Data;
-                        break;
-                }
-        }
-        else {
-                MT2D_Var_Last_Error = Var_Type_Not_Supported;
-        }
-
 }
 
-int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
-        int output = 0;
-        if (Var->Type == VAR_CHAR) {
-                output = (int)(*(char*)Var->Data);
+static void Private_Arith(MT2D_VAR *Store, MT2D_VAR *Other, int sign) {
+        if (Other->Type != VAR_CHAR && Other->Type != VAR_INT && Other->Type != VAR_FLOAT) return;
+        switch (Store->Type) {
+        case VAR_INT:
+                Store->Data.i += sign * MT2D_Object_VAR_GetInt(Other);
+                break;
+        case VAR_CHAR:
+                if (Other->Type == VAR_FLOAT)
+                        Store->Data.c = (char)((float)Store->Data.c + sign * Other->Data.f);
+                else
+                        Store->Data.c = (char)(Store->Data.c + sign * MT2D_Object_VAR_GetInt(Other));
+                break;
+        case VAR_FLOAT:
+                Store->Data.f += sign * Private_To_Float(Other);
+                break;
+        default:
+                break;
         }
-        else if (Var->Type == VAR_INT) {
-                output = *(int*)Var->Data;
-        }
-        else if (Var->Type == VAR_FLOAT) {
-                output = *(float*)Var->Data;
-
-        }
-        else {
-                MT2D_Var_Last_Error = Var_Type_Not_Supported;
-        }
-        return output;
-
 }
 
-bool MT2D_Object_VAR_GetBool(MT2D_VAR* Var) {
-        bool output = false;
-        if (Var->Type == VAR_CHAR) {
-                output = *(char*)Var->Data > 0;
-        }
-        else if (Var->Type == VAR_INT) {
-                output = *(int*)Var->Data > 0;
-        }
-        else if (Var->Type == VAR_FLOAT) {
-                output = *(float*)Var->Data > 0;
-
-        }
-
-        else {
-                MT2D_Var_Last_Error = Var_Type_Not_Supported;
-        }
-        return output;
-
-}
-
-
+/*
+        Int stores are by far the most common (positions, counters), so int += int/char is checked
+        first: no sign multiply and no second type switch on slow CPUs. Everything else goes through
+        the generic path.
+*/
 void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
         if (Store->Type == VAR_INT) {
-                if (ToAdd->Type == VAR_INT) {
-                        *(int*)Store->Data = *(int*)Store->Data + *(int*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_CHAR) {
-                        *(int*)Store->Data = *(int*)Store->Data + (int)*(char*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_FLOAT) {
-                        *(int*)Store->Data = *(int*)Store->Data + (int)*(float*)ToAdd->Data;
-                }
+                if (ToAdd->Type == VAR_INT)  { Store->Data.i += ToAdd->Data.i; return; }
+                if (ToAdd->Type == VAR_CHAR) { Store->Data.i += ToAdd->Data.c; return; }
         }
-        else if (Store->Type == VAR_CHAR) {
-                if (ToAdd->Type == VAR_INT) {
-                        *(char*)Store->Data = *(char*)Store->Data + (char)*(int*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_CHAR) {
-                        *(char*)Store->Data = *(char*)Store->Data + *(char*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_FLOAT) {
-                        *(char*)Store->Data = *(char*)Store->Data + (float)*(float*)ToAdd->Data;
-                }
-        }
-
+        Private_Arith(Store, ToAdd, 1);
 }
-
 
 void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
         if (Store->Type == VAR_INT) {
-                if (ToAdd->Type == VAR_INT) {
-                        *(int*)Store->Data = *(int*)Store->Data - *(int*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_CHAR) {
-                        *(int*)Store->Data = *(int*)Store->Data - (int)*(char*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_FLOAT) {
-                        *(int*)Store->Data = *(int*)Store->Data - (int)*(float*)ToAdd->Data;
-                }
+                if (ToAdd->Type == VAR_INT)  { Store->Data.i -= ToAdd->Data.i; return; }
+                if (ToAdd->Type == VAR_CHAR) { Store->Data.i -= ToAdd->Data.c; return; }
         }
-        else if (Store->Type == VAR_CHAR) {
-                if (ToAdd->Type == VAR_INT) {
-                        *(char*)Store->Data = *(char*)Store->Data - *(int*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_CHAR) {
-                        *(char*)Store->Data = *(char*)Store->Data - *(char*)ToAdd->Data;
-                }
-                else if (ToAdd->Type == VAR_FLOAT) {
-                        *(char*)Store->Data = *(char*)Store->Data - *(float*)ToAdd->Data;
-                }
-
-        }
+        Private_Arith(Store, ToAdd, -1);
 }
 
 MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *var) {
-        MT2D_VAR *NewVAR =0;
-        switch (var->Type) {
-        case VAR_INT:
-                NewVAR = MT2D_Object_Create_Var_Int(var->Name, *(int*)var->Data);
-                break;
-        case VAR_CHAR:
-                NewVAR = MT2D_Object_Create_Var_Char(var->Name, *(char*)var->Data);
-                break;
+        MT2D_VAR *NewVAR = 0;
+        if (var->Type == VAR_STRING) {
+                NewVAR = MT2D_Object_Create_Var_String(var->Name, (const char*)var->Data.p);
+        }
+        else if (var->Type == VAR_INT || var->Type == VAR_CHAR || var->Type == VAR_FLOAT) {
+                NewVAR = Private_Alloc(var->Name, (MT2D_VAR_TYPE)var->Type);
+                if (NewVAR) NewVAR->Data = var->Data;
         }
         return NewVAR;
 }
@@ -474,14 +441,19 @@ MT2D_VAR **MT2D_VAR_Create_MatrixN(int amount, ...) {
         return M;
 }
 
+void MT2D_VAR_ReleaseData(MT2D_VAR *var) {
+        if (var->Type == VAR_STRING) {
+                free(var->Data.p);
+                var->Data.p = 0;
+        }
+}
+
+/*
+        The name and the numeric value are inline, so only a VAR_STRING text is released apart from the var.
+*/
 void MT2D_VAR_Free(MT2D_VAR *var, int constName) {
-        if (var->Type != VAR_POINTER) {
-                free(var->Name);
-                free(var->Data);
-        }
-        else if (constName == 0) {
-                /* pointer vars don't own their Data, only the Name */
-                free(var->Name);
-        }
+        (void)constName;
+        if (var == NULL) return;
+        MT2D_VAR_ReleaseData(var);
         free(var);
 }

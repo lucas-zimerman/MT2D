@@ -27,8 +27,8 @@ void Object_Render(Object *obj) {
                 Sprite_Render_on_Window(
                         obj->State[obj->ActualState]->Sprites[obj->ActualFrame],
                         DISPLAY_WINDOW1,
-                        *(int*)obj->User_Vars[Object_PosX_Var_Index].Data,
-                        *(int*)obj->User_Vars[Object_PosY_Var_Index].Data
+                        obj->User_Vars[Object_PosX_Var_Index].Data.i,
+                        obj->User_Vars[Object_PosY_Var_Index].Data.i
                 );
         }
 }
@@ -38,13 +38,6 @@ void Object_Add_Variable(Object* object, MT2D_VAR* variable)
         object->User_Vars_Count++;
         object->User_Vars = (MT2D_VAR*)realloc(object->User_Vars, (object->User_Vars_Count + 1) * sizeof(MT2D_VAR));
         object->User_Vars[object->User_Vars_Count - 1] = *variable;
-}
-
-/* Object_Add_Variable that also releases the MT2D_VAR shell (its Name and Data now belong to the object). */
-static void Object_Add_Variable_Move(Object* object, MT2D_VAR* variable)
-{
-        Object_Add_Variable(object, variable);
-        free(variable);
 }
 
 void Object_Add_Variables(Object* object, MT2D_VAR* variables, int total)
@@ -75,14 +68,16 @@ Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int Pos
         Obj->CanDelete = false;
         Obj->MyScene = 0;
 
-        Obj->User_Vars = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
-        Obj->User_Vars_Count = 0;
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Pos_X", PosX));
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Pos_Y", PosY));
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Size_X", sizeX));
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Size_Y", sizeY));
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Acel_X", 0));
-        Object_Add_Variable_Move(Obj, MT2D_Object_Create_Var_Int("Acel_Y", 0));
+        /* The built-in vars are written in place: one allocation, no temporary vars.
+           One spare slot is kept, like Object_Add_Variable does (it reallocs to Count + 1). */
+        Obj->User_Vars = (MT2D_VAR*)malloc((Object_First_User_Var_Index + 1) * sizeof(MT2D_VAR));
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_PosX_Var_Index],  "Pos_X",  PosX);
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_PosY_Var_Index],  "Pos_Y",  PosY);
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_SizeX_Var_Index], "Size_X", sizeX);
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_SizeY_Var_Index], "Size_Y", sizeY);
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_AcelX_Var_Index], "Acel_X", 0);
+        MT2D_VAR_Init_Int(&Obj->User_Vars[Object_AcelY_Var_Index], "Acel_Y", 0);
+        Obj->User_Vars_Count = Object_First_User_Var_Index;
         return Obj;
 }
 
@@ -138,7 +133,7 @@ void Object_Goto_NextStep(Object *O) {
                                 O = O;
                         }
                         if(O->User_Vars != 0){
-                                sprintf(debugbuff,"function Object %p Timeout %d State [%s] Frame %d\n",O, *(int*)O->User_Vars[0].Data, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
+                                sprintf(debugbuff,"function Object %p Timeout %d State [%s] Frame %d\n",O, O->User_Vars[0].Data.i, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
                                 MT2D_Ide_Printf(debugbuff);
                         }
                         else {
@@ -206,8 +201,7 @@ void Object_Delete(Object *Me, bool deleteStates) {
         if (Me != 0) {
                 if (Me->User_Vars_Count) {
                         for (i = 0; i < Me->User_Vars_Count; i++) {
-                                free(Me->User_Vars[i].Data);
-                                free(Me->User_Vars[i].Name);
+                                MT2D_VAR_ReleaseData(&Me->User_Vars[i]);
                         }
                 }
                 free(Me->User_Vars);

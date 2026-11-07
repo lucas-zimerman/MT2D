@@ -60,7 +60,7 @@ TEST(add_variable_and_variables) {
     Object_Add_Variable(o, health);
     CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index + 1);
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index].Name, "Health");
-    CHECK_EQ(*(int *)o->User_Vars[Object_First_User_Var_Index].Data, 20);
+    CHECK_EQ(o->User_Vars[Object_First_User_Var_Index].Data.i, 20);
 
     MT2D_VAR extra[2];
     extra[0] = *MT2D_Object_Create_Var_Int("Ammo", 3);
@@ -69,7 +69,7 @@ TEST(add_variable_and_variables) {
     CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index + 3);
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index + 1].Name, "Ammo");
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index + 2].Name, "Score");
-    CHECK_EQ(*(int *)o->User_Vars[Object_First_User_Var_Index + 2].Data, 4);
+    CHECK_EQ(o->User_Vars[Object_First_User_Var_Index + 2].Data.i, 4);
 }
 
 TEST(next_step_waits_then_runs_functions) {
@@ -205,6 +205,59 @@ TEST(delete_object_accepts_null_and_frees_states_on_request) {
     Object *o = Object_Create(false, false, 1, 1, 0, 0, one_state(st), 1);
     Object_Delete(o, true);
     CHECK(true); // reaching this line means no crash / double free
+}
+
+TEST(create_builds_the_builtin_vars_in_place) {
+    ObjectState **st = (ObjectState **)malloc(sizeof(ObjectState *));
+    st[0] = MT2D_OBJECT_CREATE_STATE((char *)"Idle");
+    MT2D_ObjectState_ADD(st[0], 0, 1, 0);
+    Object *o = Object_Create(true, false, 3, 4, 10, 20, st, 1);
+    CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index);
+    CHECK_STR_EQ(o->User_Vars[Object_PosX_Var_Index].Name, "Pos_X");
+    CHECK_STR_EQ(o->User_Vars[Object_PosY_Var_Index].Name, "Pos_Y");
+    CHECK_STR_EQ(o->User_Vars[Object_SizeX_Var_Index].Name, "Size_X");
+    CHECK_STR_EQ(o->User_Vars[Object_SizeY_Var_Index].Name, "Size_Y");
+    CHECK_STR_EQ(o->User_Vars[Object_AcelX_Var_Index].Name, "Acel_X");
+    CHECK_STR_EQ(o->User_Vars[Object_AcelY_Var_Index].Name, "Acel_Y");
+    CHECK_EQ(ObjectPosX(o), 10);
+    CHECK_EQ(ObjectPosY(o), 20);
+    CHECK_EQ(ObjectSizeX(o), 3);
+    CHECK_EQ(ObjectSizeY(o), 4);
+    CHECK_EQ(ObjectAcelX(o), 0);
+    CHECK_EQ(ObjectAcelY(o), 0);
+    for (int i = 0; i < Object_First_User_Var_Index; i++) CHECK_EQ(o->User_Vars[i].Type, VAR_INT);
+
+    // user vars added later land after the built-in ones and don't disturb them
+    for (int n = 0; n < 5; n++) {
+        char name[8];
+        sprintf(name, "U%d", n);
+        MT2D_VAR *v = MT2D_Object_Create_Var_Int(name, 100 + n);
+        Object_Add_Variable(o, v);
+        free(v);
+    }
+    CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index + 5);
+    CHECK_EQ(ObjectPosX(o), 10);
+    CHECK_EQ(ObjectAcelY(o), 0);
+    CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index + 4].Name, "U4");
+    CHECK_EQ(o->User_Vars[Object_First_User_Var_Index + 4].Data.i, 104);
+    Object_Delete(o, true);
+}
+
+TEST(var_init_in_place) {
+    MT2D_VAR v[4];
+    CHECK(MT2D_VAR_Init_Int(&v[0], "I", 7) && v[0].Data.i == 7 && v[0].Type == VAR_INT);
+    CHECK(MT2D_VAR_Init_Char(&v[1], "C", 'z') && v[1].Data.c == 'z' && v[1].Type == VAR_CHAR);
+    CHECK(MT2D_VAR_Init_Float(&v[2], "F", 1.5f) && v[2].Data.f == 1.5f && v[2].Type == VAR_FLOAT);
+    CHECK(MT2D_VAR_Init_Pointer(&v[3], "P") && v[3].Data.p == 0 && v[3].Type == VAR_POINTER);
+    CHECK_STR_EQ(v[3].Name, "P");
+    CHECK_EQ(MT2D_Var_Last_Error, Var_No_Error);
+    CHECK(!MT2D_VAR_Init_Int(&v[0], NULL, 1));
+    CHECK_EQ(MT2D_Var_Last_Error, Var_Null_Name);
+    char tooLong[MT2D_VAR_NAME_MAX + 1];
+    memset(tooLong, 'a', MT2D_VAR_NAME_MAX); tooLong[MT2D_VAR_NAME_MAX] = 0;
+    CHECK(!MT2D_VAR_Init_Int(&v[0], tooLong, 1));
+    CHECK_EQ(MT2D_Var_Last_Error, Var_Name_Too_Long);
+    MT2D_Var_Last_Error = Var_No_Error;
 }
 
 MT2D_TEST_MAIN()

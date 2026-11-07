@@ -21,7 +21,7 @@ by the Pointer.
 **/
 int Cscript_Get_Object_VarIndex(MT2D_VAR *Var) {
         int out = -1;
-        Object *O = (Object*)Var->Data;
+        Object *O = (Object*)Var->Data.p;
         int i = 0;
         for (i < 0; i < O->User_Vars_Count; i++) {
                 if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
@@ -39,7 +39,7 @@ use the function Cscript_VAR_Get_Integer in case you are dealing
 with other types of data other than object struct data.
 **/
 int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
-        Object *O = (Object*)Var->Data;
+        Object *O = (Object*)Var->Data.p;
         int Return = 0;
         if (O) {
                 int i = 0;
@@ -62,7 +62,7 @@ with other types of data other than object struct data.
 !! WARNING, NewVar must not be a POINTER!!!
 **/
 void Cscript_Set_Object_Internal_Data(Object *caller, MT2D_VAR *Var, MT2D_VAR *NewVar) {
-        Object *O = (Object*)Var->Data;
+        Object *O = (Object*)Var->Data.p;
         if (O) {
                 //check vars
                 int i = 0;
@@ -82,9 +82,9 @@ It checks what type of var is before taking directly the data.
 int Cscript_VAR_Get_Integer(Object *object, MT2D_VAR *Var) {
         int Return = 0;
         if (Var->Type == VAR_POINTER) {
-                Var->Data = object;
+                Var->Data.p = object;
                 Return = Cscript_Get_Object_Internal_Data(Var);
-                Var->Data = 0;
+                Var->Data.p = 0;
         }
         else {
                 Return = MT2D_Object_VAR_GetInt(Var);
@@ -98,7 +98,7 @@ It checks what type of var is before taking directly the data.
 **/
 void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
         if (Var->Type == VAR_POINTER) {
-                Var->Data = object;
+                Var->Data.p = object;
                 if (NewData->Type == VAR_POINTER) {
                         MT2D_VAR *Tmp = MT2D_Object_Create_Var_Int((char*)"Tmp", Cscript_Get_Object_Internal_Data(NewData));
                         Cscript_Set_Object_Internal_Data(object, Var, Tmp);
@@ -146,17 +146,17 @@ VARS[1] = Data to transfer
 void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
         MT2D_VAR *tmp;
         if (VARS[0]->Type == VAR_POINTER) {
-                if (VARS[0]->Data == 0) {
-                        VARS[0]->Data = Object;
+                if (VARS[0]->Data.p == 0) {
+                        VARS[0]->Data.p = Object;
                         if (VARS[1]->Type == VAR_POINTER) {
-                                VARS[1]->Data = Object;
+                                VARS[1]->Data.p = Object;
                                 Cscript_VAR_Set_Integer(Object, VARS[0], VARS[1]);
-                                VARS[1]->Data = 0;
+                                VARS[1]->Data.p = 0;
                         }
                         else {
                                 Cscript_VAR_Set_Integer(Object, VARS[0], VARS[1]);
                         }
-                        VARS[0]->Data = 0;
+                        VARS[0]->Data.p = 0;
                 }
                 else {
                         Cscript_Set_Object_Internal_Data(Object, VARS[0], VARS[1]);
@@ -434,13 +434,13 @@ void Cscript_While_End(Object* caller, MT2D_VAR** vars) {
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y) {
         int x = Cscript_VAR_Get_Integer(object, X_Y[0]);
         int y = Cscript_VAR_Get_Integer(object, X_Y[1]);
-        *(int*)object->User_Vars[Object_PosX_Var_Index].Data = x;
-        *(int*)object->User_Vars[Object_PosY_Var_Index].Data = y;
+        object->User_Vars[Object_PosX_Var_Index].Data.i = x;
+        object->User_Vars[Object_PosY_Var_Index].Data.i = y;
 }
 
 void Cscript_Move(Object *object) {
-        *(int*)object->User_Vars[Object_PosX_Var_Index].Data += *(int*)object->User_Vars[Object_AcelX_Var_Index].Data;
-        *(int*)object->User_Vars[Object_PosY_Var_Index].Data += *(int*)object->User_Vars[Object_AcelY_Var_Index].Data;
+        object->User_Vars[Object_PosX_Var_Index].Data.i += object->User_Vars[Object_AcelX_Var_Index].Data.i;
+        object->User_Vars[Object_PosY_Var_Index].Data.i += object->User_Vars[Object_AcelY_Var_Index].Data.i;
 }
 
 /**
@@ -456,15 +456,15 @@ void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
         NewObject = Object_Create(
                 NewModel->Solid, 
                 NewModel->RenderOnly, 
-                *(int*)NewModel->User_Vars[Object_SizeX_Var_Index].Data,
-                *(int*)NewModel->User_Vars[Object_SizeY_Var_Index].Data,
+                NewModel->User_Vars[Object_SizeX_Var_Index].Data.i,
+                NewModel->User_Vars[Object_SizeY_Var_Index].Data.i,
                 X[0], 
                 Y[0], 
                 NewModel->State, 
                 NewModel->States_Count
         );
-        *(int*)NewObject->User_Vars[Object_AcelX_Var_Index].Data = X[1];
-        *(int*)NewObject->User_Vars[Object_AcelY_Var_Index].Data = Y[1];
+        NewObject->User_Vars[Object_AcelX_Var_Index].Data.i = X[1];
+        NewObject->User_Vars[Object_AcelY_Var_Index].Data.i = Y[1];
         if (NewModel->User_Vars_Count > 0)
         {
  //TODO: OBSOLETE?
@@ -481,13 +481,13 @@ void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
 
 bool Object_Hit_Object(Object* Caller, Object* Target)
 {
-        if (*(int*)Caller->User_Vars[Object_PosX_Var_Index].Data <= *(int*)Target->User_Vars[Object_PosX_Var_Index].Data + *(int*)Target->User_Vars[Object_SizeX_Var_Index].Data)
+        if (Caller->User_Vars[Object_PosX_Var_Index].Data.i <= Target->User_Vars[Object_PosX_Var_Index].Data.i + Target->User_Vars[Object_SizeX_Var_Index].Data.i)
         {
-                if (*(int*)Caller->User_Vars[Object_PosX_Var_Index].Data + *(int*)Caller->User_Vars[Object_SizeX_Var_Index].Data >= *(int*)Target->User_Vars[Object_PosX_Var_Index].Data)
+                if (Caller->User_Vars[Object_PosX_Var_Index].Data.i + Caller->User_Vars[Object_SizeX_Var_Index].Data.i >= Target->User_Vars[Object_PosX_Var_Index].Data.i)
                 {
-                        if (*(int*)Caller->User_Vars[Object_PosY_Var_Index].Data <= *(int*)Target->User_Vars[Object_PosY_Var_Index].Data + *(int*)Target->User_Vars[Object_SizeY_Var_Index].Data)
+                        if (Caller->User_Vars[Object_PosY_Var_Index].Data.i <= Target->User_Vars[Object_PosY_Var_Index].Data.i + Target->User_Vars[Object_SizeY_Var_Index].Data.i)
                         {
-                                if (*(int*)Caller->User_Vars[Object_PosY_Var_Index].Data + *(int*)Caller->User_Vars[Object_SizeY_Var_Index].Data >= *(int*)Target->User_Vars[Object_PosY_Var_Index].Data)
+                                if (Caller->User_Vars[Object_PosY_Var_Index].Data.i + Caller->User_Vars[Object_SizeY_Var_Index].Data.i >= Target->User_Vars[Object_PosY_Var_Index].Data.i)
                                 {
                                         return true;
                                 }
@@ -512,9 +512,9 @@ void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars) {
                 if (Caller->MyScene->ObjectGroup[i]->Solid && Object_Hit_Object(Caller, Caller->MyScene->ObjectGroup[i]))
                 {
                         // Object collided.
-                        Vars[2]->Data = Caller->MyScene->ObjectGroup[i];
+                        Vars[2]->Data.p = Caller->MyScene->ObjectGroup[i];
                         ObjVarInded = Cscript_Get_Object_VarIndex(Vars[2]);
-                        Vars[2]->Data = 0;
+                        Vars[2]->Data.p = 0;
                         MT2D_Object_SUB(&Caller->MyScene->ObjectGroup[i]->User_Vars[ObjVarInded], Vars[1]);
                         i = Caller->MyScene->Count;
                         Cscript_Object_SetState(Caller, Vars);
@@ -642,16 +642,13 @@ void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
 
 #pragma region AUDIO
 
+/* The file is the text of a VAR_STRING var, or the Name of any other var. */
 void Cscript_PlaySound(Object *object, MT2D_VAR **SoundName) {
-        if (SoundName[0]->Name) {
-                MT2D_Play_Audio(SoundName[0]->Name);
-        }
+        MT2D_Play_Audio((char*)MT2D_Object_VAR_GetPath(SoundName[0]));
 }
 
 void Cscript_PlayMusic(Object *object, MT2D_VAR **MusicName) {
-        if (MusicName[0]->Name) {
-                MT2D_Play_Music(MusicName[0]->Name);
-        }
+        MT2D_Play_Music((char*)MT2D_Object_VAR_GetPath(MusicName[0]));
 }
 
 #pragma endregion FUNCTIONS

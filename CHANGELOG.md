@@ -4,6 +4,11 @@
 
 ### Breaking
 
+- `MT2D_VAR.Data` is now an inline union (`Data.i`, `Data.c`, `Data.f`, `Data.p`) and `MT2D_VAR.Name` an inline `char[MT2D_VAR_NAME_MAX]`: one allocation per var instead of three, see [MIGRATION.md](MIGRATION.md).
+- Var names are limited to `MT2D_VAR_NAME_MAX - 1` (18) characters. Longer names are rejected: the constructors return `NULL` and set `Var_Name_Too_Long`. Store long texts (e.g. sound paths) in a `VAR_STRING` var.
+- `MT2D_Object_Set_Var(Var, void*, Type)` copies the value instead of taking ownership of the pointer, and the `int`/`float`/`bool` overloads now store their value. The `char*`, `unsigned` and the never implemented `Create_Var_UInt/UChar` were removed.
+- `MT2D_Object_Create_Var` returns `NULL` (with `Var_Null_Data`/`Var_Null_Name`) on bad input.
+- `Cscript_Play*FromContainer` no longer cache the loaded file inside the var.
 - `bool` and `unsigned` var types were removed from MT2D_Var.
 - `Sprite` no longer has `Data`/`RotatedTexture`, ASCII sprites use a compact slice image and SDL images use `MT2D_Internal_Image`, see [MIGRATION.md](MIGRATION.md) ([#4](https://github.com/lucas-zimerman/MT2D/issues/4)).
 - Engine `FILE` references were replaced by `MT2D_FILE`.
@@ -16,7 +21,7 @@
 method1:
 ```c
 //Set 12 to the posX coord
-*(int*)Object.User_Vars[Object_PosX_Var_Index].Data = 12;
+Object.User_Vars[Object_PosX_Var_Index].Data.i = 12;
 ```
 method2:
 ```c
@@ -25,6 +30,8 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them
+- `MT2D_Object_Create_Var_Float`, float support in `MT2D_Object_ADD/SUB` and `MT2D_VAR_CLONE`; `MT2D_Object_VAR_GetInt/GetBool` are now inline
 - Add `MT2D_Types.h` (fixed width types), `Sprite_Create_Ascii_From_Cells` and `Sprite_Get_Char`, ASCII sprites no longer store transparent cells (saves RAM on MS-DOS)
 - Add common object parameters as variables (Acceleration, Position, Size) ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
 - Add functions Object_Add_Variable and Object_Add_Variables ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))

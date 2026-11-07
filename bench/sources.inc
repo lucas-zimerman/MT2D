@@ -1,0 +1,2 @@
+# Engine sources the benchmarks link (sourced by the build scripts). $E is the MT2D folder of the tree being built.
+SRC="$E/ObjectCore/Cscript.cpp $E/ObjectCore/Object.cpp $E/ObjectCore/State.cpp $E/ObjectCore/STDFunctions.cpp $E/ObjectCore/Vars.cpp $E/ObjectCore/SpriteBlock.cpp $E/ObjectCore/Sprites.cpp $E/ObjectCore/MT2D_Text_Image.cpp $E/MT2D.cpp $E/MT2D_Layout.cpp $E/Audio/MT2D_Audio_core.cpp $E/Container/aes.cpp $E/Container/MT2D_Container.cpp $E/Tools/Video/MT2D_Generic_Line.cpp $E/_LINUX/MT2D_Linux_CP850.cpp"

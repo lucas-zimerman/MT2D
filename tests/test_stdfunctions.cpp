@@ -52,7 +52,7 @@ TEST(var_add_object_var_to_plain_var) {
     MT2D_VAR *target = integer(1);
     MT2D_VAR *vars[2] = {target, named("Pos_X")};
     Cscript_VAR_ADD(o, vars);
-    CHECK_EQ(*(int *)target->Data, 8);
+    CHECK_EQ(target->Data.i, 8);
 }
 
 TEST(var_add_two_object_vars) {
@@ -67,7 +67,7 @@ TEST(var_add_plain_vars) {
     Object *o = simple_object();
     MT2D_VAR *vars[2] = {integer(2), integer(3)};
     Cscript_VAR_ADD(o, vars);
-    CHECK_EQ(*(int *)vars[0]->Data, 5);
+    CHECK_EQ(vars[0]->Data.i, 5);
 }
 
 TEST(var_sub) {
@@ -78,7 +78,7 @@ TEST(var_sub) {
 
     MT2D_VAR *plain[2] = {integer(9), integer(2)};
     Cscript_VAR_SUB(o, plain);
-    CHECK_EQ(*(int *)plain[0]->Data, 7);
+    CHECK_EQ(plain[0]->Data.i, 7);
 
     MT2D_VAR *objs[2] = {named("Pos_X"), named("Pos_Y")};
     Cscript_VAR_SUB(o, objs);
@@ -96,9 +96,9 @@ TEST(var_inc_and_dec) {
 
     MT2D_VAR *plain[1] = {integer(10)};
     Cscript_VAR_INC(o, plain);
-    CHECK_EQ(*(int *)plain[0]->Data, 11);
+    CHECK_EQ(plain[0]->Data.i, 11);
     Cscript_VAR_DEC(o, plain);
-    CHECK_EQ(*(int *)plain[0]->Data, 10);
+    CHECK_EQ(plain[0]->Data.i, 10);
 }
 
 // ---- variables -----------------------------------------------------------
@@ -123,14 +123,14 @@ TEST(set_var_plain_var_from_object_var) {
     MT2D_VAR *dst = integer(0);
     MT2D_VAR *vars[2] = {dst, named("Pos_X")};
     Cscript_Set_Var(o, vars);
-    CHECK_EQ(*(int *)dst->Data, 33);
+    CHECK_EQ(dst->Data.i, 33);
 }
 
 TEST(set_var_plain_from_plain) {
     Object *o = simple_object();
     MT2D_VAR *vars[2] = {integer(0), integer(5)};
     Cscript_Set_Var(o, vars);
-    CHECK_EQ(*(int *)vars[0]->Data, 5);
+    CHECK_EQ(vars[0]->Data.i, 5);
 }
 
 TEST(teleport_to_coord) {
@@ -391,7 +391,7 @@ TEST(while_end_goes_back_to_the_while) {
     WhileFixture f = make_while('<', 3);
     f.o->ActualFrame = 1; // the While is stored at frame 1 for this call
     Cscript_While(f.o, f.vars);
-    CHECK_EQ(*(int *)f.vars[0]->Data, 1);
+    CHECK_EQ(f.vars[0]->Data.i, 1);
     f.o->ActualFrame = 2;
     Cscript_While_End(f.o, f.vars);
     // The engine increments the frame after every call, so this lands on the While.
@@ -448,7 +448,7 @@ TEST(goto_state_if_hit_damages_the_other_object) {
     // [0] state to go, [1] damage, [2] name of the health var in the other object
     MT2D_VAR *vars[3] = {named("Hit"), integer(3), named("Health")};
     Object_GotoState_IfHit(caller, vars);
-    CHECK_EQ(*(int *)health->Data, 7);
+    CHECK_EQ(health->Data.i, 7);
     CHECK_EQ(caller->ActualState, 1);
 }
 
@@ -462,7 +462,7 @@ TEST(goto_state_if_hit_without_collision_does_nothing) {
     ObjectScene_Add(scene, victim);
     MT2D_VAR *vars[3] = {named("Hit"), integer(3), named("Health")};
     Object_GotoState_IfHit(caller, vars);
-    CHECK_EQ(*(int *)health->Data, 10);
+    CHECK_EQ(health->Data.i, 10);
     CHECK_EQ(caller->ActualState, 0);
 }
 
@@ -494,9 +494,9 @@ TEST(create_object_spawns_a_copy_of_the_model_in_the_scene) {
     CHECK_EQ(ObjectSizeY(spawned), 3);
     CHECK_EQ(spawned->User_Vars_Count, Object_First_User_Var_Index + 1);
     CHECK_STR_EQ(spawned->User_Vars[Object_First_User_Var_Index].Name, "Health");
-    CHECK_EQ(*(int *)spawned->User_Vars[Object_First_User_Var_Index].Data, 9);
+    CHECK_EQ(spawned->User_Vars[Object_First_User_Var_Index].Data.i, 9);
     // the var data is cloned, not shared with the model
-    CHECK(spawned->User_Vars[Object_First_User_Var_Index].Data != model->User_Vars[Object_First_User_Var_Index].Data);
+    CHECK(spawned->User_Vars[Object_First_User_Var_Index].Name != model->User_Vars[Object_First_User_Var_Index].Name);
 }
 
 // ---- audio ---------------------------------------------------------------
@@ -507,6 +507,24 @@ TEST(audio_functions_accept_a_sound_name) {
     MT2D_VAR *vars[1] = {named("hit.wav")};
     Cscript_PlaySound(o, vars);
     Cscript_PlayMusic(o, vars);
+    CHECK(true);
+}
+
+TEST(audio_functions_accept_a_long_string_path) {
+    Object *o = simple_object();
+    MT2D_VAR *vars[1] = {MT2D_Object_Create_Var_String("Boom", "assets/Sounds/a_really_long_explosion.ogg")};
+    Cscript_PlaySound(o, vars);
+    Cscript_PlayMusic(o, vars);
+    MT2D_VAR_Free(vars[0], 1);
+    CHECK(true);
+}
+
+TEST(object_delete_releases_string_vars) {
+    Object *model = simple_object();
+    MT2D_VAR *shell = MT2D_Object_Create_Var_String("Path", "a text that does not fit in a var name");
+    Object_Add_Variable(model, shell);
+    free(shell); // only the shell: the object owns the text now
+    Object_Delete(model, true); // releases the text of the user var
     CHECK(true);
 }
 
