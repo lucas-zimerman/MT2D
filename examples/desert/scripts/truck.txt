@@ -1,0 +1,98 @@
+// The monster truck. It cruises on one of two lanes (lane 0 is the far one, lane 1 the near one).
+// When the radar shouts "Dodge" it drifts to the other lane: the body tilts, the tires smoke
+// and the road slows down for a moment (global Speed is what the scenery scrolls with).
+object truck
+{
+    solid;
+    int Pos_X = 150;
+    int Pos_Y = 140;
+    int Size_X = 64;
+    int Size_Y = 44;
+    int lane = 0;
+    int puffX = 0;   // where the puffs are born: the rear tire
+    int puffY = 0;
+
+    states
+    {
+    Cruise:
+        global Speed = 4
+        Show image "truck0.png" 64 44
+        Wait 3
+        puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+        CreateObject(global Dust, puffX, puffY, -4, 0)
+        Show image "truck1.png" 64 44
+        Wait 3
+        global TruckY = Pos_Y
+        Show image "truck2.png" 64 44
+        Wait 3
+        if (global Dodge == 1)
+        {
+            global Dodge = 0
+            if (lane == 0) { Goto DriftNear }
+            else { Goto DriftFar }
+        }
+
+    // lane 0 -> 1: toward the camera, the nose dips
+    DriftNear:
+        PlaySound("screech.wav")
+        global Speed = 3
+        Acel_Y = 3
+        while (Pos_Y < 170)
+        {
+            Show image "drift_d1.png" 64 44
+            Wait 2
+            puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+            CreateObject(global Smoke, puffX, puffY, -4, 0)
+            Move
+            global TruckY = Pos_Y
+            Show image "drift_d2.png" 64 44
+            Wait 2
+            puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+            CreateObject(global Smoke, puffX, puffY, -5, 0)
+            Move
+        }
+        Acel_Y = 0
+        lane = 1
+        global Lane = 1
+        global TruckY = Pos_Y
+        Goto Recover
+
+    // lane 1 -> 0: away from the camera, the nose goes up
+    DriftFar:
+        PlaySound("screech.wav")
+        global Speed = 3
+        Acel_Y = -3
+        while (Pos_Y > 140)
+        {
+            Show image "drift_u1.png" 64 44
+            Wait 2
+            puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+            CreateObject(global Smoke, puffX, puffY, -4, 0)
+            Move
+            global TruckY = Pos_Y
+            Show image "drift_u2.png" 64 44
+            Wait 2
+            puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+            CreateObject(global Smoke, puffX, puffY, -5, 0)
+            Move
+        }
+        Acel_Y = 0
+        lane = 0
+        global Lane = 0
+        global TruckY = Pos_Y
+        Goto Recover
+
+    // counter steer, then floor it
+    Recover:
+        global Speed = 5
+        Show image "truck1.png" 64 44
+        Wait 4
+        puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+        CreateObject(global Dust, puffX, puffY, -6, 0)
+        Show image "truck2.png" 64 44
+        Wait 4
+        puffX = Pos_X puffX += 2 puffY = Pos_Y puffY += 19
+        CreateObject(global Dust, puffX, puffY, -6, 0)
+        Goto Cruise
+    }
+}
