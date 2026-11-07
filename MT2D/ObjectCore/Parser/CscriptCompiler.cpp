@@ -90,6 +90,7 @@ std::vector<Tok> Tokenize(const char *p) {
                         t.Text = std::string(1, c);
                         if ((c == '=' || c == '!' || c == '<' || c == '>') && p[1] == '=') { t.Text += '='; p++; }
                         else if ((c == '&' || c == '|') && p[1] == c) { t.Text += c; p++; }
+                        else if ((c == '+' || c == '-') && (p[1] == c || p[1] == '=')) { t.Text += p[1]; p++; }
                         else if (!strchr("{}(),;:<>=!", c)) Fail(line, std::string("unexpected character '") + c + "'");
                         p++;
                         out.push_back(t);
@@ -102,7 +103,11 @@ std::vector<Tok> Tokenize(const char *p) {
 
 /* ---- model -------------------------------------------------------------- */
 struct Arg { int Kind; long Value; std::string Text; int Line; }; /* 0 number, 1 name, 2 text */
-struct Frame { int Sprite; int Wait; int Fn; std::vector<Arg> Args; int Line; };
+struct Frame {
+        int Sprite; int Wait; int Fn; std::vector<Arg> Args; int Line;
+        bool IsWait; /* made by Wait: an action that follows can share this frame */
+        Frame() : Sprite(-1), Wait(0), Fn(-1), Line(0), IsWait(false) {}
+};
 struct State { std::string Name; int Line; std::vector<Frame> Frames; };
 struct VarRec { int Slot; std::string Name; long Value; };
 /* a condition tree: one comparison, && , || or ! */
@@ -123,7 +128,7 @@ long InverseOp(long op) {
 
 class Compiler {
 public:
-        explicit Compiler(const std::vector<Tok> &t) : T(t), P(0) {}
+        explicit Compiler(const std::vector<Tok> &t) : T(t), P(0), Barrier((size_t)-1) {}
 
         void ParseFile() {
                 ExpectKeyword("object");
@@ -196,6 +201,7 @@ private:
         std::vector<VarRec> Vars;
         std::vector<State> States;
         std::vector<Cond> Conds;
+        size_t Barrier; /* index of a frame some jump lands on: nothing may be merged into the frame before it */
         std::vector<std::string> Sprites;
         std::map<std::string, int> SpriteIndex;
 
@@ -252,6 +258,7 @@ private:
                         State st; st.Line = Cur().Line;
                         st.Name = ExpectName("a state name");
                         ExpectPunct(":");
+                        Barrier = (size_t)-1;
                         for (size_t i = 0; i < States.size(); i++) if (States[i].Name == st.Name) Fail(st.Line, "state '" + st.Name + "' is declared twice");
                         ParseStatements(st, 0);
                         if (st.Frames.empty()) Fail(st.Line, "state '" + st.Name + "' has no frames");
@@ -274,7 +281,7 @@ private:
                         else if (IsKeyword("if")) ParseIf(st, depth);
                         else if (IsKeyword("else")) Fail(Cur().Line, "'else' without 'if'");
                         else {
-                                st.Frames.push_back(ParseFrame());
+                                ParseSimple(st);
                                 if (IsPunct(";")) P++;
                         }
                 }
@@ -290,7 +297,7 @@ private:
         /* A jump of N frames makes the object land on (its own index + N + 1), see Cscript_JumpFrames. */
 
         Frame JumpFrame(const char *fn, int line) {
-                Frame f; f.Sprite = -1; f.Wait = 0; f.Line = line; f.Fn = FindFunction(fn);
+                Frame f; f.Line = line; f.Fn = FindFunction(fn);
                 Arg a; a.Kind = 0; a.Value = 0; a.Line = line;
                 f.Args.push_back(a);
                 return f;
@@ -298,6 +305,7 @@ private:
 
         /* the jumps listed will land on the next frame that is added to the state */
         void PatchHere(State &st, std::vector<size_t> &jumps) {
+                if (!jumps.empty()) Barrier = st.Frames.size();
                 for (size_t i = 0; i < jumps.size(); i++) {
                         st.Frames[jumps[i]].Args[0].Value = (long)st.Frames.size() - (long)jumps[i] - 1;
                 }
@@ -470,40 +478,77 @@ private:
                 return -1;
         }
 
-        Frame Control(const char *fn, int line) {
-                Frame f; f.Sprite = -1; f.Wait = 0; f.Line = line; f.Fn = FindFunction(fn);
+        /* An action runs when the wait of the frame ends, so it can share the frame of the Wait
+           right before it, unless some jump lands between them. */
+        void AddAction(State &st, const Frame &f) {
+                size_t n = st.Frames.size();
+                if (n > 0 && Barrier != n && st.Frames[n - 1].IsWait && st.Frames[n - 1].Fn < 0) {
+                        st.Frames[n - 1].Fn = f.Fn;
+                        st.Frames[n - 1].Args = f.Args;
+                        return;
+                }
+                st.Frames.push_back(f);
+        }
+
+        int ParseWaitTime() {
+                if (Cur().Type != T_INT || Cur().Value < 0 || Cur().Value > 65535) Fail(Cur().Line, "expected the wait time (0 to 65535)");
+                return (int)T[P++].Value;
+        }
+
+        Frame NamedCall(const char *fn, int line, const std::string &name) {
+                Frame f; f.Line = line; f.Fn = FindFunction(fn);
+                Arg a; a.Kind = 1; a.Value = 0; a.Line = line; a.Text = name;
+                f.Args.push_back(a);
                 return f;
         }
 
-        Frame ParseFrame() {
-                Frame f; f.Sprite = -1; f.Wait = 0; f.Fn = -1; f.Line = Cur().Line;
-                if (IsKeyword("goto")) {
+        /* Show "sprite" + Wait n, Wait n, Goto, Stop, x++ x-- x += v x -= v x = v and Function(args) */
+        void ParseSimple(State &st) {
+                int line = Cur().Line;
+                if (IsKeyword("show")) {
                         P++;
-                        f = Control("SetState", f.Line);
-                        Arg a; a.Kind = 1; a.Value = 0; a.Line = Cur().Line; a.Text = ExpectName("a state name");
-                        f.Args.push_back(a);
-                        return f;
-                }
-                if (IsKeyword("stop")) {
+                        Frame f; f.Line = line; f.IsWait = true;
+                        if (Cur().Type == T_STR) { f.Sprite = SpriteId(Cur().Text, Cur().Line); P++; }
+                        else if (IsKeyword("none")) { P++; }
+                        else Fail(Cur().Line, "expected a \"sprite\" or none after Show");
+                        if (IsPunct(";")) P++;
+                        if (!IsKeyword("wait")) Fail(line, "Show must be directly followed by Wait");
                         P++;
-                        return Control("RemoveObject", f.Line);
+                        f.Wait = ParseWaitTime();
+                        st.Frames.push_back(f);
                 }
-                if (Cur().Type == T_STR) {
-                        f.Sprite = SpriteId(Cur().Text, Cur().Line);
+                else if (IsKeyword("wait")) {
                         P++;
+                        Frame f; f.Line = line; f.IsWait = true;
+                        f.Wait = ParseWaitTime();
+                        st.Frames.push_back(f);
                 }
-                else if (IsKeyword("none")) {
+                else if (IsKeyword("goto")) {
                         P++;
+                        AddAction(st, NamedCall("SetState", line, ExpectName("a state name")));
                 }
-                else Fail(Cur().Line, "expected a frame: a \"sprite\" or none, then the wait, then an optional action");
-                if (Cur().Type != T_INT || Cur().Value < 0 || Cur().Value > 65535) Fail(Cur().Line, "expected the wait (0 to 65535) after the sprite");
-                f.Wait = (int)T[P++].Value;
-                if (Cur().Type == T_IDENT && !IsKeyword("none") && !IsKeyword("goto") && !IsKeyword("stop") &&
-                        !IsKeyword("while") && !IsKeyword("if") && !IsKeyword("else") &&
-                        !(Peek(1).Type == T_PUNCT && Peek(1).Text == ":")) {
-                        ParseAction(f);
+                else if (IsKeyword("stop")) {
+                        P++;
+                        Frame f; f.Line = line; f.Fn = FindFunction("RemoveObject");
+                        AddAction(st, f);
                 }
-                return f;
+                else if (Cur().Type == T_IDENT) {
+                        const Tok &n = Peek(1);
+                        bool assign = n.Type == T_PUNCT && (n.Text == "++" || n.Text == "--" || n.Text == "+=" || n.Text == "-=" || n.Text == "=");
+                        if (assign) {
+                                std::string var = ExpectName("a var name");
+                                std::string op = T[P++].Text;
+                                Frame f = NamedCall(op == "++" ? "VarInc" : op == "--" ? "VarDec" : op == "+=" ? "VarAdd" : op == "-=" ? "VarSub" : "SetVar", line, var);
+                                if (op != "++" && op != "--") f.Args.push_back(ParseOperand());
+                                AddAction(st, f);
+                        }
+                        else {
+                                Frame f; f.Line = line;
+                                ParseAction(f);
+                                AddAction(st, f);
+                        }
+                }
+                else Fail(line, "expected a statement: Show, Wait, a function call, x++, x = 1, while, if, Goto or Stop");
         }
 
         void ParseAction(Frame &f) {
