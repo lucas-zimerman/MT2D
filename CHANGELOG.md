@@ -2,11 +2,6 @@
 
 ## Unreleased
 
-### Linux / macOS terminal
-
-- Add the `allchars` example, which shows the 256 CP850 characters in a 16x16 table.
-- Proper CP850 support: the display buffers are converted to Unicode when drawn (accents, box drawing, blocks and the DOS symbols) and typed characters are converted back to CP850. This needs wide character curses (`ncursesw`) and a UTF-8 terminal locale.
-
 ### Breaking
 
 - `bool` and `unsigned` var types were removed from MT2D_Var.
@@ -74,6 +69,7 @@ ObjectPosX(Object) = 12;
 - Fix SDL key releases that happened between two frames being lost (quick taps were never seen by the keyboard buffer) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - SDL builds now start in the executable folder, so the font and images are found when the program is launched from another directory ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - Add a silent `SDL_Beep` when SDL audio is disabled, so SDL builds link without SDL2_mixer ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix CP850 support in the Linux/macOS terminal (curses) backend: the screen buffers are now converted to Unicode when drawn (accents, box drawing, blocks and DOS symbols were blank or approximated) and typed characters are converted back to CP850. Needs `ncursesw` and a UTF-8 locale ([#21](https://github.com/lucas-zimerman/MT2D/pull/21))
 
 ## 2.0.1 - 2019-03-24
 
