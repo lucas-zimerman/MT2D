@@ -82,6 +82,8 @@ void MT2D_ObjectState_Delete(ObjectState *Me) {
                         Cscript_RemoveFromMemory(Me->Functions[i]);
                         Sprite_Delete(Me->Sprites[i]);
                 }
+                free(Me->Sprites);
+                free(Me->Functions);
         }
         free(Me);                             
 }

@@ -58,6 +58,7 @@ ObjectPosX(Object) = 12;
 - Fix file reading/writing typo in containers and an include overflow ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Fix SDL issues for MS-DOS/SDL builds and the full path handling ([#9](https://github.com/lucas-zimerman/MT2D/pull/9))
 - Code cleanup (tabs replaced by spaces, unused code removed) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Fix memory leaks in the container, ObjectCore, input boxes and SDL code, plus a double free and a heap overflow in containers ([#16](https://github.com/lucas-zimerman/MT2D/pull/16))
 
 ## 2.0.1 - 2019-03-24
 

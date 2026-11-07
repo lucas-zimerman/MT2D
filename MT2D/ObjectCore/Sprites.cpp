@@ -128,7 +128,7 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
                 S->ScaleX = ScaleX;
                 S->ScaleY = ScaleY;
                 S->type = 1;
-                //we need to kill that surface...
+                SDL_FreeSurface(Img);
         }//else return a null sprite
         return S;
 #else 
@@ -168,7 +168,7 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                         S->ScaleY = ScaleY;
                         S->type = 1;
                         S->refCount = 0;
-                        //we need to kill that surface...
+                        SDL_FreeSurface(Img);
                 }//else return a null sprite
                 return S;
 #else 

@@ -89,6 +89,7 @@ int MT2D_InputBox_Integer(char *mensage){
 			out_loop=true;
 		}else if(buff==escape_pressed){
 			string_size=0;
+			free(string);
 			string=0;
 			out_loop=true;
 		}else if(buff>='0' && buff<='9'){
@@ -105,6 +106,9 @@ int MT2D_InputBox_Integer(char *mensage){
 			}
 		}
 	}
-	output_integer = atoi(string);
+	if (string) {
+		output_integer = atoi(string);
+		free(string);
+	}
 	return output_integer;
 }

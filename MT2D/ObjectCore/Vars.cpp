@@ -479,11 +479,9 @@ void MT2D_VAR_Free(MT2D_VAR *var, int constName) {
                 free(var->Name);
                 free(var->Data);
         }
-        if (constName == 0) {
+        else if (constName == 0) {
+                /* pointer vars don't own their Data, only the Name */
                 free(var->Name);
-                if (var->Data != NULL) {
-                        free(var->Data);
-                }
         }
         free(var);
 }

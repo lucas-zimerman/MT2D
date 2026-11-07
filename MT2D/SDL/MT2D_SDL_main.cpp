@@ -158,6 +158,7 @@ MT2D_SDL_Texture *MT2D_SDL_Create_Rotated_Texture(SDL_Surface *Surface, MT2D_SDL
 		}
 	}
 	MT2D_SDL_Texture *StreamTexture = MT2D_SDL_CreateTextureFromSurface(MainEvents.Render, RotatedSurface);
+	SDL_FreeSurface(RotatedSurface);
 
 	/*
 		Textures of type SDL_TEXTUREACCESS_TARGET are lost when the screen is resized '-'
@@ -275,6 +276,8 @@ bool NewLoadFromFile(char *string) {
 			MT2D_SDL_RenderCopy(MainEvents.Render, CharSpriteRotated[i], NULL, &RotateClip);
 			*/
 			CharSpriteRotated[i] = MT2D_SDL_Create_Rotated_Texture(tmpSurface, CharSprite[i]);
+			SDL_FreeSurface(tmpSurface);
+			tmpSurface = NULL;
 		}
 		//Get rid of old loaded surface
 		SDL_FreeSurface(NEWloadedSurface);
@@ -330,6 +333,7 @@ bool loadMedia()
 			hor += 8;
 
 		}
+		SDL_FreeSurface(tmpSurface);
 #ifdef _DEBUG
 		MT2D_Ide_Printf((char*)"Success\n");
 #endif
@@ -465,6 +469,26 @@ void MT2D_SDL_Init()
 void close()
 {
 	free_Texture();
+	for (int i = 0; i < 256; i++) {
+		if (CharSprite[i]) {
+			MT2D_SDL_DestroyTexture(CharSprite[i]);
+			CharSprite[i] = NULL;
+		}
+		if (CharSpriteRotated[i]) {
+			MT2D_SDL_DestroyTexture(CharSpriteRotated[i]);
+			CharSpriteRotated[i] = NULL;
+		}
+	}
+	for (int i = 0; i < 2; i++) {
+		if (OffscrBuff[i]) {
+			MT2D_SDL_DestroyTexture(OffscrBuff[i]);
+			OffscrBuff[i] = NULL;
+		}
+	}
+	if (ScreenBuffer) {
+		MT2D_SDL_DestroyTexture(ScreenBuffer);
+		ScreenBuffer = NULL;
+	}
 
 	//Destroy window
 	MT2D_SDL_DestroyRenderer(MainEvents.Render);
