@@ -29,6 +29,7 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/Container/aes.cpp
     ${ENGINE}/Container/MT2D_Container.cpp
     ${ENGINE}/ObjectCore/Cscript.cpp
+    ${ENGINE}/ObjectCore/MT2D_Text_Image.cpp
     ${ENGINE}/ObjectCore/Object.cpp
     ${ENGINE}/ObjectCore/SpriteBlock.cpp
     ${ENGINE}/ObjectCore/Sprites.cpp
@@ -49,7 +50,7 @@ target_compile_options(mt2d_engine PRIVATE -w -fpermissive)
 
 enable_testing()
 
-foreach(name vars state spriteblock cscript object sprites stdfunctions container aes display layout)
+foreach(name vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout)
     add_executable(test_${name} test_${name}.cpp)
     target_link_libraries(test_${name} mt2d_engine)
     target_compile_options(test_${name} PRIVATE -w -fpermissive)

@@ -5,6 +5,7 @@
 ### Breaking
 
 - `bool` and `unsigned` var types were removed from MT2D_Var.
+- `Sprite` no longer has `Data`/`RotatedTexture`, ASCII sprites use a compact slice image and SDL images use `MT2D_Internal_Image`, see [MIGRATION.md](MIGRATION.md) ([#4](https://github.com/lucas-zimerman/MT2D/issues/4)).
 - Engine `FILE` references were replaced by `MT2D_FILE`.
 - File seek now accepts `long` values, and container coordinates are now `long`.
 - MS-DOS code was refactored (files renamed to the 8.3 format, e.g. `M2Render.cpp`, `M2Init.cpp`).
@@ -24,6 +25,7 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Add `MT2D_Types.h` (fixed width types), `Sprite_Create_Ascii_From_Cells` and `Sprite_Get_Char`, ASCII sprites no longer store transparent cells (saves RAM on MS-DOS)
 - Add common object parameters as variables (Acceleration, Position, Size) ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
 - Add functions Object_Add_Variable and Object_Add_Variables ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
 - Add Emscripten support (no audio yet) and a joystick implementation for it ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))

@@ -12,20 +12,11 @@ static void clear_windows() {
 }
 
 static Sprite *make_sprite(const char *row1, const char *row2) {
-    Sprite *s = (Sprite *)malloc(sizeof(Sprite));
-    s->SizeX = (int)strlen(row1);
-    s->SizeY = row2 ? 2 : 1;
-    s->ScaleX = s->ScaleY = 1;
-    s->type = 0;
-    s->refCount = 0;
-    s->Data = (char **)malloc(s->SizeY * sizeof(char *));
-    s->Data[0] = (char *)malloc(s->SizeX + 1);
-    strcpy(s->Data[0], row1);
-    if (row2) {
-        s->Data[1] = (char *)malloc(s->SizeX + 1);
-        strcpy(s->Data[1], row2);
-    }
-    return s;
+    int w = (int)strlen(row1);
+    char cells[64] = {0};
+    memcpy(cells, row1, w);
+    if (row2) memcpy(cells + w, row2, w);
+    return Sprite_Create_Ascii_From_Cells(w, row2 ? 2 : 1, cells);
 }
 
 TEST(load_sprite_from_missing_file_returns_null) {
@@ -47,10 +38,10 @@ TEST(load_sprite_reads_ascii_rows) {
         CHECK_EQ(s->ScaleY, 1);
         CHECK(s->SizeX >= 2);
         CHECK(s->SizeY >= 2);
-        CHECK_EQ(s->Data[0][0], 'A');
-        CHECK_EQ(s->Data[0][1], 'B');
-        CHECK_EQ(s->Data[1][0], 'C');
-        CHECK_EQ(s->Data[1][1], 'D');
+        CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'A');
+        CHECK_EQ(Sprite_Get_Char(s, 1, 0), 'B');
+        CHECK_EQ(Sprite_Get_Char(s, 0, 1), 'C');
+        CHECK_EQ(Sprite_Get_Char(s, 1, 1), 'D');
         Sprite_Delete(s);
     }
     remove("sprite.txt");
@@ -64,9 +55,9 @@ TEST(load_sprite_image_without_sdl_returns_placeholder) {
     CHECK_EQ(s->ScaleY, 5);
     CHECK_EQ(s->SizeX, 3);
     CHECK_EQ(s->SizeY, 1);
-    CHECK_EQ(s->Data[0][0], '<');
-    CHECK_EQ(s->Data[0][1], '!');
-    CHECK_EQ(s->Data[0][2], '>');
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), '<');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 0), '!');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 0), '>');
 }
 
 TEST(render_on_window1) {
@@ -92,8 +83,7 @@ TEST(render_on_window2) {
 TEST(render_skips_null_characters) {
     clear_windows();
     WINDOW1[2][2] = 'z';
-    Sprite *s = make_sprite("A_C", 0);
-    s->Data[0][1] = 0; // transparent cell
+    Sprite *s = Sprite_Create_Ascii_From_Cells(3, 1, "A\0C"); // middle cell is transparent
     Sprite_Render_on_Window(s, DISPLAY_WINDOW1, 1, 2);
     CHECK_EQ(WINDOW1[2][1], 'A');
     CHECK_EQ(WINDOW1[2][2], 'z');
@@ -116,6 +106,35 @@ TEST(render_clips_right_of_screen) {
     CHECK_EQ(WINDOW1[0][MAX_HOR - 2], 'A');
     CHECK_EQ(WINDOW1[0][MAX_HOR - 1], 'B');
     CHECK_EQ(WINDOW1[1][0], 0); // no wrap around into the next row
+}
+
+TEST(render_clips_top_and_bottom) {
+    clear_windows();
+    Sprite *s = make_sprite("AB", "CD");
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW1, 0, -1));
+    CHECK_EQ(WINDOW1[0][0], 'C');
+    CHECK_EQ(WINDOW1[0][1], 'D');
+    clear_windows();
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW2, 3, MAX_VER - 1));
+    CHECK_EQ(WINDOW2[MAX_VER - 1][3], 'A');
+    CHECK_EQ(WINDOW2[MAX_VER - 1][4], 'B');
+}
+
+TEST(render_fully_offscreen_writes_nothing) {
+    clear_windows();
+    Sprite *s = make_sprite("AB", "CD");
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW1, MAX_HOR + 5, MAX_VER + 5));
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW1, -10, -10));
+    CHECK_EQ(WINDOW1[0][0], 0);
+}
+
+TEST(char_accessors_check_bounds) {
+    Sprite *s = make_sprite("AB", 0);
+    CHECK_EQ(Sprite_Get_Char(s, 2, 0), 0);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 1), 0);
+    CHECK_EQ(Sprite_Get_Char(s, -1, 0), 0);
+    CHECK_EQ(Sprite_Get_Char(0, 0, 0), 0);
+    Sprite_Delete(s);
 }
 
 TEST(render_null_sprite_returns_false) {
