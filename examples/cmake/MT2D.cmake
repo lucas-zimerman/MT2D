@@ -180,8 +180,11 @@ function(mt2d_engine_target target backend)
         endif()
         target_link_libraries(${target} PUBLIC ${MT2D_SDL_LIBS})
     elseif(NOT MT2D_DOS AND NOT WIN32)
-        # wide character curses (ncursesw) is needed to draw the CP850 characters as Unicode
-        set(CURSES_NEED_WIDE TRUE)
+        # wide character curses (ncursesw) is needed to draw the CP850 characters as Unicode.
+        # macOS has no separate ncursesw: its curses already has the wide character functions.
+        if(NOT APPLE)
+            set(CURSES_NEED_WIDE TRUE)
+        endif()
         find_package(Curses REQUIRED)
         target_include_directories(${target} PUBLIC ${CURSES_INCLUDE_DIRS})
         target_link_libraries(${target} PUBLIC ${CURSES_LIBRARIES})
