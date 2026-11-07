@@ -3,6 +3,7 @@
 #else
 #include <cstdlib>
 #endif
+#include <stdarg.h>
 #include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Object.h>
 
@@ -46,6 +47,43 @@ Cscript *Cscript_New4(Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Functio
 }
 
 
+
+Cscript *Cscript_NewV(void(*Function)(), int, ...) {
+        return Cscript_New1(Function);
+}
+
+Cscript *Cscript_NewV(void(*Function)(Object *), int, ...) {
+        return Cscript_New2(Function);
+}
+
+static MT2D_VAR **Cscript_ReadVars(int count, va_list vl) {
+        MT2D_VAR **Vars = 0;
+        if (count > 0) {
+                Vars = (MT2D_VAR**)malloc(count * sizeof(MT2D_VAR*));
+                for (int i = 0; i < count; i++) {
+                        Vars[i] = va_arg(vl, MT2D_VAR*);
+                }
+        }
+        return Vars;
+}
+
+Cscript *Cscript_NewV(void(*Function)(Object *, MT2D_VAR **), int count, ...) {
+        va_list vl;
+        va_start(vl, count);
+        MT2D_VAR **Vars = Cscript_ReadVars(count, vl);
+        va_end(vl);
+        return Cscript_New3(Vars, Function);
+}
+
+/* the first extra argument is the model Object*, the rest are the Vars */
+Cscript *Cscript_NewV(void(*Function)(Object *, Object *, MT2D_VAR **), int count, ...) {
+        va_list vl;
+        va_start(vl, count);
+        Object *Model = count > 0 ? va_arg(vl, Object*) : 0;
+        MT2D_VAR **Vars = Cscript_ReadVars(count > 0 ? count - 1 : 0, vl);
+        va_end(vl);
+        return Cscript_New4(Model, Vars, Function);
+}
 
 void Cscript_Execute(Object *Caller, Cscript *Function) {
         if (Function) {

@@ -48,7 +48,6 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 //#define MT2D_DEBUG_ENABLED
 #endif
 
-#pragma region Internal_Defines
 
 #if (defined(WIN32) || defined(_WIN64)) && defined(_WIN32)
         #define WINDOWS_DESKTOP_TARGET
@@ -65,9 +64,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #elif defined(__EMSCRIPTEN__)
         #define BROWSER_TARGET
 #endif
-#pragma endregion
 
-#pragma region Portable_Inline
 #ifdef _MSC_VER
 #define forceinline __forceinline
 #elif defined(__GNUC__)
@@ -75,9 +72,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #else
 #define forceinline inline
 #endif
-#pragma endregion
 
-#pragma region Portable_Inline
 #ifdef _MSC_VER
 #define forceinline __forceinline
 #elif defined(__GNUC__)
@@ -85,6 +80,5 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #else
 #define forceinline inline
 #endif
-#pragma endregion
 
 #endif 
