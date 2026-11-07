@@ -362,11 +362,24 @@ static void Private_Arith(MT2D_VAR *Store, MT2D_VAR *Other, int sign) {
         }
 }
 
+/*
+        Int stores are by far the most common (positions, counters), so int += int/char is checked
+        first: no sign multiply and no second type switch on slow CPUs. Everything else goes through
+        the generic path.
+*/
 void  MT2D_Object_ADD(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
+        if (Store->Type == VAR_INT) {
+                if (ToAdd->Type == VAR_INT)  { Store->Data.i += ToAdd->Data.i; return; }
+                if (ToAdd->Type == VAR_CHAR) { Store->Data.i += ToAdd->Data.c; return; }
+        }
         Private_Arith(Store, ToAdd, 1);
 }
 
 void  MT2D_Object_SUB(MT2D_VAR *Store, MT2D_VAR *ToAdd) {
+        if (Store->Type == VAR_INT) {
+                if (ToAdd->Type == VAR_INT)  { Store->Data.i -= ToAdd->Data.i; return; }
+                if (ToAdd->Type == VAR_CHAR) { Store->Data.i -= ToAdd->Data.c; return; }
+        }
         Private_Arith(Store, ToAdd, -1);
 }
 

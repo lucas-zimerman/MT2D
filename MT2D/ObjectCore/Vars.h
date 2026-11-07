@@ -97,6 +97,7 @@ MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR);
 
 /* Hot path helpers, kept inline: no call overhead on slow CPUs. */
 static inline int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
+        if (Var->Type == VAR_INT) return Var->Data.i; /* the common case first */
         switch (Var->Type) {
         case VAR_INT:   return Var->Data.i;
         case VAR_CHAR:  return (int)Var->Data.c;

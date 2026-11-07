@@ -348,6 +348,22 @@ TEST(add_and_sub_char) {
     MT2D_VAR_Free(three, 1);
 }
 
+TEST(int_store_fast_paths_match_the_generic_ones) {
+    MT2D_VAR *store = MT2D_Object_Create_Var_Int("S", 100);
+    MT2D_VAR *neg = MT2D_Object_Create_Var_Char("N", -3);
+    MT2D_VAR *big = MT2D_Object_Create_Var_Int("B", -1000);
+    float f = 2.5f;
+    MT2D_VAR *fl = MT2D_Object_Create_Var("F", VAR_FLOAT, &f);
+    MT2D_Object_ADD(store, neg);  CHECK_EQ(store->Data.i, 97);   // int += negative char
+    MT2D_Object_SUB(store, neg);  CHECK_EQ(store->Data.i, 100);
+    MT2D_Object_ADD(store, big);  CHECK_EQ(store->Data.i, -900); // int += negative int
+    MT2D_Object_SUB(store, big);  CHECK_EQ(store->Data.i, 100);
+    MT2D_Object_ADD(store, fl);   CHECK_EQ(store->Data.i, 102);  // float source: generic path, truncated
+    MT2D_Object_SUB(store, fl);   CHECK_EQ(store->Data.i, 100);
+    CHECK_EQ(MT2D_Object_VAR_GetInt(store), 100);
+    MT2D_VAR_Free(store, 1); MT2D_VAR_Free(neg, 1); MT2D_VAR_Free(big, 1); MT2D_VAR_Free(fl, 1);
+}
+
 TEST(clone_int_and_char) {
     MT2D_VAR *i = MT2D_Object_Create_Var_Int("I", 8);
     MT2D_VAR *ci = MT2D_VAR_CLONE(i);
