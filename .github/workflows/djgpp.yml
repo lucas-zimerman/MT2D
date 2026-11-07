@@ -36,3 +36,8 @@ jobs:
           # -std=gnu++98 + -Wall -Wextra approximates what old DOS compilers accept
           i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
             -c MT2D/ObjectCore/MT2D_Text_Image.cpp -o build/djgpp/MT2D_Text_Image.o
+          # Cscript_New(fn, ...) uses variadic macros + overloading: make sure DJGPP's GCC accepts them
+          i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
+            -c MT2D/ObjectCore/Cscript.cpp -o build/djgpp/Cscript.o
+          i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
+            -c tests/djgpp/cscript_new_check.cpp -o build/djgpp/cscript_new_check.o
