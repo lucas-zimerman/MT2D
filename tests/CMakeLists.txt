@@ -1,0 +1,59 @@
+cmake_minimum_required(VERSION 3.10)
+project(MT2D_Tests CXX)
+
+# Tests for the portable (terminal mode, no SDL) part of the MT2D engine.
+#
+#   cmake -S tests -B build/tests && cmake --build build/tests && ctest --test-dir build/tests --output-on-failure
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# gnu++ (not strict c++) so that the `linux` macro used by the engine is defined.
+set(CMAKE_CXX_EXTENSIONS ON)
+
+get_filename_component(REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+set(ENGINE "${REPO_ROOT}/MT2D")
+
+# Some engine sources include headers with a different letter case
+# (MT2D/Objectcore/...) or with backslashes (MT2D\MT2D.h). Those only work on
+# Windows, so build a small shadow include tree instead of editing the engine.
+set(SHADOW "${CMAKE_CURRENT_BINARY_DIR}/shadow")
+file(MAKE_DIRECTORY "${SHADOW}/MT2D")
+file(CREATE_LINK "${ENGINE}/ObjectCore" "${SHADOW}/MT2D/Objectcore" SYMBOLIC)
+file(WRITE "${SHADOW}/MT2D\\MT2D.h" "#include <MT2D/MT2D.h>\n")
+file(WRITE "${SHADOW}/MT2D\\MT2D_Debug.h" "#include <MT2D/MT2D_Debug.h>\n")
+
+add_library(mt2d_engine STATIC
+    ${ENGINE}/MT2D.cpp
+    ${ENGINE}/MT2D_Layout.cpp
+    ${ENGINE}/Audio/MT2D_Audio_core.cpp
+    ${ENGINE}/Container/aes.cpp
+    ${ENGINE}/Container/MT2D_Container.cpp
+    ${ENGINE}/ObjectCore/Cscript.cpp
+    ${ENGINE}/ObjectCore/Object.cpp
+    ${ENGINE}/ObjectCore/SpriteBlock.cpp
+    ${ENGINE}/ObjectCore/Sprites.cpp
+    ${ENGINE}/ObjectCore/State.cpp
+    ${ENGINE}/ObjectCore/STDFunctions.cpp
+    ${ENGINE}/ObjectCore/Vars.cpp
+    ${ENGINE}/Tools/Video/MT2D_Generic_Line.cpp
+)
+# compat first so its MT2D/MT2D.h wins over the real one.
+target_include_directories(mt2d_engine PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/compat"
+    "${CMAKE_CURRENT_SOURCE_DIR}/framework"
+    "${SHADOW}"
+    "${REPO_ROOT}"
+)
+# The engine is old code, keep the build output readable.
+target_compile_options(mt2d_engine PRIVATE -w -fpermissive)
+
+enable_testing()
+
+foreach(name vars state spriteblock cscript object sprites stdfunctions container aes display layout)
+    add_executable(test_${name} test_${name}.cpp)
+    target_link_libraries(test_${name} mt2d_engine)
+    target_compile_options(test_${name} PRIVATE -w -fpermissive)
+    # Tests create temporary files, run each one in its own scratch directory.
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/run_${name}")
+    add_test(NAME ${name} COMMAND test_${name} WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/run_${name}")
+endforeach()
