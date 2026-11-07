@@ -32,7 +32,7 @@ else()
     set(MT2D_DOS FALSE)
 endif()
 
-# The object text compiler (ObjectCore/Parser, uses the STL) is optional: games can ship compiled
+# The object text compiler (ObjectCore/Parser) is optional: games can ship compiled
 # objects (.mto, made by the cscriptc tool) and only need the small ObjectLoader. Off by default on DOS.
 if(MT2D_DOS)
     option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" OFF)
@@ -175,7 +175,7 @@ function(mt2d_engine_target target backend)
         )
     endif()
     if(MT2D_CSCRIPT_PARSER)
-        list(APPEND sources ObjectCore/Parser/CscriptCompiler.cpp)
+        list(APPEND sources ObjectCore/Parser/CscriptCompiler.c)
     endif()
     list(TRANSFORM sources PREPEND "${MT2D_ENGINE_DIR}/")
 

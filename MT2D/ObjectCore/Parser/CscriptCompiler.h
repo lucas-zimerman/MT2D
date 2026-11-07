@@ -1,8 +1,8 @@
 /* CscriptCompiler.h
    Compiles the object text format into the compact binary format read by ObjectCore_Load
    (see ObjectLoader.h). Only built when MT2D_USING_CSCRIPT_PARSER is defined (CMake option
-   MT2D_CSCRIPT_PARSER), games that ship compiled files do not need it. It uses the STL, so it is
-   meant for desktop tools (cscriptc) and for development builds.
+   MT2D_CSCRIPT_PARSER), games that ship compiled files do not need it. It is plain C, meant for
+   desktop tools (cscriptc) and for development builds.
 
         object movingdot
         {
@@ -55,16 +55,22 @@
 #ifndef MT2D_CSCRIPT_COMPILER_H
 #define MT2D_CSCRIPT_COMPILER_H
 
-#if defined(MT2D_USING_CSCRIPT_PARSER)
-#include <string>
-#include <vector>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Object.h>
 
-/* Returns false and fills error ("line N: message") when the text is not valid. */
-bool CscriptCompiler_Compile(const char *text, std::vector<unsigned char> &out, std::string &error);
+#if defined(MT2D_USING_CSCRIPT_PARSER)
+MT2D_C_BEGIN
+
+/* Compiles the text. Returns true and a malloc'd block (*out, *size bytes, free it with
+   CscriptCompiler_Free) or false and the reason, "line N: message", copied to error
+   (error is optional, errorSize is its size in bytes). */
+bool CscriptCompiler_Compile(const char *text, unsigned char **out, unsigned long *size, char *error, int errorSize);
+void CscriptCompiler_Free(unsigned char *out);
 
 /* Compiles the text file and loads the object. NULL on error (error is optional). */
-Object *ObjectCore_LoadScript(const char *textFile, std::string *error = 0);
+Object *ObjectCore_LoadScript(const char *textFile, char *error, int errorSize);
+
+MT2D_C_END
 #endif
 
 #endif

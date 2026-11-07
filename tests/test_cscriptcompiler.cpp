@@ -8,10 +8,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// The compiler is C (char buffers), these tests are easier to read with the STL.
+static bool compile(const char *text, std::vector<unsigned char> &bin, std::string &err) {
+    unsigned char *out = 0;
+    unsigned long size = 0;
+    char msg[256];
+    bin.clear();
+    bool ok = CscriptCompiler_Compile(text, &out, &size, msg, (int)sizeof(msg));
+    err = msg;
+    if (ok) {
+        bin.assign(out, out + size);
+        CscriptCompiler_Free(out);
+    }
+    return ok;
+}
+
 static Object *compile_and_load(const char *text, std::string *errOut = 0) {
     std::vector<unsigned char> bin;
     std::string err;
-    bool ok = CscriptCompiler_Compile(text, bin, err);
+    bool ok = compile(text, bin, err);
     if (errOut) *errOut = err;
     if (!ok) return 0;
     return ObjectCore_LoadFromMemory(&bin[0], (unsigned long)bin.size());
@@ -20,7 +35,7 @@ static Object *compile_and_load(const char *text, std::string *errOut = 0) {
 static std::string error_of(const char *text) {
     std::vector<unsigned char> bin;
     std::string err;
-    CHECK(!CscriptCompiler_Compile(text, bin, err));
+    CHECK(!compile(text, bin, err));
     CHECK(bin.empty());
     return err;
 }
@@ -550,7 +565,7 @@ TEST(global_names_are_checked_when_the_object_is_loaded) {
         "}}";
     std::vector<unsigned char> bin;
     std::string err;
-    CHECK(CscriptCompiler_Compile(text, bin, err));
+    CHECK(compile(text, bin, err));
     CHECK(err.empty());
     // but loading needs them
     CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
@@ -734,12 +749,12 @@ TEST(load_script_from_text_file) {
     if (!f) return;
     fputs("object a { int hp = 3; states { S: Wait 1 } }", f);
     fclose(f);
-    std::string err;
-    Object *o = ObjectCore_LoadScript("script.txt", &err);
+    char err[256];
+    Object *o = ObjectCore_LoadScript("script.txt", err, (int)sizeof(err));
     CHECK(o != 0);
     if (o) CHECK_EQ(var_of(o, "hp"), 3);
     ObjectCore_Unload(o);
-    CHECK(ObjectCore_LoadScript("missing.txt", &err) == 0);
+    CHECK(ObjectCore_LoadScript("missing.txt", err, (int)sizeof(err)) == 0);
     CHECK(has(err, "cannot open"));
 }
 

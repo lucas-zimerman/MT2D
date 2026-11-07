@@ -8,7 +8,7 @@ cmake --build build/tests
 ctest --test-dir build/tests --output-on-failure
 ```
 
-Needs a C++11 compiler and CMake 3.10+. No external test library is used,
+Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new engine code is C, see AGENTS.md). No external test library is used,
 `framework/mt2d_test.h` is a small header-only runner.
 
 | Test file | Engine code covered |
@@ -20,9 +20,9 @@ Needs a C++11 compiler and CMake 3.10+. No external test library is used,
 | `test_cscript.cpp` | `ObjectCore/Cscript.cpp` |
 | `test_object.cpp` | `ObjectCore/Object.cpp` (objects and scenes) |
 | `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.cpp` (built in Cscript functions, audio calls are no-ops) |
-| `test_objectloader.cpp` | `ObjectCore/ObjectLoader.cpp` (compiled `.mto` files, truncated/invalid input) |
-| `test_objectglobals.cpp` | `ObjectCore/ObjectGlobals.cpp` (registry of global vars, objects and functions) |
-| `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.cpp` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
+| `test_objectloader.cpp` | `ObjectCore/ObjectLoader.c` (compiled `.mto` files, truncated/invalid input) |
+| `test_objectglobals.cpp` | `ObjectCore/ObjectGlobals.c` (registry of global vars, objects and functions) |
+| `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.c` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
 | `test_container.cpp` | `Container/MT2D_Container.cpp` |
 | `test_aes.cpp` | `Container/aes.cpp` (NIST known answers) |
 | `test_display.cpp` | display buffers in `MT2D.cpp` |

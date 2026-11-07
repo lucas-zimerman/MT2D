@@ -1,7 +1,7 @@
 # Object scripts
 
 Object scripts describe an ObjectCore object (its vars, states, sprites and behaviour) in a
-small text file instead of C++ code:
+small text file instead of code:
 
 ```
 object movingdot
@@ -50,7 +50,7 @@ The text compiler is optional (CMake option `MT2D_CSCRIPT_PARSER`, off by defaul
 cscriptc movingdot.txt movingdot.mto
 ```
 
-```cpp
+```c
 #include <MT2D/ObjectCore/ObjectLoader.h>
 
 Object *dot = ObjectCore_Load("movingdot.mto");
@@ -194,21 +194,21 @@ GotoStateIfHitObject(global Doggo, hit)
 
 ## Loading objects
 
-```cpp
+```c
 #include <MT2D/ObjectCore/ObjectLoader.h>
 
 Object *ObjectCore_Load(const char *file);                       // NULL on error
 Object *ObjectCore_LoadFromMemory(const unsigned char *data, unsigned long size);
 Object *ObjectCore_Clone(Object *model, int x, int y);           // a new object, same behaviour
 void    ObjectCore_Unload(Object *model);
-const char *ObjectCore_GetLastError();                           // why a load failed
+const char *ObjectCore_GetLastError(void);                       // why a load failed
 ```
 
 A loaded object is a **model**: its states are shared data. Make the objects you put in the scene
 with `ObjectCore_Clone`; a clone shares the states of the model and has its own copy of the flags,
 size, acceleration and vars (with the values the model has when you clone it).
 
-```cpp
+```c
 Object *model = ObjectCore_Load("tile.mto");
 Object *a = ObjectCore_Clone(model, 0, 0);
 Object *b = ObjectCore_Clone(model, 102, 0);
@@ -220,26 +220,29 @@ ObjectCore_Unload(model);      // last: frees the states, the model object and i
 
 Do not call `ObjectCore_Unload` while clones are still in a scene, they use its states.
 
-With the text compiler built in, `ObjectCore_LoadScript("tile.txt", &error)` compiles and loads a
-text file in one call (`error` is a `std::string`, it receives the line and the reason).
+With the text compiler built in, `ObjectCore_LoadScript("tile.txt", error, sizeof(error))` compiles and
+loads a text file in one call (`error` is a `char` buffer, it receives the line and the reason, it can
+be `NULL`). `CscriptCompiler_Compile` gives you the `.mto` bytes in memory instead.
 
 ## Globals
 
 Scripts cannot know about your game's own vars, objects and functions, so you register them by
 name **before** loading the objects that use them. The registry does not copy anything.
 
-```cpp
+```c
 #include <MT2D/ObjectCore/ObjectGlobals.h>
 
 ObjectCore_AddGlobalVar(GameSpeed);                       // the name is GameSpeed->Name
 ObjectCore_AddGlobalObject("Doggo", doggo);               // used as global Doggo
 ObjectCore_AddGlobalCScript("SpawnSmoke", SpawnSmoke);    // void f(Object *caller)
-ObjectCore_AddGlobalCScript("GetCash", GetCash, 1);       // void f(Object *caller, MT2D_VAR **args), 1 argument
+ObjectCore_AddGlobalCScriptVars("GetCash", GetCash, 1);   // void f(Object *caller, MT2D_VAR **args), 1 argument
+ObjectCore_AddGlobalCScriptObjVars("Spawn", Spawn, 3);    // void f(Object *caller, Object *other, MT2D_VAR **args)
 ```
 
-* The signatures a function can have are the ones of Cscript: `void f(Object*)`,
-  `void f(Object*, MT2D_VAR**)` and `void f(Object*, Object*, MT2D_VAR**)`. The optional last
-  number is how many arguments a script has to write (the object counts as the first one in the
+* The signatures a function can have are the ones of Cscript: `void f(Object*)`
+  (`ObjectCore_AddGlobalCScript`), `void f(Object*, MT2D_VAR**)` (`...Vars`) and
+  `void f(Object*, Object*, MT2D_VAR**)` (`...ObjVars`). The last
+  number is how many arguments a script has to write (-1 accepts any amount) (the object counts as the first one in the
   last signature); the load fails if a script does not match.
 * Add returns `false` for a name that exists or is longer than 18 characters.
 * Each kind (vars, objects, functions) has its own names.
@@ -282,10 +285,11 @@ The exact list (the position of each is the number stored in `.mto` files) is
 
 | What | How |
 | --- | --- |
-| Loader and global registry | Always built. Files `ObjectCore/ObjectLoader.*`, `ObjectCore/ObjectGlobals.*`. |
-| Text compiler | CMake option `MT2D_CSCRIPT_PARSER` (ON by default, OFF for DJGPP). Files in `ObjectCore/Parser/`. Defines `MT2D_USING_CSCRIPT_PARSER`. |
+| Loader and global registry | Always built, plain C. Files `ObjectCore/ObjectLoader.*`, `ObjectCore/ObjectGlobals.*`. |
+| Text compiler | CMake option `MT2D_CSCRIPT_PARSER` (ON by default, OFF for DJGPP). Plain C, files in `ObjectCore/Parser/`. Defines `MT2D_USING_CSCRIPT_PARSER`. |
 | `cscriptc` tool | Built by `tests/CMakeLists.txt` when the option is ON: `cscriptc in.txt out.mto`. |
-| Android | `Android.mk` builds the loader; it does not build `Parser/`. |
+| Android | `Android.mk` builds the loader and the registry; it does not build `Parser/`. |
+| Your build system | Compile `.c` files too, with C99 (`-std=gnu99`). |
 
 The tests (`tests/test_objectloader.cpp`, `test_objectglobals.cpp`, `test_cscriptcompiler.cpp`)
 double as examples of every feature.

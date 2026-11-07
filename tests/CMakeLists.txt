@@ -58,10 +58,10 @@ target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermis
 option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
 set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader objectglobals)
 if(MT2D_CSCRIPT_PARSER)
-    target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.cpp)
+    target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
     target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)
     list(APPEND TEST_NAMES cscriptcompiler)
-    add_executable(cscriptc ${ENGINE}/ObjectCore/Parser/cscriptc.cpp)
+    add_executable(cscriptc ${ENGINE}/ObjectCore/Parser/cscriptc.c)
     target_link_libraries(cscriptc mt2d_engine)
 endif()
 
