@@ -352,6 +352,7 @@ void delete_data_from_file(int offset, int index) {
 			free(buffer);
 		}
 		free(ContainerHash.hash[index][offset]->name);
+		ContainerHash.hash[index][offset]->name = NULL;
 		try_remove_container(ContainerHash.hash[index][offset]->DataFileId);
 		ContainerHash.hash[index][offset]->DataFileId = NULL;// This looks so wrong but I blame vscode for nagging
 	}
@@ -361,7 +362,7 @@ void delete_data_from_file(int offset, int index) {
 */
 void free_MT2D_ContainerFile(MT2D_ContainerFile* file)
 {
-	if (file->DataFileId->refCount > 0) {
+	if (file->DataFileId != NULL && file->DataFileId->refCount > 0) {
 		file->DataFileId->refCount--;
 	}
 	free(file->name);
@@ -507,6 +508,7 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt){
 		int pos=0;
 		unsigned char *name = read_Hidden_Name(&pos,old);// no need to be decoded
 		MT2D_FILE_WRITE(tmp,name,nameSize,1);
+		free(name);
 		MT2D_FILE_WRITE_BYTE(tmp,'\n');
 	    write_padding_length(tmp,ContainerHash.hash[hashIndex][offset]->xpadding, length);
 
@@ -679,10 +681,11 @@ bool MT2D_Container_Load_File(char *Path) {
 	MT2D_Ide_Printf(Path);
 	bool loaded = false;
 	MT2D_FILE *file = MT2D_FILE_OPEN(Path, "rb");
-	if (file) {
-		MT2D_Ide_Printf("Container File found");
-		loaded = true;
+	if (!file) {
+		return false;
 	}
+	MT2D_Ide_Printf("Container File found");
+	loaded = true;
 	int length = strlen(Path) +1;
 	char *newString = (char*)malloc(length * sizeof(char));
 	char* newString2 = (char*)malloc(length * sizeof(char));	
@@ -783,8 +786,8 @@ bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool d
 	Filename = (char*)malloc(strlen(NewName) + strlen(Path) + 2);
 	sprintf(Filename, "%s/%s\0",Path, NewName);
 	MT2D_FILE *Destination = MT2D_FILE_OPEN(Filename, "wb");
+	free(Filename);
 	if (Destination) {
-		free(Filename);
 		BYTE *data = MT2D_Container_Get_Data(index,decrypt);
 		int length = MT2D_Container_Get_FileLength(index);
 		int xpadding = MT2D_Container_Get_FilePadding(index);
@@ -848,6 +851,7 @@ bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool 
 			
 			MT2D_FILE_WRITE(contFile,data,length + padding,1);
 			MT2D_FILE_CLOSE(contFile);
+			free(data);
 			return true;
 		}
 	}
@@ -911,10 +915,10 @@ BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	else {
 		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)ContainerHash.hash[hashIndex][hashOffset]->DataFileId->file, "rb");
 		MT2D_FILE_SEEK(file, offset, SEEK_SET);
-		data = (BYTE*)malloc((offset + padding + length)*sizeof(BYTE));
+		data = (BYTE*)malloc((padding + length + 1)*sizeof(BYTE));
 		MT2D_FILE_READ(file, data, padding + length, 1);
 		if(decrypt){
-			decryptAes(data,length,&padding);
+			data = decryptAes(data,length,&padding);
 		}
 		data[padding + length] = '\0';
 		MT2D_FILE_CLOSE(file);
