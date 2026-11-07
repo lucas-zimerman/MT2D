@@ -41,3 +41,6 @@ jobs:
             -c MT2D/ObjectCore/Cscript.cpp -o build/djgpp/Cscript.o
           i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
             -c tests/djgpp/cscript_new_check.cpp -o build/djgpp/cscript_new_check.o
+          # the compiled object loader has to stay DOS friendly (no STL, C++98)
+          i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
+            -c MT2D/ObjectCore/ObjectLoader.cpp -o build/djgpp/ObjectLoader.o

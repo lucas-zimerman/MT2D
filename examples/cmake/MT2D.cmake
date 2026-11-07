@@ -32,6 +32,14 @@ else()
     set(MT2D_DOS FALSE)
 endif()
 
+# The object text compiler (ObjectCore/Parser, uses the STL) is optional: games can ship compiled
+# objects (.mto, made by the cscriptc tool) and only need the small ObjectLoader. Off by default on DOS.
+if(MT2D_DOS)
+    option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" OFF)
+else()
+    option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
+endif()
+
 # --------------------------------------------------------------------------------------------
 # SDL2 (only looked up when an SDL example is added)
 # --------------------------------------------------------------------------------------------
@@ -103,6 +111,7 @@ set(MT2D_COMMON_SOURCES
     ObjectCore/Cscript.cpp
     ObjectCore/MT2D_Text_Image.cpp
     ObjectCore/Object.cpp
+    ObjectCore/ObjectLoader.cpp
     ObjectCore/SpriteBlock.cpp
     ObjectCore/Sprites.cpp
     ObjectCore/State.cpp
@@ -162,9 +171,15 @@ function(mt2d_engine_target target backend)
             _LINUX/IO/MT2D_Linux_Keyboard.cpp
         )
     endif()
+    if(MT2D_CSCRIPT_PARSER)
+        list(APPEND sources ObjectCore/Parser/CscriptCompiler.cpp)
+    endif()
     list(TRANSFORM sources PREPEND "${MT2D_ENGINE_DIR}/")
 
     add_library(${target} STATIC ${sources})
+    if(MT2D_CSCRIPT_PARSER)
+        target_compile_definitions(${target} PUBLIC MT2D_USING_CSCRIPT_PARSER)
+    endif()
     # "${MT2D_REPO_DIR}" makes <MT2D/...> includes work.
     target_include_directories(${target} PUBLIC "${MT2D_REPO_DIR}")
     set_target_properties(${target} PROPERTIES

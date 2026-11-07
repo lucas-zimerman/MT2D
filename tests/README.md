@@ -20,6 +20,8 @@ Needs a C++11 compiler and CMake 3.10+. No external test library is used,
 | `test_cscript.cpp` | `ObjectCore/Cscript.cpp` |
 | `test_object.cpp` | `ObjectCore/Object.cpp` (objects and scenes) |
 | `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.cpp` (built in Cscript functions, audio calls are no-ops) |
+| `test_objectloader.cpp` | `ObjectCore/ObjectLoader.cpp` (compiled `.mto` files, truncated/invalid input) |
+| `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.cpp` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
 | `test_container.cpp` | `Container/MT2D_Container.cpp` |
 | `test_aes.cpp` | `Container/aes.cpp` (NIST known answers) |
 | `test_display.cpp` | display buffers in `MT2D.cpp` |
@@ -54,4 +56,3 @@ Found while writing the tests (no test, to avoid crashing the run):
   file whose first character has a low nibble of `F` (`o`, `O`, `/`, `?`, `_`)
   writes out of bounds.
 * `Cscript_AddVar_ToObject` indexes `Var[i]` while looping over the object's vars.
-* `Cscript_Empty` does not initialise `_void`.

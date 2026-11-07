@@ -30,6 +30,7 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/Container/MT2D_Container.cpp
     ${ENGINE}/ObjectCore/Cscript.cpp
     ${ENGINE}/ObjectCore/MT2D_Text_Image.cpp
+    ${ENGINE}/ObjectCore/ObjectLoader.cpp
     ${ENGINE}/ObjectCore/Object.cpp
     ${ENGINE}/ObjectCore/SpriteBlock.cpp
     ${ENGINE}/ObjectCore/Sprites.cpp
@@ -49,9 +50,20 @@ target_include_directories(mt2d_engine PUBLIC
 # The engine is old code, keep the build output readable.
 target_compile_options(mt2d_engine PRIVATE -w -fpermissive)
 
+# The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
+option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader)
+if(MT2D_CSCRIPT_PARSER)
+    target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.cpp)
+    target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)
+    list(APPEND TEST_NAMES cscriptcompiler)
+    add_executable(cscriptc ${ENGINE}/ObjectCore/Parser/cscriptc.cpp)
+    target_link_libraries(cscriptc mt2d_engine)
+endif()
+
 enable_testing()
 
-foreach(name vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850)
+foreach(name ${TEST_NAMES})
     add_executable(test_${name} test_${name}.cpp)
     target_link_libraries(test_${name} mt2d_engine)
     target_compile_options(test_${name} PRIVATE -w -fpermissive)

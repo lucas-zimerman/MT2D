@@ -10,12 +10,13 @@
 Cscript *Cscript_Empty()
 {
         Cscript *F = (Cscript*)malloc(sizeof(Cscript));
+        F->_void = 0;
         F->_Obj = 0;
-        F->_Obj_Vars = 0;
         F->_Obj_Vars = 0;
         F->_Obj_Obj_Vars = 0;
         F->TempObj = 0;
         F->TempVars = 0;
+        F->Packed = 0;
         return F;
 }
 
@@ -104,6 +105,10 @@ void Cscript_Execute(Object *Caller, Cscript *Function) {
 
 void Cscript_RemoveFromMemory(Cscript *Me) {
         if (Me) {
+                if (Me->Packed) {
+                        free(Me); // one block, nothing else to release
+                        return;
+                }
                 if (Me->TempObj) {
                         free(Me->TempObj); // we only store a pointer and not the actuall object so we just remover the byte that points for that object.
                 }

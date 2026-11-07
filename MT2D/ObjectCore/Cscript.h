@@ -59,6 +59,7 @@ struct Cscript
         void(*_Obj_Obj_Vars)(struct Object*, struct Object*, MT2D_VAR**);//a function with only a single object, one or more objects in the second arg and lastly one or more Vars as arg, normally the caller as the first object
         MT2D_VAR **TempVars;
         struct Object *TempObj;
+        unsigned char Packed; /* 1 = TempVars and the vars they point to live in the same block as the Cscript (see ObjectLoader), a single free releases everything */
 };
 
 Cscript *Cscript_Empty();

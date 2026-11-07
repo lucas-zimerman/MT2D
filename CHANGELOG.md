@@ -30,6 +30,10 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Object files: `ObjectCore_Load("movingdot.mto")` ([#3](https://github.com/lucas-zimerman/MT2D/issues/3)) loads an object (vars, states, frames, sprites and Cscript calls) from a compact binary file. The loader has no parser and no function name table, reads the file in one pass and allocates every array with its final size, one allocation per frame. Release it with `ObjectCore_Unload`.
+- Text compiler for those files, `MT2D/ObjectCore/Parser` (CMake option `MT2D_CSCRIPT_PARSER`, off by default for DJGPP): a DECORATE like format with `int` vars, states, `"sprite" wait Action(args)` frames, `Goto` and `Stop`, see `MT2D/ObjectCore/Parser/CscriptCompiler.h`. Use the `cscriptc` tool (built by `tests/`) or `ObjectCore_LoadScript` to compile it.
+- `CscriptFunctions.h` lists the built in Cscript calls available to compiled objects (the position in the list is the id stored in files, only append).
+- `Cscript.Packed` marks a Cscript stored in one block with its vars, `Cscript_RemoveFromMemory` frees it with a single `free`.
 - New relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`), the building blocks for if/else and loops inside a state.
 - New Cscript conditions `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}` and `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`), completing the set next to the existing `==`, `<=` and `>=`.
 - `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them
@@ -60,6 +64,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- `Cscript_Empty` now initialises `_void`.
 - Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Allow the use of NULL as functions ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Set SDL Audio to 44KHz ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
