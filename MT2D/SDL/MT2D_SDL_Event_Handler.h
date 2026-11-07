@@ -29,6 +29,7 @@ struct MT2D_SDL_Events {
 };
 
 void MT2D_SDL_Event_Handler();
+void MT2D_SDL_Flush_Key_Releases();/*applies the key releases that were postponed (called by the joystick update)*/
 void MT2D_SDL_Event_Handler_NoLoop();
 #endif
 

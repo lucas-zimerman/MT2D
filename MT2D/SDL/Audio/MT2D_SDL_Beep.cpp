@@ -155,6 +155,8 @@ void SDL_Beep(int frequency, int TimeMS) {
 
 #else
 //#e define "SDL_USE_AUDIO" must be declared to use the emulated PC SPEAKER function
+//without it the beep is silent (but the project still links)
+void SDL_Beep(int frequency, int TimeMS) {}
 #endif
 
 #endif

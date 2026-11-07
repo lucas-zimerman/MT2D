@@ -1,5 +1,5 @@
 #if !defined(__ANDROID__)
-#include <MT2D\MT2D.h>
+#include <MT2D/MT2D.h>
 #elif defined(__MSDOS__)
 #include "../../MT2D/MT2D.h"
 #else

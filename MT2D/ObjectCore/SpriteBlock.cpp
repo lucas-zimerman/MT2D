@@ -1,8 +1,8 @@
 //#include "Sprites.h"
 #ifndef __ANDROID__
-#include <MT2D/Objectcore/SpriteBlock.h>
+#include <MT2D/ObjectCore/SpriteBlock.h>
 #else
-#include "../Objectcore/SpriteBlock.h"
+#include "../ObjectCore/SpriteBlock.h"
 #endif
 #include <stdlib.h>
 

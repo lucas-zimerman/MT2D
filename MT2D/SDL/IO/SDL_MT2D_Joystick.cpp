@@ -12,6 +12,8 @@
 #include "../../Joystick/MT2D_Joystick.h"
 #endif
 
+#include <stdlib.h>
+
 #ifdef SDL_USE
 
 extern MT2D_SDL_Events MainEvents;
@@ -103,6 +105,51 @@ void MT2D_SDL_Update_Keys(MT2D_Joystick *MyJosytick) {
 		MainEvents.Keyboard_Buffer_Count = 0;
 	}
 	*/
+}
+
+extern MT2D_Joystick *GlobalJoystickHandler;
+
+void MT2D_SDL_Joystick_Init() {
+	int i;
+	GlobalJoystickHandler = (MT2D_Joystick*)malloc(sizeof(MT2D_Joystick));
+	for (i = 0; i < 4; i++) {
+		GlobalJoystickHandler->Button_Pressed[i] = false;
+		GlobalJoystickHandler->Mapped_Button[i] = 0;
+	}
+	GlobalJoystickHandler->Left_Modified = false;
+	GlobalJoystickHandler->Left_X_axis = 0;
+	GlobalJoystickHandler->Left_Y_axis = 0;
+	GlobalJoystickHandler->Right_Modified = false;
+	GlobalJoystickHandler->Right_X_axis = 0;
+	GlobalJoystickHandler->Right_Y_axis = 0;
+	GlobalJoystickHandler->Touched = false;
+	GlobalJoystickHandler->DeadZoneAxis = 8000;
+	SDL_Joystick_Init();
+	GlobalJoystickHandler->gGameController = SDL_LoadJoystick();
+}
+
+void MT2D_SDL_Joystick_Close() {
+	if (GlobalJoystickHandler) {
+		if (GlobalJoystickHandler->gGameController != 0) {
+			SDL_JoystickClose(GlobalJoystickHandler->gGameController);
+		}
+		free(GlobalJoystickHandler);
+		GlobalJoystickHandler = 0;
+	}
+}
+
+/* Reads the SDL events (it replaces the MT2D_Keyboard calls) and updates the joystick state. */
+void MT2D_SDL_Joystick_Update() {
+	int i;
+	for (i = 0; i < 4; i++) {
+		GlobalJoystickHandler->Button_Pressed[i] = false;
+	}
+	GlobalJoystickHandler->Right_Modified = false;
+	GlobalJoystickHandler->Right_X_axis = 0;
+	GlobalJoystickHandler->Right_Y_axis = 0;
+	MT2D_SDL_Flush_Key_Releases(); /* keys released during the last frame were already seen by it */
+	MT2D_SDL_Event_Handler();
+	MT2D_SDL_Update_Keys(GlobalJoystickHandler);
 }
 
 #endif

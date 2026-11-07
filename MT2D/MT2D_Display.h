@@ -5,17 +5,17 @@
 #define MT2D_Clear_Main_Window MT2D_SDL_Clear_Main_Window
 #define MT2D_Draw_Window MT2D_SDL_Draw_Window
 #elif defined(_WIN32)
-#include "_WINDOWS\Render\MT2D_Win_Render.h"
+#include "_WINDOWS/Render/MT2D_Win_Render.h"
 #define MT2D_Clear_Main_Window MT2D_Win_Clear_Main_Window
 #define MT2D_Draw_Window MT2D_Win_Draw_Window
 #elif defined(__MSDOS__)  || defined(__DOS__)
-#include <MT2D\_MSDOS\Render\MT2D_Dos_Render.h>
+#include <MT2D/_MSDOS/Render/MT2D_Dos_Render.h>
 #define MT2D_Clear_Main_Window MT2D_Dos_Clear_Main_Window
 #define MT2D_Draw_Window MT2D_Dos_Draw_Window
 #elif defined(linux) && !defined(__ANDROID__)
 #include "_LINUX/Render/MT2D_Linux_Render.h"
-#define MT2D_Clear_Main_Window MT2D_Linux_Draw_Window
-#define MT2D_Draw_Window MT2D_Linux_Clear_Main_Window
+#define MT2D_Clear_Main_Window MT2D_Linux_Clear_Main_Window
+#define MT2D_Draw_Window MT2D_Linux_Draw_Window
 #else
 void MT2D_Clear_Main_Window();
 void MT2D_Draw_Window(int which);

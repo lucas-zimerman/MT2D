@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+project(graphics CXX)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/MT2D.cmake)
+file(GLOB GRAPHICS_ASSETS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} assets/*.png)
+mt2d_add_example(graphics SOURCES src/main.cpp SDL ASSETS ${GRAPHICS_ASSETS} DOS_NAME graphics)

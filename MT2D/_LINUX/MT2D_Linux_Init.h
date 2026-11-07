@@ -1,16 +1,11 @@
 /*===================================================================
-MT2D_Win_Init.h/ MT2D_Win_Init.cpp created By Lucas Zimerman Fraulob
+MT2D_Linux_Init.h/ MT2D_Linux_Init.cpp
 
-This file handles the Windows specific code required to init the MT2D
-engine.
+Init of the terminal (curses) backend used by Linux and macOS.
 ===================================================================*/
-
-
-
-
 #if defined(linux) && !defined(MT2DLIN_INIT_H)
 #define MT2DLIN_INIT_H
 
-bool MT2D_Linux_Init()
+bool MT2D_Linux_Init();
 
 #endif

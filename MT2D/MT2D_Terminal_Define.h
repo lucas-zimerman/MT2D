@@ -1,5 +1,11 @@
 #ifndef MTTerm_Def_H
 #define MTTerm_Def_H
+
+// The engine uses the (GNU only) `linux` macro for "unix like". Define it ourselves so
+// strict -std=c++XX builds and macOS work too.
+#if (defined(__linux__) || defined(__APPLE__)) && !defined(linux)
+#define linux 1
+#endif
 /*===================================================================
 MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 

@@ -293,8 +293,31 @@ bool NewLoadFromFile(char *string) {
 
 }
 
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
+#elif defined(_WIN32)
+#include <direct.h>
+#define chdir _chdir
+#endif
+
+/* Makes the folder of the executable the working directory, so the font, icon and
+   the images are found no matter where the program was started from. */
+static void MT2D_SDL_Enter_Base_Path()
+{
+#if defined(__linux__) || defined(__APPLE__) || defined(_WIN32)
+	char *base = SDL_GetBasePath();
+	if (base) {
+		if (chdir(base) != 0) {
+			SDL_Log("MT2D: could not enter %s\n", base);
+		}
+		SDL_free(base);
+	}
+#endif
+}
+
 bool loadMedia()
 {
+	MT2D_SDL_Enter_Base_Path();
 	SDL_Surface *tmpSurface = 0;
 	SDL_Rect R;
 	int ver = 0;

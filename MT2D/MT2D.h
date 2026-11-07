@@ -101,14 +101,14 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
         #include <MT2D/SDL/MT2D_SDL_main.h>
         #define MT2D_Init MT2D_SDL_Init
 #elif defined(_WIN32)
-        #include "_WINDOWS\MT2D_Win_Init.h"
+        #include "_WINDOWS/MT2D_Win_Init.h"
         #define MT2D_Init MT2D_Win_Init
 
 #elif defined(__MSDOS__) || defined(__DOS__)
-        #include <MT2D\_MSDOS\MT2D_Dos_Init.h>
+        #include <MT2D/_MSDOS/MT2D_Dos_Init.h>
         #define MT2D_Init MT2D_Dos_Init
 #elif defined(linux)
-        #include "_LINUX\MT2D_Linux_Init.h"
+        #include "_LINUX/MT2D_Linux_Init.h"
         #define MT2D_Init MT2D_Linux_Init
 #elif defined(__EMSCRIPTEN__) && !defined(SDL_USE)
 #error "MT2D must use SDL in order to work with EMSCRIPTEN, please enable it in MT2D_Terminal_Define.h"
