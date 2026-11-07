@@ -24,40 +24,40 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
-- Add common object parameters as variables (Acceleration, Position, Size).
-- Add functions Object_Add_Variable and Object_Add_Variables.
-- Add Emscripten support (no audio yet) and a joystick implementation for it.
-- Add a custom CMakeLists to help building MT2D projects.
-- Add new STDFunctions: JumpFramesIfRandom, While and WhileEnd (beta).
-- Add Object_GotoState_IfHitObject.
-- Add Cscript functions for playing sounds/music from a container.
-- Add support for audio playback from memory.
-- Add option to get a MT2D Var as a bool.
-- Add an extra MT2D_FILE layer; SDL handles the files when SDL is in use.
-- Add Android joystick logic.
-- Add initial Open Watcom support for MS-DOS, plus MS-DOS joystick, keyboard, render and system call implementations.
-- Add Container test case (`TestCase/ContainerTest`).
-- Add VSYNC with SDL to avoid unstable framerates.
-- Add a specific debug tag for ObjectCore, and notes to help find out why sprite rendering or adding fails.
-- Add logs to SDL_Audio.
-- SDL now finds fonts inside the assets folder by default.
-- Container refactor: data is no longer fully stored in memory, and it supports temporary files, updating, inserting and removing files, getting where the data is located, and clearing data/containers.
-- Add functions to create a matrix of vars of any size.
-- Add MS-DOS tooling notes (`Tools/msdos/readme.txt`).
+- Add common object parameters as variables (Acceleration, Position, Size) ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
+- Add functions Object_Add_Variable and Object_Add_Variables ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
+- Add Emscripten support (no audio yet) and a joystick implementation for it ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add a custom CMakeLists to help building MT2D projects ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add new STDFunctions: JumpFramesIfRandom, While and WhileEnd (beta) ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add Object_GotoState_IfHitObject ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add Cscript functions for playing sounds/music from a container ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add support for audio playback from memory ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add option to get a MT2D Var as a bool ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add an extra MT2D_FILE layer; SDL handles the files when SDL is in use ([#5](https://github.com/lucas-zimerman/MT2D/pull/5))
+- Add Android joystick logic ([#5](https://github.com/lucas-zimerman/MT2D/pull/5))
+- Add initial Open Watcom support for MS-DOS, plus MS-DOS joystick, keyboard, render and system call implementations ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Add Container test case (`TestCase/ContainerTest`) ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add VSYNC with SDL to avoid unstable framerates ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Add a specific debug tag for ObjectCore, and notes to help find out why sprite rendering or adding fails ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add logs to SDL_Audio ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- SDL now finds fonts inside the assets folder by default ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Container refactor: data is no longer fully stored in memory, and it supports temporary files, updating, inserting and removing files, getting where the data is located, and clearing data/containers ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add functions to create a matrix of vars of any size ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Add MS-DOS tooling notes (`Tools/msdos/readme.txt`) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
 
 ### Fixes
 
-- Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene.
-- Allow the use of NULL as functions.
-- Set SDL Audio to 44KHz.
-- Fix SDL Log and internal SDL paths.
-- Fix const warnings and a state crash.
-- Fix lower/upper case typos in includes.
-- Fix memory leaks and unfreed memory in the container code.
-- Fix a problem in the encryption part that removed data from the decrypted content.
-- Fix file reading/writing typo in containers and an include overflow.
-- Fix SDL issues for MS-DOS/SDL builds and the full path handling.
-- Code cleanup (tabs replaced by spaces, unused code removed).
+- Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Allow the use of NULL as functions ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Set SDL Audio to 44KHz ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix SDL Log and internal SDL paths ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix const warnings and a state crash ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix lower/upper case typos in includes ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Fix memory leaks and unfreed memory in the container code ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix a problem in the encryption part that removed data from the decrypted content ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix file reading/writing typo in containers and an include overflow ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
+- Fix SDL issues for MS-DOS/SDL builds and the full path handling ([#9](https://github.com/lucas-zimerman/MT2D/pull/9))
+- Code cleanup (tabs replaced by spaces, unused code removed) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
 
 ## 2.0.1 - 2019-03-24
 
