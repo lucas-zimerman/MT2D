@@ -31,16 +31,15 @@ Sprite0 0 Goto "Spawn1"
 
 MT2D_C_BEGIN
 
-#pragma region AI FUNCTIONS
+/* ---- AI FUNCTIONS ---- */
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y);
 void Cscript_Move(Object *object);
 void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars);
 void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars);
 void Object_GotoState_IfHitObject(Object* Caller, Object* Target, MT2D_VAR** Vars);
-#pragma endregion
 
 
-#pragma region LOGIC FUNCTIONS
+/* ---- LOGIC FUNCTIONS ---- */
 void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX);
 void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars);
 void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars);
@@ -65,20 +64,17 @@ void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Vars);
 void Cscript_While(Object* caller, MT2D_VAR** vars);
 void Cscript_While_End(Object* caller, MT2D_VAR** vars);
 void Cscript_JumpFramesIfRandom(Object* caller, MT2D_VAR** vars);
-#pragma endregion
 
-#pragma region MATH FUNCTIONS
+/* ---- MATH FUNCTIONS ---- */
 void Cscript_VAR_INC(Object *object, MT2D_VAR **VAR);
 void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR);
 void Cscript_VAR_ADD(Object *object, MT2D_VAR **VARS);
 void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS);
-#pragma endregion
 
 
 
-#pragma region AUDIO FUNCTIONS
+/* ---- AUDIO FUNCTIONS ---- */
 void Cscript_PlaySound(Object *object,MT2D_VAR **SoundName);
 void Cscript_PlayMusic(Object *object,MT2D_VAR **MusicName);
-#pragma endregion
 
 MT2D_C_END
