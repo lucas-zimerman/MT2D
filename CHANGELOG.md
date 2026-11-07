@@ -30,6 +30,7 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- New relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`), the building blocks for if/else and loops inside a state.
 - New Cscript conditions `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}` and `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`), completing the set next to the existing `==`, `<=` and `>=`.
 - `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them
 - `MT2D_Object_Create_Var_Float`, float support in `MT2D_Object_ADD/SUB` and `MT2D_VAR_CLONE`; `MT2D_Object_VAR_GetInt/GetBool` are now inline

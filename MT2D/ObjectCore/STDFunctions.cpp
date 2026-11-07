@@ -333,6 +333,47 @@ void Cscript_JumpNextFrameIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
         }
 }
 
+/* Operator codes shared with Cscript_While: '<' '>' '=' '!' (not equal), 242 (>=) and 243 (<=). */
+static bool Cscript_Private_Compare(int Left, unsigned char Operation, int Right) {
+        switch (Operation) {
+        case '>':  return Left > Right;
+        case '<':  return Left < Right;
+        case '=':  return Left == Right;
+        case '!':  return Left != Right;
+        case 242:  return Left >= Right; //>=
+        case 243:  return Left <= Right; //<=
+        default:   return false;
+        }
+}
+
+/*
+Moves the frame pointer by "jump" frames, forward or backward. The engine goes to the next
+frame right after the call, so the object lands on frame (ActualFrame + jump + 1):
+jump 0 = next frame (no change), jump 1 = skip one frame, jump -2 = go back to the previous frame.
+Vars:
+[0] = jump
+*/
+void Cscript_JumpFrames(Object *object, MT2D_VAR **Vars) {
+        object->ActualFrame += Cscript_VAR_Get_Integer(object, Vars[0]);
+}
+
+/*
+Same as Cscript_JumpFrames, but only when the comparison is true.
+Vars:
+[0] = jump
+[1] = Left
+[2] = operator, an unsigned char (see Cscript_While; 242 is >=, 243 is <=)
+[3] = Right
+*/
+void Cscript_JumpFramesIfVar(Object *object, MT2D_VAR **Vars) {
+        int Left = Cscript_VAR_Get_Integer(object, Vars[1]);
+        unsigned char Operation = (unsigned char)Cscript_VAR_Get_Integer(object, Vars[2]);
+        int Right = Cscript_VAR_Get_Integer(object, Vars[3]);
+        if (Cscript_Private_Compare(Left, Operation, Right)) {
+                object->ActualFrame += Cscript_VAR_Get_Integer(object, Vars[0]);
+        }
+}
+
 /* Jumps to the state called like Name, does nothing if there is none. */
 static void Cscript_Private_GotoStateByName(Object *object, const char *Name) {
         for (int i = 0; i < object->States_Count; i++) {
