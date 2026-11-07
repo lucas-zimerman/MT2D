@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-### Added
-
-- `Cscript_New(fn, ...)`: one constructor for every kind of Cscript function, with any number of vars, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22)).
-
 ### Breaking
 
 - `bool` and `unsigned` var types were removed from MT2D_Var.
@@ -51,6 +47,7 @@ ObjectPosX(Object) = 12;
 - Add functions to create a matrix of vars of any size ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Add MS-DOS tooling notes (`Tools/msdos/readme.txt`) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
 - Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 
 ### Fixes
 
@@ -73,6 +70,7 @@ ObjectPosX(Object) = 12;
 - Fix SDL key releases that happened between two frames being lost (quick taps were never seen by the keyboard buffer) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - SDL builds now start in the executable folder, so the font and images are found when the program is launched from another directory ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - Add a silent `SDL_Beep` when SDL audio is disabled, so SDL builds link without SDL2_mixer ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Remove `#pragma region`/`endregion` from `MT2D_Terminal_Define.h`, which DJGPP's GCC rejects with `-Werror` ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 
 ## 2.0.1 - 2019-03-24
 
