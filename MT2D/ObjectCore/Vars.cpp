@@ -55,33 +55,66 @@ static char *Private_Dup(const char *Text)
         return out;
 }
 
-static MT2D_VAR *Private_Alloc(const char *Name, MT2D_VAR_TYPE Type)
+/* Fills a var in place (no allocation). One bounded pass both copies the name and detects names that don't fit. */
+static bool Private_Init(MT2D_VAR *V, const char *Name, MT2D_VAR_TYPE Type)
 {
-        MT2D_VAR *V;
         int i;
         if (Name == NULL) {
                 Private_Set_Error(Var_Null_Name, "NULL NAME RECEIVED IN VAR");
-                return NULL;
+                return false;
         }
-        V = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
-        if (V == NULL) {
-                Private_Set_Error(Var_Out_Of_Memory_To_Create_New_Var, "Out of Memory to create a new var");
-                return NULL;
-        }
-        /* One bounded pass both copies the name and detects names that don't fit. */
         for (i = 0; i < MT2D_VAR_NAME_MAX; i++) {
                 V->Name[i] = Name[i];
                 if (Name[i] == 0) break;
         }
         if (i == MT2D_VAR_NAME_MAX) {
-                free(V);
                 Private_Set_Error(Var_Name_Too_Long, "VAR NAME IS TOO LONG");
-                return NULL;
+                return false;
         }
         V->Type = (signed char)Type;
         memset(&V->Data, 0, sizeof(V->Data));
         MT2D_Var_Last_Error = Var_No_Error;
+        return true;
+}
+
+static MT2D_VAR *Private_Alloc(const char *Name, MT2D_VAR_TYPE Type)
+{
+        MT2D_VAR *V = (MT2D_VAR*)malloc(sizeof(MT2D_VAR));
+        if (V == NULL) {
+                Private_Set_Error(Var_Out_Of_Memory_To_Create_New_Var, "Out of Memory to create a new var");
+                return NULL;
+        }
+        if (!Private_Init(V, Name, Type)) {
+                free(V);
+                return NULL;
+        }
         return V;
+}
+
+bool MT2D_VAR_Init_Int(MT2D_VAR *Var, const char *Name, int Value)
+{
+        if (!Private_Init(Var, Name, VAR_INT)) return false;
+        Var->Data.i = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Char(MT2D_VAR *Var, const char *Name, char Value)
+{
+        if (!Private_Init(Var, Name, VAR_CHAR)) return false;
+        Var->Data.c = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Float(MT2D_VAR *Var, const char *Name, float Value)
+{
+        if (!Private_Init(Var, Name, VAR_FLOAT)) return false;
+        Var->Data.f = Value;
+        return true;
+}
+
+bool MT2D_VAR_Init_Pointer(MT2D_VAR *Var, const char *Name)
+{
+        return Private_Init(Var, Name, VAR_POINTER);
 }
 
 void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data)

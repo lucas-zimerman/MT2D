@@ -85,6 +85,13 @@ static inline const char *MT2D_Object_VAR_GetPath(MT2D_VAR *Var) {
         return Var->Type == VAR_STRING ? (const char*)Var->Data.p : Var->Name;
 }
 
+/* Initializes a var that lives in caller memory (e.g. inside Object.User_Vars): no allocation.
+   Returns false (and sets Var_Null_Name / Var_Name_Too_Long) if the name is invalid. */
+bool MT2D_VAR_Init_Int(MT2D_VAR *Var, const char *Name, int Value);
+bool MT2D_VAR_Init_Char(MT2D_VAR *Var, const char *Name, char Value);
+bool MT2D_VAR_Init_Float(MT2D_VAR *Var, const char *Name, float Value);
+bool MT2D_VAR_Init_Pointer(MT2D_VAR *Var, const char *Name);
+
 void MT2D_Object_VAR_SetVar(MT2D_VAR *Var, MT2D_VAR *New);
 MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR);
 
