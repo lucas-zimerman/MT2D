@@ -356,7 +356,9 @@ void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
         }               
         if(i ==  Caller->User_Vars_Count){
                 /* Skip duplicated var */
-                Object_Add_Variable(Caller, MT2D_VAR_CLONE(Var[0]));
+                MT2D_VAR* clone = MT2D_VAR_CLONE(Var[0]);
+                Object_Add_Variable(Caller, clone);
+                free(clone); /* only the shell, Name and Data now belong to Caller */
         }
 }
 
@@ -469,7 +471,9 @@ void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
  //               MT2D_VAR *NewVars = (MT2D_VAR*)malloc(NewModel->User_Vars_Count * sizeof(MT2D_VAR));
                 for (int i = Object_First_User_Var_Index; i < NewModel->User_Vars_Count; i++)
                 {
-                        Object_Add_Variable(NewObject, MT2D_VAR_CLONE(&NewModel->User_Vars[i]));
+                        MT2D_VAR* clone = MT2D_VAR_CLONE(&NewModel->User_Vars[i]);
+                        Object_Add_Variable(NewObject, clone);
+                        free(clone); /* only the shell, Name and Data now belong to NewObject */
                 }
         }
         ObjectScene_Add(Caller->MyScene, NewObject);

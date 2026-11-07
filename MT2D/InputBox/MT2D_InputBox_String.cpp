@@ -84,6 +84,7 @@ char *MT2D_InputBox_String(char *mensage){
 			out_loop=true;
 		}else if(buff==escape_pressed){
 			string_size=0;
+			free(string);
 			string=0;
 			out_loop=true;
 		}else{

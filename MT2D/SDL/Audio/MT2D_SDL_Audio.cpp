@@ -46,6 +46,8 @@ typedef struct MT2D_Audio_Buffer {
 };
 
 MT2D_Audio_Buffer SDL_ABuffer;
+/* Memory block that backs the music loaded from a file, it must outlive the Mix_Music */
+static char* SDL_Music_Buffer = 0;
 bool SDL_AUDIO_STARTED = false;
 
 extern char SDL_SOUND_TYPE;
@@ -86,11 +88,15 @@ void SDL_Close_Sound_System()
 	if (SDL_SOUND_TYPE == 1) {
 		while (Mix_Playing(0) != 0);
 		for (int i = 0; i < 8; i++) {
-			if (SDL_ABuffer.SDL_Audio[0]) {
-				Mix_FreeChunk(SDL_ABuffer.SDL_Audio[0]);
+			if (SDL_ABuffer.SDL_Audio[i]) {
+				Mix_FreeChunk(SDL_ABuffer.SDL_Audio[i]);
+				SDL_ABuffer.SDL_Audio[i] = 0;
 			}
 		}
 		Mix_FreeMusic(SDL_ABuffer.SDL_music);
+		SDL_ABuffer.SDL_music = 0;
+		free(SDL_Music_Buffer);
+		SDL_Music_Buffer = 0;
 		Mix_CloseAudio();
 		SDL_Quit();
 	}
@@ -153,13 +159,20 @@ void SDL_Play_Music(char *Name){
                 //	SDL_RWclose(file);
 #else
 				MT2D_FILE* file = MT2D_FILE_OPEN(Name, "rb");
+				if (file == NULL) {
+					SDL_ABuffer.SDL_music = NULL;
+					return;
+				}
 				MT2D_FILE_SEEK(file, 0, SEEK_END);
 				int size = MT2D_FILE_TELL(file);
 				char* buff = (char*)malloc(size * sizeof(char));
 				MT2D_FILE_SEEK(file, 0, SEEK_SET);
 				MT2D_FILE_READ(file, buff, size, 1);
+				MT2D_FILE_CLOSE(file);
 				SDL_RWops* a = SDL_RWFromMem(buff, size);
 				SDL_ABuffer.SDL_music = Mix_LoadMUS_RW(a,1);
+				free(SDL_Music_Buffer); /* the previous music was already freed above */
+				SDL_Music_Buffer = buff;
                 //SDL_ABuffer.SDL_music = Mix_LoadMUS(Name);
 #endif
                 if (!SDL_ABuffer.SDL_music) {

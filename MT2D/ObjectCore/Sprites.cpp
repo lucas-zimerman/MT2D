@@ -131,7 +131,7 @@ static Sprite *Create_Image_Sprite(SDL_Surface *Img, int ScaleX, int ScaleY) {
         S->ScaleY = ScaleY;
         S->type = 1;
         S->refCount = 0;
-        //we need to kill that surface...
+        SDL_FreeSurface(Img);
         return S;
 }
 #else
