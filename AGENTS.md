@@ -15,8 +15,11 @@
 ## Pull requests
 
 Every pull request is referenced as `([#id](prurl))`, for example
-`([#26](https://github.com/lucas-zimerman/MT2D/pull/26))`: in `CHANGELOG.md` entries and wherever
-else a PR is mentioned in the docs.
+`([#26](https://github.com/lucas-zimerman/MT2D/pull/26))`, wherever a PR is mentioned.
+
+**Each item of `CHANGELOG.md` must end with that reference** to the PR that made the change (an
+issue can be linked before it, e.g. `([#3](.../issues/3))`). Open the PR first, then add its number
+to the entries.
 
 ## Other rules
 
