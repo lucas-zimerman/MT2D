@@ -9,7 +9,7 @@
 # Backends (an example picks one with mt2d_add_example(... SDL) or without it):
 #   * terminal (default) -> the engine's native text backend:
 #                           DJGPP = MS-DOS text video memory, Windows = console API,
-#                           Linux / macOS = curses (ncurses is required).
+#                           Linux / macOS = curses (ncursesw is required).
 #   * SDL                -> a window that emulates the text screen, also draws images.
 #                           Needs SDL2 + SDL2_image (and optionally SDL2_mixer for audio files).
 #                           Not available with DJGPP.
@@ -154,6 +154,7 @@ function(mt2d_engine_target target backend)
         )
     else()
         list(APPEND sources
+            _LINUX/MT2D_Linux_CP850.cpp
             _LINUX/MT2D_Linux_Cursor.cpp
             _LINUX/MT2D_Linux_Init.cpp
             _LINUX/MT2D_Linux_System_Calls.cpp
@@ -179,6 +180,8 @@ function(mt2d_engine_target target backend)
         endif()
         target_link_libraries(${target} PUBLIC ${MT2D_SDL_LIBS})
     elseif(NOT MT2D_DOS AND NOT WIN32)
+        # wide character curses (ncursesw) is needed to draw the CP850 characters as Unicode
+        set(CURSES_NEED_WIDE TRUE)
         find_package(Curses REQUIRED)
         target_include_directories(${target} PUBLIC ${CURSES_INCLUDE_DIRS})
         target_link_libraries(${target} PUBLIC ${CURSES_LIBRARIES})

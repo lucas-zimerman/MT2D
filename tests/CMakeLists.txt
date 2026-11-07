@@ -37,6 +37,7 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/ObjectCore/STDFunctions.cpp
     ${ENGINE}/ObjectCore/Vars.cpp
     ${ENGINE}/Tools/Video/MT2D_Generic_Line.cpp
+    ${ENGINE}/_LINUX/MT2D_Linux_CP850.cpp
 )
 # compat first so its MT2D/MT2D.h wins over the real one.
 target_include_directories(mt2d_engine PUBLIC
@@ -50,7 +51,7 @@ target_compile_options(mt2d_engine PRIVATE -w -fpermissive)
 
 enable_testing()
 
-foreach(name vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout)
+foreach(name vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850)
     add_executable(test_${name} test_${name}.cpp)
     target_link_libraries(test_${name} mt2d_engine)
     target_compile_options(test_${name} PRIVATE -w -fpermissive)

@@ -6,6 +6,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | Example | Backend | What it shows |
 | --- | --- | --- |
 | `helloworld` | terminal | Start the engine, write text on the screen buffer, wait for a key |
+| `allchars` | terminal | Show the 256 CP850 characters of the screen buffer in a 16x16 table |
 | `inputpopup` | terminal | Message box, text input, number input and a two option question |
 | `menu` | terminal | `MT2D_Short_Menu` / `MT2D_Menu` |
 | `playpcspeaker` | terminal | PC speaker: sound effects and two public domain songs (Beethoven) made of beeps |
@@ -44,7 +45,7 @@ sudo apt install build-essential cmake libncurses-dev libsdl2-dev libsdl2-image-
 # plus libsdl2-mixer-dev to hear the playsound and playmusic examples
 ```
 
-The terminal examples use ncurses. There is no PC speaker on modern machines, so `MT2D_System_Beep` tries the
+The terminal examples use ncurses (wide character support, `libncursesw`) and need a UTF-8 terminal: the screen buffers hold CP850 text (like on MS-DOS) that is converted to Unicode when drawn, and typed characters are converted back to CP850. There is no PC speaker on modern machines, so `MT2D_System_Beep` tries the
 Linux console speaker first and otherwise writes a short tone to a temporary `.wav` and plays it with `paplay`,
 `pw-play` or `aplay`. If none of them exists you only get silence (the timing of the songs stays the same).
 

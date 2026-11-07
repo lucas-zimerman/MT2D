@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Linux / macOS terminal
+
+- Add the `allchars` example, which shows the 256 CP850 characters in a 16x16 table.
+- Proper CP850 support: the display buffers are converted to Unicode when drawn (accents, box drawing, blocks and the DOS symbols) and typed characters are converted back to CP850. This needs wide character curses (`ncursesw`) and a UTF-8 terminal locale.
+
 ### Breaking
 
 - `bool` and `unsigned` var types were removed from MT2D_Var.
