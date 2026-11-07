@@ -80,6 +80,32 @@ MT2D_SDL_Texture *rt = sprite->Image->RotatedTexture;
 
 Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text`/`Image` pointer, not the data. Don't `Sprite_Delete` both copies.
 
+## Cscript constructors (Unreleased)
+
+`Cscript_New1`..`Cscript_New4` and `MT2D_VAR_Create_Matrix1`..`4` are replaced, at call sites, by a single `Cscript_New(fn, ...)`. The old functions still exist, so existing code keeps building. See [#22](https://github.com/lucas-zimerman/MT2D/pull/22).
+
+```c
+// before
+Cscript_New2(Cscript_Move)
+Cscript_New3(MT2D_VAR_Create_Matrix3(named("Reset"), named("Pos_X"), number(54)),
+             Cscript_JumpToStateIfVarHigherEq)
+Cscript_New4(model, MT2D_VAR_Create_Matrix2(a, b), Cscript_CreateObject)
+
+// after: function first, then the vars (any amount)
+Cscript_New(Cscript_Move)
+Cscript_New(Cscript_JumpToStateIfVarHigherEq, named("Reset"), named("Pos_X"), number(54))
+Cscript_New(Cscript_CreateObject, model, a, b)   // object variant: the first extra argument is the model Object*
+```
+
+- The overload is picked from the type of the function, so the arguments of the function decide which `Cscript` slot is filled (`void f()`, `void f(Object*)`, `void f(Object*, MT2D_VAR**)` or `void f(Object*, Object*, MT2D_VAR**)`).
+- It takes up to `CSCRIPT_MAX_ARGS` (16) arguments after the function.
+- `Cscript_New` is a variadic macro and uses the GNU `##__VA_ARGS__` extension (GCC, DJGPP and Clang accept it, also with `-std=gnu++98`). Compilers without it can keep using `Cscript_New1`..`4`.
+- The vars array is still allocated for you, and freed by `Cscript_RemoveFromMemory`, which also frees the model object of the object variant.
+
+## Build changes
+
+- `#pragma region` / `#pragma endregion` were removed from `MT2D_Terminal_Define.h`, DJGPP's GCC does not know them and `-Werror` made them fail the build. Prefer plain comments in headers that DOS builds include (`STDFunctions.h` still has them).
+
 ## New headers
 
 - `MT2D/MT2D_Types.h`: `MT2D_U8`, `MT2D_U16`, `MT2D_U32` and `MT2D_Alloc`/`MT2D_Free`. Use them for size sensitive data, since `int` is 16 bits on Borland C++ and 32 bits on DJGPP.

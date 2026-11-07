@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `Cscript_New(fn, ...)`: one constructor for every kind of Cscript function, with any number of vars, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22)).
+
 ### Breaking
 
 - `bool` and `unsigned` var types were removed from MT2D_Var.
