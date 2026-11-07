@@ -1,0 +1,107 @@
+// The sand worm. It chases the truck under the sand (a mound and a dust trail), rears up when
+// it decides to strike and leaps over the dune in an arc. Every other step it leaves a body
+// segment behind (CreateObject) which makes the arch. It lands where the truck was.
+object worm
+{
+    solid;
+    int Pos_X = 0;
+    int Pos_Y = 151;
+    int Size_X = 30;
+    int Size_Y = 24;
+    int ground = 151;
+    int trail = 159;   // the puffs are born at the feet of the head
+    int segX = 0;      // the body segments are born a bit inside the head
+    int segY = 0;
+
+    states
+    {
+    // under the sand: pick the lane of the truck and start far behind it
+    Burrow:
+        Show none
+        Wait 1
+        if (global Lane == 0) { Pos_Y = 151 trail = 159 }
+        else { Pos_Y = 180 trail = 188 }
+        ground = Pos_Y
+        Pos_X = 0
+        Pos_X -= 70
+        Acel_X = 4
+        Acel_Y = 0
+        Goto Chase
+
+    // closing in, leaving a trail of dust
+    Chase:
+        while (Pos_X < 30)
+        {
+            Show image "mound0.png" 40 32
+            Wait 3
+            CreateObject(global Dust, Pos_X, trail, -4, 0)
+            Move
+            Show image "mound1.png" 40 32
+            Wait 3
+            Move
+        }
+        Goto Stalk
+
+    // right behind it, waiting for the right moment
+    Stalk:
+        Show image "mound0.png" 40 32
+        Wait 4
+        CreateObject(global Dust, Pos_X, trail, -4, 0)
+        Show image "mound1.png" 40 32
+        Wait 4
+        if (random(14)) { Goto Rise }
+
+    // sand flies and the head comes out
+    Rise:
+        PlaySound("roar.wav")
+        CreateObject(global Grain, Pos_X, Pos_Y, -3, -8)
+        CreateObject(global Grain, Pos_X, Pos_Y, 1, -11)
+        CreateObject(global Grain, Pos_X, Pos_Y, 4, -9)
+        Show image "head_up.png" 40 32
+        Wait 12
+        PlaySound("whoosh.wav")
+        Acel_X = 8
+        Acel_Y = 0
+        Acel_Y -= 20
+        Goto Leap
+
+    // a jump: Acel_Y grows every step like gravity, the head turns with it
+    Leap:
+        while (Pos_Y <= ground)
+        {
+            if (Acel_Y < -6)
+            {
+                Show image "head_up.png" 40 32
+                Wait 3
+            }
+            else if (Acel_Y < 6)
+            {
+                Show image "head_mid.png" 40 32
+                Wait 3
+            }
+            else
+            {
+                Show image "head_down.png" 40 32
+                Wait 3
+            }
+            segX = Pos_X segX += 3 segY = Pos_Y segY += 4
+            CreateObject(global Segment, segX, segY, 0, 0)
+            Move
+            Acel_Y += 4
+        }
+        Goto Crash
+
+    // it hits the sand and misses
+    Crash:
+        PlaySound("thud.wav")
+        CreateObject(global Grain, Pos_X, ground, -5, -9)
+        CreateObject(global Grain, Pos_X, ground, -2, -13)
+        CreateObject(global Grain, Pos_X, ground, 0, -10)
+        CreateObject(global Grain, Pos_X, ground, 2, -12)
+        CreateObject(global Grain, Pos_X, ground, 5, -8)
+        CreateObject(global Dust, Pos_X, trail, -4, 0)
+        Show none
+        Wait 40
+        Goto Burrow
+    }
+}

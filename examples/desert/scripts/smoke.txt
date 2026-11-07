@@ -1,0 +1,20 @@
+// The tire smoke of a drift. It grows, drifts back with the scenery and disappears.
+object smoke
+{
+    states
+    {
+    Puff:
+        Show image "smoke0.png" 24 24
+        Wait 3
+        Move
+        Show image "smoke1.png" 24 24
+        Wait 3
+        Move
+        Show image "smoke2.png" 24 24
+        Wait 3
+        Move
+        Show image "smoke3.png" 24 24
+        Wait 3
+        Stop
+    }
+}

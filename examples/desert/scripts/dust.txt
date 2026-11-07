@@ -1,0 +1,20 @@
+// A puff of sand. It grows, drifts back with the scenery and disappears.
+object dust
+{
+    states
+    {
+    Puff:
+        Show image "dust0.png" 24 24
+        Wait 3
+        Move
+        Show image "dust1.png" 24 24
+        Wait 3
+        Move
+        Show image "dust2.png" 24 24
+        Wait 3
+        Move
+        Show image "dust3.png" 24 24
+        Wait 3
+        Stop
+    }
+}

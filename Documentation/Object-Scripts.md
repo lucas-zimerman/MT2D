@@ -189,6 +189,8 @@ GotoStateIfHitObject(global Doggo, hit)
 * Frames with `Wait 0` (and everything the compiler makes for `if`/`while`/`Goto`) are run in the
   same tick, one after the other.
 * A loop where **no** frame waits never gives control back to the game, that is up to the script.
+  This includes a `Stop` (or `Goto`) that comes right after a `while` and is not preceded by a `Wait`: the state
+  restarts through frames that do not wait. Put a `Wait 1` before it (`Show none Wait 1 Stop`).
 * To keep the memory small the compiler puts an action in the frame of the `Wait` before it when
   nothing jumps between them. This does not change what a script does.
 

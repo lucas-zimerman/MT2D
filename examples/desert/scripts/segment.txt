@@ -1,0 +1,16 @@
+// A piece of the worm's body. It sinks into the sand and goes away.
+object segment
+{
+    states
+    {
+    Fade:
+        Acel_Y = 1
+        Show image "seg_big.png" 24 24
+        Wait 12
+        Move
+        Show image "seg_small.png" 24 24
+        Wait 3
+        Move
+        Stop
+    }
+}

@@ -1,0 +1,21 @@
+// A grain of sand thrown in the air: Acel_Y grows every step, so it falls.
+object grain
+{
+    int age = 0;
+
+    states
+    {
+    Fly:
+        Show image "grain0.png" 6 6
+        Wait 1
+        Move
+        Acel_Y += 1
+        age++
+        Show image "grain1.png" 6 6
+        Wait 1
+        Move
+        Acel_Y += 1
+        age++
+        if (age > 20) { Stop }
+    }
+}
