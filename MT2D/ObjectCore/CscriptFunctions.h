@@ -5,9 +5,10 @@
    X(Name, Symbol, Kind, Arity)
      Name   = the name used in the text script and the base of the id (CSCRIPT_FN_<Name>)
      Symbol = the C function from STDFunctions.h
-     Kind   = OBJ  -> void f(Object*)
-              VARS -> void f(Object*, MT2D_VAR**) , Arity vars are always given
-     Arity  = amount of arguments
+     Kind   = OBJ    -> void f(Object*)
+              VARS   -> void f(Object*, MT2D_VAR**) , Arity vars are always given
+              OBJOBJ -> void f(Object*, Object*, MT2D_VAR**) , the first argument is a global object
+     Arity  = amount of arguments written in the script (the object of OBJOBJ counts)
 
    !!! The position in this list IS the id stored in compiled files, only append at the end. !!!
 
@@ -43,7 +44,9 @@
         X(VarAdd,                    Cscript_VAR_ADD,                   VARS, 2) \
         X(VarSub,                    Cscript_VAR_SUB,                   VARS, 2) \
         X(PlaySound,                 Cscript_PlaySound,                 VARS, 1) \
-        X(PlayMusic,                 Cscript_PlayMusic,                 VARS, 1)
+        X(PlayMusic,                 Cscript_PlayMusic,                 VARS, 1) \
+        X(GotoStateIfHitObject,      Object_GotoState_IfHitObject,      OBJOBJ, 2) \
+        X(CreateObject,              Cscript_CreateObject,              OBJOBJ, 5)
 
 #define MT2D_CSCRIPT_FN_ID(Name, Symbol, Kind, Arity) CSCRIPT_FN_##Name,
 enum MT2D_CSCRIPT_FN {

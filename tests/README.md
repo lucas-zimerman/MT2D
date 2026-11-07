@@ -21,6 +21,7 @@ Needs a C++11 compiler and CMake 3.10+. No external test library is used,
 | `test_object.cpp` | `ObjectCore/Object.cpp` (objects and scenes) |
 | `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.cpp` (built in Cscript functions, audio calls are no-ops) |
 | `test_objectloader.cpp` | `ObjectCore/ObjectLoader.cpp` (compiled `.mto` files, truncated/invalid input) |
+| `test_objectglobals.cpp` | `ObjectCore/ObjectGlobals.cpp` (registry of global vars, objects and functions) |
 | `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.cpp` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
 | `test_container.cpp` | `Container/MT2D_Container.cpp` |
 | `test_aes.cpp` | `Container/aes.cpp` (NIST known answers) |

@@ -18,7 +18,10 @@ namespace {
 const int NAME_MAX_LEN = 18; /* MT2D_VAR_NAME_MAX - 1 */
 
 struct FnInfo { const char *Name; int Kind; int Arity; };
-#define COMPILER_FN_ENTRY(Name, Symbol, Kind, Arity) { #Name, 0, Arity },
+#define COMPILER_KIND_OBJ 0
+#define COMPILER_KIND_VARS 1
+#define COMPILER_KIND_OBJOBJ 2
+#define COMPILER_FN_ENTRY(Name, Symbol, Kind, Arity) { #Name, COMPILER_KIND_##Kind, Arity },
 const FnInfo Functions[] = { MT2D_CSCRIPT_FUNCTIONS(COMPILER_FN_ENTRY) };
 #undef COMPILER_FN_ENTRY
 const int FunctionCount = (int)(sizeof(Functions) / sizeof(Functions[0]));
@@ -102,16 +105,20 @@ std::vector<Tok> Tokenize(const char *p) {
 }
 
 /* ---- model -------------------------------------------------------------- */
-struct Arg { int Kind; long Value; std::string Text; int Line; }; /* 0 number, 1 name, 2 text */
+struct Arg { int Kind; long Value; std::string Text; int Line; }; /* 0 number, 1 name, 2 text, 3 global */
+const int FN_NONE = -1;
+const int FN_GLOBAL = -2; /* the function is a registered global one, Frame.GlobalFn is its name */
 struct Frame {
         int Sprite; int Wait; int Fn; std::vector<Arg> Args; int Line;
+        std::string GlobalFn;
         bool IsWait; /* made by Wait: an action that follows can share this frame */
-        Frame() : Sprite(-1), Wait(0), Fn(-1), Line(0), IsWait(false) {}
+        Frame() : Sprite(-1), Wait(0), Fn(FN_NONE), Line(0), IsWait(false) {}
 };
 struct State { std::string Name; int Line; std::vector<Frame> Frames; };
 struct VarRec { int Slot; std::string Name; long Value; };
 /* a condition tree: one comparison, && , || or ! */
-enum CondType { C_CMP, C_AND, C_OR, C_NOT };
+enum CondType { C_CMP, C_AND, C_OR, C_NOT, C_RAND };
+struct SpriteDef { int Kind; int Sx; int Sy; std::string Path; }; /* Kind 0 ASCII file, 1 image file, 2 image from the container */
 struct Cond { CondType Type; Arg L, R; long Op; int A, B; };
 
 /* the comparison that is true when "L op R" is false */
@@ -128,7 +135,7 @@ long InverseOp(long op) {
 
 class Compiler {
 public:
-        explicit Compiler(const std::vector<Tok> &t) : T(t), P(0), Barrier((size_t)-1) {}
+        explicit Compiler(const std::vector<Tok> &t) : T(t), P(0), Barrier((size_t)-1), Solid(false), RenderOnly(false) {}
 
         void ParseFile() {
                 ExpectKeyword("object");
@@ -138,7 +145,9 @@ public:
                 while (!IsPunct("}")) {
                         if (IsKeyword("int")) ParseVar();
                         else if (IsKeyword("states")) ParseStates();
-                        else Fail(Cur().Line, "expected 'int', 'states' or '}'");
+                        else if (IsKeyword("solid")) { P++; Solid = true; if (IsPunct(";")) P++; }
+                        else if (IsKeyword("renderonly")) { P++; RenderOnly = true; if (IsPunct(";")) P++; }
+                        else Fail(Cur().Line, "expected 'int', 'solid', 'renderonly', 'states' or '}'");
                 }
                 P++;
                 if (Cur().Type != T_END) Fail(Cur().Line, "unexpected text after the object");
@@ -148,10 +157,14 @@ public:
 
         void Write(std::vector<unsigned char> &o) const {
                 o.push_back('M'); o.push_back('T'); o.push_back('O'); o.push_back('1');
+                o.push_back((unsigned char)((Solid ? 1 : 0) | (RenderOnly ? 2 : 0)));
                 Put16(o, (unsigned)Sprites.size());
                 for (size_t i = 0; i < Sprites.size(); i++) {
-                        o.push_back((unsigned char)Sprites[i].size());
-                        o.insert(o.end(), Sprites[i].begin(), Sprites[i].end());
+                        const SpriteDef &sd = Sprites[i];
+                        o.push_back((unsigned char)sd.Kind);
+                        if (sd.Kind > 0) { Put16(o, (unsigned)sd.Sx); Put16(o, (unsigned)sd.Sy); }
+                        o.push_back((unsigned char)sd.Path.size());
+                        o.insert(o.end(), sd.Path.begin(), sd.Path.end());
                 }
                 Put16(o, (unsigned)States.size());
                 for (size_t s = 0; s < States.size(); s++) {
@@ -163,8 +176,12 @@ public:
                                 const Frame &fr = st.Frames[f];
                                 Put16(o, fr.Sprite < 0 ? 0xFFFF : (unsigned)fr.Sprite);
                                 Put16(o, (unsigned)fr.Wait);
-                                Put16(o, fr.Fn < 0 ? 0xFFFF : (unsigned)fr.Fn);
-                                if (fr.Fn < 0) continue;
+                                Put16(o, fr.Fn == FN_NONE ? 0xFFFF : fr.Fn == FN_GLOBAL ? 0xFFFE : (unsigned)fr.Fn);
+                                if (fr.Fn == FN_NONE) continue;
+                                if (fr.Fn == FN_GLOBAL) {
+                                        o.push_back((unsigned char)fr.GlobalFn.size());
+                                        o.insert(o.end(), fr.GlobalFn.begin(), fr.GlobalFn.end());
+                                }
                                 unsigned strBytes = 0;
                                 for (size_t a = 0; a < fr.Args.size(); a++) if (fr.Args[a].Kind == 2) strBytes += (unsigned)fr.Args[a].Text.size() + 1;
                                 o.push_back((unsigned char)fr.Args.size());
@@ -202,8 +219,10 @@ private:
         std::vector<State> States;
         std::vector<Cond> Conds;
         size_t Barrier; /* index of a frame some jump lands on: nothing may be merged into the frame before it */
-        std::vector<std::string> Sprites;
+        std::vector<SpriteDef> Sprites;
         std::map<std::string, int> SpriteIndex;
+        bool Solid;
+        bool RenderOnly;
 
         static void Put16(std::vector<unsigned char> &o, unsigned v) { o.push_back((unsigned char)(v & 0xFF)); o.push_back((unsigned char)((v >> 8) & 0xFF)); }
         static void Put32(std::vector<unsigned char> &o, long v) {
@@ -385,6 +404,7 @@ private:
         Arg ParseOperand() {
                 Arg a; a.Value = 0; a.Line = Cur().Line; a.Kind = 0;
                 if (Cur().Type == T_INT) { a.Value = Cur().Value; P++; }
+                else if (IsKeyword("global")) { P++; a.Kind = 3; a.Text = ExpectName("a global name"); }
                 else if (Cur().Type == T_IDENT) { a.Kind = 1; a.Text = ExpectName("a var name"); }
                 else Fail(Cur().Line, "expected a var or a number");
                 return a;
@@ -396,6 +416,14 @@ private:
                         int e = ParseOr();
                         ExpectPunct(")");
                         return e;
+                }
+                if (IsKeyword("random") && Peek(1).Type == T_PUNCT && Peek(1).Text == "(") {
+                        P += 2;
+                        if (Cur().Type != T_INT || Cur().Value < 0 || Cur().Value > 100) Fail(Cur().Line, "random(...) needs the chance in percent, from 0 to 100");
+                        int id = AddCond(C_RAND, -1, -1);
+                        Conds[id].Op = T[P++].Value;
+                        ExpectPunct(")");
+                        return id;
                 }
                 int id = AddCond(C_CMP, -1, -1);
                 Arg l = ParseOperand();
@@ -434,6 +462,27 @@ private:
                 case C_NOT:
                         EmitCond(st, c.A, !jumpWhen, out, line);
                         break;
+                case C_RAND: {
+                        /* JumpFramesIfRandom jumps when rand() % max <= chance: p percent = chance p - 1 of 100 */
+                        Frame f = JumpFrame("JumpFramesIfRandom", line);
+                        Arg chance; chance.Kind = 0; chance.Value = c.Op - 1; chance.Line = line;
+                        Arg max; max.Kind = 0; max.Value = 100; max.Line = line;
+                        f.Args.push_back(chance);
+                        f.Args.push_back(max);
+                        if (jumpWhen) {
+                                out.push_back(st.Frames.size());
+                        }
+                        else {
+                                /* hit: skip the next frame, miss: that frame jumps out */
+                                f.Args[0].Value = 1;
+                        }
+                        st.Frames.push_back(f);
+                        if (!jumpWhen) {
+                                out.push_back(st.Frames.size());
+                                st.Frames.push_back(JumpFrame("JumpFrames", line));
+                        }
+                        break;
+                }
                 case C_AND:
                         if (!jumpWhen) { /* jump if any is false */
                                 EmitCond(st, c.A, false, out, line);
@@ -461,15 +510,18 @@ private:
                 }
         }
 
-        int SpriteId(const std::string &path, int line) {
+        int SpriteId(int kind, const std::string &path, int sx, int sy, int line) {
                 if (path.empty()) return -1;
                 if (path.size() > 255) Fail(line, "sprite path is too long");
-                std::map<std::string, int>::iterator it = SpriteIndex.find(path);
+                std::ostringstream key;
+                key << kind << ':' << sx << ':' << sy << ':' << path;
+                std::map<std::string, int>::iterator it = SpriteIndex.find(key.str());
                 if (it != SpriteIndex.end()) return it->second;
                 if (Sprites.size() >= 65535) Fail(line, "too many sprites");
+                SpriteDef d; d.Kind = kind; d.Sx = sx; d.Sy = sy; d.Path = path;
                 int id = (int)Sprites.size();
-                Sprites.push_back(path);
-                SpriteIndex[path] = id;
+                Sprites.push_back(d);
+                SpriteIndex[key.str()] = id;
                 return id;
         }
 
@@ -482,8 +534,9 @@ private:
            right before it, unless some jump lands between them. */
         void AddAction(State &st, const Frame &f) {
                 size_t n = st.Frames.size();
-                if (n > 0 && Barrier != n && st.Frames[n - 1].IsWait && st.Frames[n - 1].Fn < 0) {
+                if (n > 0 && Barrier != n && st.Frames[n - 1].IsWait && st.Frames[n - 1].Fn == FN_NONE) {
                         st.Frames[n - 1].Fn = f.Fn;
+                        st.Frames[n - 1].GlobalFn = f.GlobalFn;
                         st.Frames[n - 1].Args = f.Args;
                         return;
                 }
@@ -502,15 +555,41 @@ private:
                 return f;
         }
 
+        static bool IsAssignText(const std::string &t) { return t == "++" || t == "--" || t == "+=" || t == "-=" || t == "="; }
+        bool IsAssignOp() const { return Cur().Type == T_PUNCT && IsAssignText(Cur().Text); }
+
+        /* x++ x-- x += v x -= v x = v : the target token is already read, kind 1 = object var, 3 = global var */
+        void ParseAssignment(State &st, int line, const std::string &var, int kind) {
+                std::string op = T[P++].Text;
+                Frame f = NamedCall(op == "++" ? "VarInc" : op == "--" ? "VarDec" : op == "+=" ? "VarAdd" : op == "-=" ? "VarSub" : "SetVar", line, var);
+                f.Args[0].Kind = kind;
+                if (op != "++" && op != "--") f.Args.push_back(ParseOperand());
+                AddAction(st, f);
+        }
+
         /* Show "sprite" + Wait n, Wait n, Goto, Stop, x++ x-- x += v x -= v x = v and Function(args) */
         void ParseSimple(State &st) {
                 int line = Cur().Line;
                 if (IsKeyword("show")) {
                         P++;
                         Frame f; f.Line = line; f.IsWait = true;
-                        if (Cur().Type == T_STR) { f.Sprite = SpriteId(Cur().Text, Cur().Line); P++; }
+                        if (Cur().Type == T_STR) { f.Sprite = SpriteId(0, Cur().Text, 1, 1, Cur().Line); P++; }
+                        else if (IsKeyword("image") || IsKeyword("container")) {
+                                int kind = IsKeyword("image") ? 1 : 2;
+                                P++;
+                                if (Cur().Type != T_STR) Fail(Cur().Line, "expected the \"file\" of the sprite");
+                                std::string path = Cur().Text;
+                                int pathLine = Cur().Line;
+                                P++;
+                                int scale[2];
+                                for (int k = 0; k < 2; k++) {
+                                        if (Cur().Type != T_INT || Cur().Value < 1 || Cur().Value > 65535) Fail(Cur().Line, "expected the sprite width and height after the file");
+                                        scale[k] = (int)T[P++].Value;
+                                }
+                                f.Sprite = SpriteId(kind, path, scale[0], scale[1], pathLine);
+                        }
                         else if (IsKeyword("none")) { P++; }
-                        else Fail(Cur().Line, "expected a \"sprite\" or none after Show");
+                        else Fail(Cur().Line, "expected a \"sprite\", image \"file\" w h, container \"file\" w h or none after Show");
                         if (IsPunct(";")) P++;
                         if (!IsKeyword("wait")) Fail(line, "Show must be directly followed by Wait");
                         P++;
@@ -532,15 +611,20 @@ private:
                         Frame f; f.Line = line; f.Fn = FindFunction("RemoveObject");
                         AddAction(st, f);
                 }
-                else if (Cur().Type == T_IDENT) {
-                        const Tok &n = Peek(1);
-                        bool assign = n.Type == T_PUNCT && (n.Text == "++" || n.Text == "--" || n.Text == "+=" || n.Text == "-=" || n.Text == "=");
-                        if (assign) {
-                                std::string var = ExpectName("a var name");
-                                std::string op = T[P++].Text;
-                                Frame f = NamedCall(op == "++" ? "VarInc" : op == "--" ? "VarDec" : op == "+=" ? "VarAdd" : op == "-=" ? "VarSub" : "SetVar", line, var);
-                                if (op != "++" && op != "--") f.Args.push_back(ParseOperand());
+                else if (IsKeyword("global")) {
+                        P++;
+                        std::string name = ExpectName("a global name");
+                        if (IsAssignOp()) ParseAssignment(st, line, name, 3);
+                        else {
+                                Frame f; f.Line = line; f.Fn = FN_GLOBAL; f.GlobalFn = name;
+                                ParseCallArgs(f);
                                 AddAction(st, f);
+                        }
+                }
+                else if (Cur().Type == T_IDENT) {
+                        if (Peek(1).Type == T_PUNCT && IsAssignText(Peek(1).Text)) {
+                                std::string var = ExpectName("a var name");
+                                ParseAssignment(st, line, var, 1);
                         }
                         else {
                                 Frame f; f.Line = line;
@@ -551,12 +635,8 @@ private:
                 else Fail(line, "expected a statement: Show, Wait, a function call, x++, x = 1, while, if, Goto or Stop");
         }
 
-        void ParseAction(Frame &f) {
-                int line = Cur().Line;
-                std::string name = Cur().Text;
-                f.Fn = FindFunction(name);
-                if (f.Fn < 0) Fail(line, "unknown function '" + name + "'");
-                P++;
+        /* optional ( arg, arg ... ) */
+        void ParseCallArgs(Frame &f) {
                 if (IsPunct("(")) {
                         P++;
                         while (!IsPunct(")")) {
@@ -565,11 +645,26 @@ private:
                         }
                         P++;
                 }
+        }
+
+        void ParseAction(Frame &f) {
+                int line = Cur().Line;
+                std::string name = Cur().Text;
+                f.Fn = FindFunction(name);
+                if (f.Fn < 0) Fail(line, "unknown function '" + name + "'");
+                std::string lower = name;
+                for (size_t i = 0; i < lower.size(); i++) lower[i] = (char)tolower((unsigned char)lower[i]);
+                if (lower.compare(0, 10, "jumpframes") == 0 || lower.compare(0, 13, "jumpnextframe") == 0)
+                        Fail(line, "'" + name + "' counts frames, use if / while instead");
+                P++;
+                ParseCallArgs(f);
                 if ((int)f.Args.size() != Functions[f.Fn].Arity) {
                         std::ostringstream o;
                         o << Functions[f.Fn].Name << " needs " << Functions[f.Fn].Arity << " argument(s), got " << f.Args.size();
                         Fail(line, o.str());
                 }
+                if (Functions[f.Fn].Kind == COMPILER_KIND_OBJOBJ && f.Args[0].Kind != 3)
+                        Fail(line, std::string(Functions[f.Fn].Name) + " needs a global object as its first argument, like global Name");
         }
 
         Arg ParseArg() {
@@ -580,6 +675,7 @@ private:
                         if (t.Text.size() > 255) Fail(t.Line, "text is too long");
                         a.Kind = 2; a.Text = t.Text; P++;
                 }
+                else if (t.Type == T_IDENT && IsKeyword("global")) { P++; a.Kind = 3; a.Text = ExpectName("a global name"); }
                 else if (t.Type == T_IDENT) { a.Kind = 1; a.Text = ExpectName("a name"); }
                 else if (t.Type == T_PUNCT) {
                         a.Kind = 0;

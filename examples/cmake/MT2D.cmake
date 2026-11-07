@@ -111,6 +111,7 @@ set(MT2D_COMMON_SOURCES
     ObjectCore/Cscript.cpp
     ObjectCore/MT2D_Text_Image.cpp
     ObjectCore/Object.cpp
+    ObjectCore/ObjectGlobals.cpp
     ObjectCore/ObjectLoader.cpp
     ObjectCore/SpriteBlock.cpp
     ObjectCore/Sprites.cpp

@@ -44,3 +44,5 @@ jobs:
           # the compiled object loader has to stay DOS friendly (no STL, C++98)
           i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
             -c MT2D/ObjectCore/ObjectLoader.cpp -o build/djgpp/ObjectLoader.o
+          i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
+            -c MT2D/ObjectCore/ObjectGlobals.cpp -o build/djgpp/ObjectGlobals.o

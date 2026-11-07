@@ -41,6 +41,14 @@
      operators < > == != >= <= (for JumpFramesIfVar). Function names are not case sensitive, they
      are listed in CscriptFunctions.h. Do not call the JumpFrames... or JumpNextFrame... functions by hand
      with frame counts: the compiler merges frames, use while/if instead.
+   * solid; and renderonly; set the flags of the object (see Object).
+   * Show image "file" w h and Show container "file" w h load an image (file or container) scaled to
+     w x h, plain Show "file" is an ASCII sprite. The same file and size is loaded once.
+   * if (random(25)) is true 25 percent of the time (0 to 100, a number).
+   * global marks something the game registers (ObjectGlobals.h): a var (global Health--,
+     Pos_X -= global GameSpeed, if (global JumpRequest == 1)), an object (the first argument of
+     GotoStateIfHitObject and CreateObject, written global Doggo) or a function (global Spawn(1, 2)).
+     The compiler cannot know them, ObjectCore_Load fails if one is not registered.
    * // and slash-star comments are allowed.
 */
 #pragma once

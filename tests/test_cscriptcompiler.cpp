@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
+#include <stdlib.h>
 
 static Object *compile_and_load(const char *text, std::string *errOut = 0) {
     std::vector<unsigned char> bin;
@@ -122,21 +123,32 @@ TEST(builtin_vars_and_function_forms) {
     ObjectCore_Unload(o);
 }
 
-TEST(operator_arguments) {
+TEST(comparison_operators_compile_to_the_opposite_jump) {
+    // the jump frame leaves the block when the condition is false: it uses the inverse operator
     Object *o = compile_and_load(
         "object a { states { S:\n"
-        " JumpFramesIfVar(1, Pos_X, <, 5)\n"
-        " JumpFramesIfVar(1, Pos_X, >=, 5)\n"
-        " JumpFramesIfVar(1, Pos_X, !=, 5)\n"
-        " JumpFramesIfVar(1, Pos_X, ==, 5)\n"
+        " if (Pos_X <  5) { Wait 1 }\n"
+        " if (Pos_X >= 5) { Wait 1 }\n"
+        " if (Pos_X != 5) { Wait 1 }\n"
+        " if (Pos_X == 5) { Wait 1 }\n"
         "}}");
     CHECK(o != 0);
     if (!o) return;
-    CHECK_EQ(o->State[0]->Functions[1]->TempVars[2]->Data.i, 242);
-    CHECK_EQ(o->State[0]->Functions[0]->TempVars[2]->Data.i, '<');
-    CHECK_EQ(o->State[0]->Functions[2]->TempVars[2]->Data.i, '!');
-    CHECK_EQ(o->State[0]->Functions[3]->TempVars[2]->Data.i, '=');
+    CHECK_EQ(o->State[0]->Count, 8);
+    CHECK_EQ(o->State[0]->Functions[0]->TempVars[2]->Data.i, 242);  // < becomes >=
+    CHECK_EQ(o->State[0]->Functions[2]->TempVars[2]->Data.i, '<');  // >= becomes <
+    CHECK_EQ(o->State[0]->Functions[4]->TempVars[2]->Data.i, '=');  // != becomes ==
+    CHECK_EQ(o->State[0]->Functions[6]->TempVars[2]->Data.i, '!');  // == becomes !=
     ObjectCore_Unload(o);
+}
+
+TEST(frame_counting_functions_cannot_be_called_by_hand) {
+    CHECK(has(error_of("object a { states { S: JumpFrames(1) }}"), "'JumpFrames' counts frames, use if / while instead"));
+    CHECK(has(error_of("object a { states { S: jumpframesifvar(1, Pos_X, <, 5) }}"), "counts frames"));
+    CHECK(has(error_of("object a { states { S: JumpFramesIfRandom(1, 190, 200) }}"), "counts frames"));
+    CHECK(has(error_of("object a { int x; states { S: JumpNextFrameIfVarEq(x, 1) }}"), "counts frames"));
+    // the ones that jump to a state by name are fine
+    CHECK(has(error_of("object a { int x; states { S: JumpToStateIfVarLower(S, x, 1) JumpFrames }}"), "counts frames"));
 }
 
 TEST(loop_state_goto_and_stop) {
@@ -187,7 +199,7 @@ TEST(show_none_and_dangling_show) {
     if (o) { CHECK(o->State[0]->Sprites[0] == 0); ObjectCore_Unload(o); }
     CHECK(has(error_of("object a { int x; states { S:\n Show \"dot.txt\"\n x++\n Wait 2 }}"), "line 2: Show must be directly followed by Wait"));
     CHECK(has(error_of("object a { states { S: Show \"dot.txt\" }}"), "Show must be directly followed by Wait"));
-    CHECK(has(error_of("object a { states { S: Show x Wait 1 }}"), "expected a \"sprite\" or none after Show"));
+    CHECK(has(error_of("object a { states { S: Show x Wait 1 }}"), "or none after Show"));
 }
 
 TEST(missing_sprite_file_is_a_load_error) {
@@ -482,13 +494,238 @@ TEST(control_flow_errors) {
     CHECK(has(error_of("object a { int x; states { S: while (x < 1 { Wait 1 } }}"), "expected ')'"));
     CHECK(has(error_of("object a { int x; states { S: while (x < 1) Wait 1 }}"), "expected '{'"));
     CHECK(has(error_of("object a { int x; states { S: if (x < 1) { Wait 1 "), "expected '}'"));
-    CHECK(has(error_of("object a { int x; states { S: Wait 1 }"), "expected 'int', 'states' or '}'"));
+    CHECK(has(error_of("object a { int x; states { S: Wait 1 }"), "expected 'int', 'solid', 'renderonly', 'states' or '}'"));
     CHECK(has(error_of("object a { int x; states { S: if (x <) { Wait 1 } }}"), "expected a var or a number"));
     CHECK(has(error_of("object a { int x; states { S: if () { Wait 1 } }}"), "expected a var or a number"));
     CHECK(has(error_of("object a { states { S: if (ghost < 1) { Wait 1 } }}"), "'ghost' is not a var or a state"));
     CHECK(has(error_of("object a { int x; states { S: if (x & 1) { Wait 1 } }}"), "unexpected character '&'"));
     CHECK(has(error_of("object a { int x; states { S: if (x < 1) { T: Wait 1 } }}"), "label cannot be inside a block"));
     CHECK(has(error_of("object a { int x; states { S: Wait 1 if (x < 1) { Wait 1 } else }}"), "expected '{'"));
+}
+
+// ---- flags, image sprites ---------------------------------------------------
+
+TEST(solid_renderonly_and_image_sprites) {
+    Object *o = compile_and_load(
+        "object a { solid; renderonly; int Size_X = 32; int Size_Y = 24;\n"
+        " states { S:\n"
+        "  Show image \"a.png\" 32 24 Wait 1\n"
+        "  Show container \"b.png\" 8 9 Wait 2\n"
+        "  Show image \"a.png\" 32 24 Wait 3\n"       // same file and scale: loaded once
+        "  Show image \"a.png\" 16 24 Wait 4\n"       // other scale: another sprite
+        "}}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(o->Solid);
+    CHECK(o->RenderOnly);
+    CHECK_EQ(ObjectSizeX(o), 32);
+    CHECK_EQ(o->State[0]->Sprites[0]->ScaleX, 32);
+    CHECK_EQ(o->State[0]->Sprites[1]->ScaleX, 8);
+    CHECK_EQ(o->State[0]->Sprites[1]->ScaleY, 9);
+    CHECK(o->State[0]->Sprites[0] == o->State[0]->Sprites[2]);
+    CHECK(o->State[0]->Sprites[0] != o->State[0]->Sprites[3]);
+    ObjectCore_Unload(o);
+    Object *plain = compile_and_load("object a { states { S: Wait 1 }}");
+    CHECK(plain != 0);
+    if (plain) { CHECK(!plain->Solid); CHECK(!plain->RenderOnly); ObjectCore_Unload(plain); }
+    CHECK(has(error_of("object a { states { S: Show image \"a.png\" Wait 1 }}"), "expected the sprite width and height"));
+    CHECK(has(error_of("object a { states { S: Show image \"a.png\" 0 4 Wait 1 }}"), "expected the sprite width and height"));
+    CHECK(has(error_of("object a { states { S: Show image 5 Wait 1 }}"), "expected the \"file\""));
+}
+
+// ---- global vars, objects and functions ------------------------------------------
+
+static int fn_calls = 0;
+static int fn_sum = 0;
+static void fn_count(Object *) { fn_calls++; }
+static void fn_add(Object *, MT2D_VAR **v) { fn_sum += v[0]->Data.i + v[1]->Data.i; }
+
+TEST(global_names_are_checked_when_the_object_is_loaded) {
+    // compiles without knowing the names
+    const char *text =
+        "object a { states { S:\n"
+        " Wait 1\n"
+        " global Health--\n"
+        " global Spawn(3, global Speed)\n"
+        "}}";
+    std::vector<unsigned char> bin;
+    std::string err;
+    CHECK(CscriptCompiler_Compile(text, bin, err));
+    CHECK(err.empty());
+    // but loading needs them
+    CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
+    CHECK_STR_EQ(ObjectCore_GetLastError(), "global var is not registered: 'Health'");
+    MT2D_VAR *health = MT2D_Object_Create_Var_Int("Health", 6);
+    MT2D_VAR *speed = MT2D_Object_Create_Var_Int("Speed", 4);
+    CHECK(ObjectCore_AddGlobalVar(health));
+    CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
+    CHECK_STR_EQ(ObjectCore_GetLastError(), "global function is not registered: 'Spawn'");
+    CHECK(ObjectCore_AddGlobalCScript("Spawn", fn_add, 2));
+    CHECK(ObjectCore_LoadFromMemory(&bin[0], bin.size()) == 0);
+    CHECK_STR_EQ(ObjectCore_GetLastError(), "global var is not registered: 'Speed'");
+    CHECK(ObjectCore_AddGlobalVar(speed));
+    Object *o = ObjectCore_LoadFromMemory(&bin[0], bin.size());
+    CHECK(o != 0);
+    CHECK_STR_EQ(ObjectCore_GetLastError(), "");
+    if (o) {
+        CHECK_EQ(o->State[0]->Count, 2);   // Health-- shares the Wait, Spawn is the second frame
+        fn_sum = 0;
+        Cscript_Execute(o, o->State[0]->Functions[0]);
+        CHECK_EQ(health->Data.i, 5);
+        Cscript_Execute(o, o->State[0]->Functions[1]);
+        CHECK_EQ(fn_sum, 7);
+        ObjectCore_Unload(o);
+    }
+    CHECK(ObjectCore_RemoveGlobalVar("Health"));
+    CHECK(ObjectCore_RemoveGlobalVar("Speed"));
+    CHECK(ObjectCore_RemoveGlobalCScript("Spawn"));
+    MT2D_VAR_Free(health, 1);   // the registry does not own the vars
+    MT2D_VAR_Free(speed, 1);
+}
+
+TEST(global_vars_in_operands_and_conditions) {
+    MT2D_VAR *speed = MT2D_Object_Create_Var_Int("GameSpeed", 3);
+    MT2D_VAR *req = MT2D_Object_Create_Var_Char("JmpReq", 1);
+    CHECK(ObjectCore_AddGlobalVar(speed));
+    CHECK(ObjectCore_AddGlobalVar(req));
+    Object *o = compile_and_load(
+        "object a { int Pos_X = 100; int r = 0; states {\n"
+        "Main:\n"
+        "  Pos_X -= global GameSpeed\n"
+        "  if (global JmpReq == 1) { r += 10 }\n"
+        "  global JmpReq = 0\n"
+        "  if (global JmpReq == 1) { r += 100 } else { r += 1000 }\n"
+        "  Goto End\n"
+        "End: Wait 1 }}");
+    CHECK(o != 0);
+    if (o) {
+        CHECK(run_to_end(o));
+        CHECK_EQ(ObjectPosX(o), 97);
+        CHECK_EQ(var_of(o, "r"), 1010);
+        CHECK_EQ(req->Data.c, 0);
+        ObjectCore_Unload(o);
+    }
+    CHECK(ObjectCore_RemoveGlobalVar("GameSpeed"));
+    CHECK(ObjectCore_RemoveGlobalVar("JmpReq"));
+    MT2D_VAR_Free(speed, 1);
+    MT2D_VAR_Free(req, 1);
+}
+
+TEST(global_function_without_arguments_and_errors) {
+    CHECK(ObjectCore_AddGlobalCScript("Ping", fn_count));
+    Object *o = compile_and_load("object a { states { S: Wait 1  global Ping()  global Ping }}");
+    CHECK(o != 0);
+    if (o) {
+        CHECK_EQ(o->State[0]->Count, 2);
+        fn_calls = 0;
+        Cscript_Execute(o, o->State[0]->Functions[0]);
+        Cscript_Execute(o, o->State[0]->Functions[1]);
+        CHECK_EQ(fn_calls, 2);
+        ObjectCore_Unload(o);
+    }
+    CHECK(ObjectCore_RemoveGlobalCScript("Ping"));
+    CHECK(has(error_of("object a { states { S: global }}"), "expected a global name"));
+    CHECK(has(error_of("object a { states { S: global 5 }}"), "expected a global name"));
+    CHECK(has(error_of("object a { int x; states { S: x = global }}"), "expected a global name"));
+}
+
+TEST(object_functions_need_a_global_object) {
+    Object *target = compile_and_load("object t { solid; states { S: Wait 1 }}");
+    CHECK(target != 0);
+    if (!target) return;
+    CHECK(ObjectCore_AddGlobalObject("Doggo", target));
+    Object *o = compile_and_load("object a { states { S: Wait 1  GotoStateIfHitObject(global Doggo, S) }}");
+    CHECK(o != 0);
+    if (o) {
+        CHECK_EQ(o->State[0]->Count, 1);   // the call shares the frame of Wait 1
+        CHECK(o->State[0]->Functions[0]->TempObj == target);
+        ObjectCore_Unload(o);
+    }
+    CHECK(has(error_of("object a { states { S: GotoStateIfHitObject(Doggo, S) }}"), "needs a global object as its first argument"));
+    CHECK(has(error_of("object a { states { S: GotoStateIfHitObject(3, S) }}"), "needs a global object as its first argument"));
+    CHECK(has(error_of("object a { states { S: GotoStateIfHitObject(global Doggo) }}"), "needs 2 argument(s), got 1"));
+    CHECK(has(error_of("object a { states { S: CreateObject(global Doggo, 1, 2) }}"), "needs 5 argument(s), got 3"));
+    CHECK(ObjectCore_RemoveGlobalObject("Doggo"));
+    ObjectCore_Unload(target);
+}
+
+// ---- random -------------------------------------------------------------------
+
+TEST(random_condition) {
+    srand(12345);
+    Object *o = compile_and_load(
+        "object a { int n = 0; int hit = 0; int miss = 0; int never = 0; int always = 0;\n"
+        "  int notHit = 0; states { Main:\n"
+        "  while (n < 2000) {\n"
+        "    n++\n"
+        "    if (random(25)) { hit++ } else { miss++ }\n"
+        "    if (random(0)) { never++ }\n"
+        "    if (random(100)) { always++ }\n"
+        "    if (!random(25)) { notHit++ }\n"
+        "  }\n"
+        "  Goto End\n"
+        "End: Wait 1 }}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(run_to_end(o));
+    CHECK_EQ(var_of(o, "hit") + var_of(o, "miss"), 2000);
+    CHECK(var_of(o, "hit") > 350 && var_of(o, "hit") < 650);       // about 25%
+    CHECK_EQ(var_of(o, "never"), 0);
+    CHECK_EQ(var_of(o, "always"), 2000);
+    CHECK(var_of(o, "notHit") > 1350 && var_of(o, "notHit") < 1650); // about 75%
+    ObjectCore_Unload(o);
+    CHECK(has(error_of("object a { states { S: if (random(101)) { Wait 1 } }}"), "chance in percent"));
+    CHECK(has(error_of("object a { int x; states { S: if (random(x)) { Wait 1 } }}"), "chance in percent"));
+}
+
+// ---- a Shibe style object ----------------------------------------------------------
+
+TEST(scrolling_tile_with_a_global_speed) {
+    MT2D_VAR *speed = MT2D_Object_Create_Var_Int("GameSpeed", 50);
+    CHECK(ObjectCore_AddGlobalVar(speed));
+    Object *tile = compile_and_load(
+        "object tile {\n"
+        "    solid;\n"
+        "    int Size_X = 102; int Size_Y = 24;\n"
+        "    states { loop:\n"
+        "        Show container \"Sprites/Game/decoration/Platform/normal.png\" 102 24\n"
+        "        Wait 1\n"
+        "        Pos_X -= global GameSpeed\n"
+        "        if (Pos_X < -100) { Pos_X = 400 }\n"
+        "    }\n"
+        "}");
+    CHECK(tile != 0);
+    if (!tile) return;
+    Object *a = ObjectCore_Clone(tile, 120, 0);
+    Object *b = ObjectCore_Clone(tile, 20, 0);
+    CHECK(a != 0 && b != 0);
+    if (a && b) {
+        CHECK(a->Solid && a->State == tile->State);
+        int wraps = 0;
+        int last = ObjectPosX(a);
+        for (int t = 0; t < 40; t++) {
+            Object_Goto_NextStep(a);
+            if (ObjectPosX(a) > last) wraps++;
+            last = ObjectPosX(a);
+        }
+        CHECK_EQ(ObjectPosX(b), 20);               // b did not run
+        CHECK(wraps >= 1);                        // it left the screen and came back at 400
+        int sawFour = 0;
+        for (int t = 0; t < 60 && !sawFour; t++) {
+            Object_Goto_NextStep(b);
+            if (ObjectPosX(b) == 400) sawFour = 1;
+        }
+        CHECK(sawFour);
+        speed->Data.i = 0;                         // the speed is read live
+        int frozen = ObjectPosX(b);
+        for (int t = 0; t < 10; t++) Object_Goto_NextStep(b);
+        CHECK_EQ(ObjectPosX(b), frozen);
+    }
+    Object_Delete(a, false);
+    Object_Delete(b, false);
+    ObjectCore_Unload(tile);
+    CHECK(ObjectCore_RemoveGlobalVar("GameSpeed"));
+    MT2D_VAR_Free(speed, 1);
 }
 
 TEST(load_script_from_text_file) {
