@@ -1,3 +1,5 @@
+// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#include "../../MT2D_Terminal_Define.h"
 // MT2D terminal (curses) renderer, used on Linux and macOS when SDL is not enabled.
 #include "../../MT2D_Terminal_Define.h"
 

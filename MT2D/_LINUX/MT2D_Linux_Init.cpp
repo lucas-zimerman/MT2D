@@ -1,3 +1,5 @@
+// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#include "../MT2D_Terminal_Define.h"
 // MT2D Created By Lucas Zimerman Fraulob
 // This is the core of MT2D engine, with only this .cpp you can do everything
 // This file is related to almost all MT2D video interface, like draw, clear and update.

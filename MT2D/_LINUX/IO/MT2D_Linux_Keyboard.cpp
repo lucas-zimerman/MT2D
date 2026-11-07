@@ -1,3 +1,5 @@
+// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#include "../../MT2D_Terminal_Define.h"
 // MT2D terminal keyboard (curses), used on Linux and macOS when SDL is not enabled.
 #if defined(linux) && !defined(__ANDROID__) && !defined(SDL_USE)
 #include "../../MT2D_Terminal_Define.h"

@@ -1,3 +1,5 @@
+// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#include "../MT2D_Terminal_Define.h"
 #if defined(linux) && !defined(__ANDROID__) && !defined(SDL_USE)
 #include "../MT2D_Terminal_Define.h"
 #include <unistd.h>
