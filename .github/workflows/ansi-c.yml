@@ -1,0 +1,42 @@
+name: ANSI C
+
+# Fails if the MT2D library contains C++ sources, or if its portable
+# sources do not compile as strict ANSI C (C89).
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  ansi-c:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject C++ source files
+        run: |
+          found=$(git ls-files 'MT2D/*' | grep -iE '\.(cpp|cc|cxx|c\+\+|hpp|hh|hxx|ipp|tpp)$' || true)
+          if [ -n "$found" ]; then
+            echo "::error::C++ files found in MT2D/ (ANSI C only):"
+            echo "$found" | while read -r f; do echo "::error file=$f::C++ file not allowed"; done
+            exit 1
+          fi
+
+      - name: Compile as ANSI C (C89)
+        run: |
+          status=0
+          # Platform specific backends need their own SDKs; check the portable code.
+          files=$(git ls-files 'MT2D/*.c' 'MT2D/*.h' \
+            | grep -vE '^MT2D/(_WINDOWS|_MSDOS|_ANDROID|_EMNISCRIPT|SDL)/' || true)
+          for f in $files; do
+            case "$f" in
+              *.h) lang="-x c" ;;
+              *)   lang="" ;;
+            esac
+            if ! gcc $lang -std=c89 -pedantic-errors -Wall -Wextra -fsyntax-only -I MT2D "$f"; then
+              echo "::error file=$f::Not valid ANSI C"
+              status=1
+            fi
+          done
+          exit $status
