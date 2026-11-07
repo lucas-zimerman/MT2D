@@ -2,9 +2,12 @@
 #ifndef OBJECT2_H
 #define OBJECT2_H
 
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/State.h>
 #include <MT2D/ObjectCore/Coordinates.h>
 #include <MT2D/ObjectCore/Vars.h>
+
+MT2D_C_BEGIN
 
 #define Object_PosX_Var_Index 0
 #define Object_PosY_Var_Index 1
@@ -14,7 +17,6 @@
 #define Object_AcelY_Var_Index 5
 #define Object_First_User_Var_Index 6
 
-struct ObjectScene;
 
 struct Object
 {
@@ -52,6 +54,7 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene);
 void Object_Delete(Object *Me, bool deleteStates);
 void Object_Add_Variable(Object* object, MT2D_VAR* variable);
 void Object_Add_Variables(Object* object, MT2D_VAR* variables, int total);
+MT2D_C_END
 
 #define ObjectPosXRef(object) (&((Object*)object)->User_Vars[Object_PosX_Var_Index].Data.i)
 #define ObjectPosYRef(object) (&((Object*)object)->User_Vars[Object_PosY_Var_Index].Data.i)

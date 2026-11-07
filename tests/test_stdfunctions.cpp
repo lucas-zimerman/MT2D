@@ -363,6 +363,43 @@ TEST(jump_next_frame_if_var_not_eq) {
     CHECK_EQ(p->ActualFrame, 0);
 }
 
+TEST(jump_frames_moves_forward_and_back) {
+    Object *o = frames_object();
+    MT2D_VAR *fwd[1] = {integer(2)};
+    Cscript_JumpFrames(o, fwd);
+    CHECK_EQ(o->ActualFrame, 2); // the engine adds one more, landing on frame 3
+
+    MT2D_VAR *back[1] = {integer(-2)};
+    Cscript_JumpFrames(o, back);
+    CHECK_EQ(o->ActualFrame, 0);
+}
+
+TEST(jump_frames_if_var_all_operators) {
+    struct Case { int l; int op; int r; bool jumps; };
+    const Case cases[] = {
+        {1, '<', 2, true},  {2, '<', 2, false},
+        {3, '>', 2, true},  {2, '>', 2, false},
+        {2, '=', 2, true},  {1, '=', 2, false},
+        {1, '!', 2, true},  {2, '!', 2, false},
+        {2, 242, 2, true},  {1, 242, 2, false},   // >=
+        {2, 243, 2, true},  {3, 243, 2, false},   // <=
+        {1, '?', 2, false},                       // unknown operator never jumps
+    };
+    for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        Object *o = frames_object();
+        MT2D_VAR *vars[4] = {integer(2), integer(cases[i].l), integer(cases[i].op), integer(cases[i].r)};
+        Cscript_JumpFramesIfVar(o, vars);
+        CHECK_EQ(o->ActualFrame, cases[i].jumps ? 2 : 0);
+    }
+}
+
+TEST(jump_frames_if_var_compares_object_vars) {
+    Object *o = frames_object();
+    MT2D_VAR *vars[4] = {integer(1), named("Pos_X"), integer('<'), integer(5)};
+    Cscript_JumpFramesIfVar(o, vars); // Pos_X (0) < 5
+    CHECK_EQ(o->ActualFrame, 1);
+}
+
 TEST(jump_frames_if_random) {
     Object *o = frames_object();
     // Vars: [0] frames to jump, [1] chance, [2] max

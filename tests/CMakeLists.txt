@@ -1,10 +1,13 @@
 cmake_minimum_required(VERSION 3.10)
-project(MT2D_Tests CXX)
+project(MT2D_Tests C CXX)
 
 # Tests for the portable (terminal mode, no SDL) part of the MT2D engine.
 #
 #   cmake -S tests -B build/tests && cmake --build build/tests && ctest --test-dir build/tests --output-on-failure
 
+# New engine code is C (see AGENTS.md), tests are C++.
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # gnu++ (not strict c++) so that the `linux` macro used by the engine is defined.
@@ -30,6 +33,8 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/Container/MT2D_Container.cpp
     ${ENGINE}/ObjectCore/Cscript.cpp
     ${ENGINE}/ObjectCore/MT2D_Text_Image.cpp
+    ${ENGINE}/ObjectCore/ObjectGlobals.c
+    ${ENGINE}/ObjectCore/ObjectLoader.c
     ${ENGINE}/ObjectCore/Object.cpp
     ${ENGINE}/ObjectCore/SpriteBlock.cpp
     ${ENGINE}/ObjectCore/Sprites.cpp
@@ -47,11 +52,22 @@ target_include_directories(mt2d_engine PUBLIC
     "${REPO_ROOT}"
 )
 # The engine is old code, keep the build output readable.
-target_compile_options(mt2d_engine PRIVATE -w -fpermissive)
+target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
+
+# The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
+option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader objectglobals)
+if(MT2D_CSCRIPT_PARSER)
+    target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
+    target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)
+    list(APPEND TEST_NAMES cscriptcompiler)
+    add_executable(cscriptc ${ENGINE}/ObjectCore/Parser/cscriptc.c)
+    target_link_libraries(cscriptc mt2d_engine)
+endif()
 
 enable_testing()
 
-foreach(name vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850)
+foreach(name ${TEST_NAMES})
     add_executable(test_${name} test_${name}.cpp)
     target_link_libraries(test_${name} mt2d_engine)
     target_compile_options(test_${name} PRIVATE -w -fpermissive)

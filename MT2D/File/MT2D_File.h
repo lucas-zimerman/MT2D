@@ -87,48 +87,48 @@
 #include <stdio.h>
 #define MT2D_FILE FILE
 
- inline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
+static inline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
         return fopen(fileName, mode);
 }
 
- inline MT2D_FILE *MT2D_FILE_OPEN_TEMP() {
+static inline MT2D_FILE *MT2D_FILE_OPEN_TEMP() {
         return tmpfile();
 }
 
- inline int MT2D_FILE_CLOSE(MT2D_FILE *file) {
+static inline int MT2D_FILE_CLOSE(MT2D_FILE *file) {
         return fclose(file);
 }
 
 
- inline int MT2D_FILE_SEEK(MT2D_FILE *file, long offset, int whence) {
+static inline int MT2D_FILE_SEEK(MT2D_FILE *file, long offset, int whence) {
         return fseek(file, offset, whence);
 }
 
- inline size_t MT2D_FILE_READ(MT2D_FILE *file, void *inBufferPtr, size_t size, size_t maxNum) {
+static inline size_t MT2D_FILE_READ(MT2D_FILE *file, void *inBufferPtr, size_t size, size_t maxNum) {
         return fread(inBufferPtr, size, maxNum, file);
 }
 
- inline unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
+static inline unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
         return fgetc(file);
 }
 
- inline size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
+static inline size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
         return fwrite(outBufferPtr, size, count, file);
 }
 
- inline int MT2D_FILE_EOF(MT2D_FILE *file) {
+static inline int MT2D_FILE_EOF(MT2D_FILE *file) {
         return feof(file);
 }
 
- inline long int MT2D_FILE_TELL(MT2D_FILE *file) {
+static inline long int MT2D_FILE_TELL(MT2D_FILE *file) {
         return ftell(file);
 }
 
- inline int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
+static inline int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
         return fputc(data, file);
 }
 
-inline int MT2D_FILE_DELETE(char *name){
+static inline int MT2D_FILE_DELETE(char *name){
         return remove(name);
 }
 #endif

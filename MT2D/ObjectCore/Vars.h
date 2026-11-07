@@ -1,16 +1,19 @@
 #ifndef VAR_HEADER
 #define VAR_HEADER
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
-enum MT2D_VAR_TYPE
+MT2D_C_BEGIN
+
+typedef enum MT2D_VAR_TYPE
 {
         VAR_CHAR = 1,
         VAR_INT,
         VAR_FLOAT,
         VAR_POINTER = -1,
         VAR_STRING = -2 /* Data.p owns a malloc'd, NUL terminated copy of the text */
-};
+} MT2D_VAR_TYPE;
 
-enum MT2D_VAR_ERROR
+typedef enum MT2D_VAR_ERROR
 {
          Var_No_Error,
          Var_Wrong_Type, //set int into char var
@@ -21,7 +24,7 @@ enum MT2D_VAR_ERROR
          Var_Null_Name,
          Var_Out_Of_Memory_To_Create_New_Var,
          Var_Name_Too_Long // names are limited to MT2D_VAR_NAME_MAX - 1 chars, use a VAR_STRING value for long text
-};
+} MT2D_VAR_ERROR;
 
 extern MT2D_VAR_ERROR MT2D_Var_Last_Error;
 
@@ -54,12 +57,17 @@ typedef struct {
 } MT2D_VAR;
 
 
+#ifdef __cplusplus
+}
+/* C++ only: overloaded, use MT2D_VAR_Init_* / MT2D_Object_VAR_SetVar from C */
 void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data);
 void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data);
 void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data);
 /* Copies *Data (int/char/float) into the var, stores the pointer itself for VAR_POINTER
    or copies the text for VAR_STRING (Data is a const char*). Type must match the var. */
 void MT2D_Object_Set_Var(MT2D_VAR *Var, void *Data, MT2D_VAR_TYPE Type);
+extern "C" {
+#endif
 
 /* Pointer to the value: &Var->Data for int/char/float, the stored pointer for VAR_POINTER/VAR_STRING. */
 void *MT2D_Object_Get_Var_Data(MT2D_VAR *Var);
@@ -133,4 +141,5 @@ MT2D_VAR **MT2D_VAR_Create_MatrixN(int amount, ...); /*I Sugest to use the other
 void MT2D_VAR_ReleaseData(MT2D_VAR *var);
 /* Releases a var made by the Create_Var functions. constName is ignored, kept for source compatibility. */
 void MT2D_VAR_Free(MT2D_VAR *var, int constName);
+MT2D_C_END
 #endif

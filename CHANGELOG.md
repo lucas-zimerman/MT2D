@@ -30,7 +30,8 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
-- New Cscript conditions `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}` and `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`), completing the set next to the existing `==`, `<=` and `>=`.
+- New Cscript functions: `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}`, `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`) and the relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`). ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
+- Object scripts: describe an object (vars, states, sprites, behaviour) in a text file, compile it with `cscriptc` and load it with `ObjectCore_Load("movingdot.mto")`, see [Object-Scripts.md](https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/Object-Scripts.md) ([#3](https://github.com/lucas-zimerman/MT2D/issues/3)) ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them
 - `MT2D_Object_Create_Var_Float`, float support in `MT2D_Object_ADD/SUB` and `MT2D_VAR_CLONE`; `MT2D_Object_VAR_GetInt/GetBool` are now inline
 - Add `MT2D_Types.h` (fixed width types), `Sprite_Create_Ascii_From_Cells` and `Sprite_Get_Char`, ASCII sprites no longer store transparent cells (saves RAM on MS-DOS)
@@ -59,6 +60,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- `Cscript_Empty` now initialises `_void`. ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Allow the use of NULL as functions ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Set SDL Audio to 44KHz ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))

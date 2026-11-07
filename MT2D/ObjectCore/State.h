@@ -14,8 +14,11 @@
   A label contains a set of states.
 
 */
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/ObjectCore/Cscript.h>
+
+MT2D_C_BEGIN
 
 struct ObjectState
 {
@@ -31,4 +34,5 @@ ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName);
 void MT2D_OBJECT_ADD_STATE(ObjectState *State, Sprite *sprite, int Wait, Cscript *Function);
 void MT2D_ObjectState_ADD(ObjectState *State, Sprite *sprite, int Wait, Cscript *Script);
 void MT2D_ObjectState_Delete(ObjectState *Me);
+MT2D_C_END
 #endif
