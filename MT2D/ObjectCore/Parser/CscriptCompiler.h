@@ -20,6 +20,20 @@
             }
         }
 
+   * while and if/else work inside a state, the blocks always need braces:
+
+            Main:
+                while (y < 300 && !paused) {
+                    "SPRITEX" 10 VarInc(y)
+                }
+                if (hp <= 0) { Goto Dead } else if (hp < 10) { "HURT" 5 } else { "OK" 5 }
+
+     A condition is made of comparisons (< > == = != >= <=) between a var and a var or number,
+     combined with && , || , ! and parentheses. A lone var or number is true when it is not 0.
+     && and || stop at the first answer, like in C. The blocks are compiled to JumpFrames and
+     JumpFramesIfVar frames (no wait, no sprite), so they cost no time by themselves. A loop where
+     no frame waits never gives the control back to the game, that is up to the script.
+     State labels cannot be inside a block, use Goto to leave one.
    * A state restarts from its first frame when its last frame ends, so a state is a loop.
    * The action of a frame runs when the wait of that frame ends.
    * "path" is a sprite file, none is no sprite. Action arguments are numbers, names (object vars

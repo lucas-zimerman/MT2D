@@ -168,4 +168,245 @@ TEST(load_script_from_text_file) {
     CHECK(has(err, "cannot open"));
 }
 
+// ---- while / if / else ------------------------------------------------------
+
+// Runs the object until it reaches the state called "End" (at most 500 ticks). The scripts
+// below always finish with `Goto End`, `End: none 1`.
+static bool run_to_end(Object *o) {
+    for (int tick = 0; tick < 500; tick++) {
+        if (o->ActualState == o->States_Count - 1) return true;
+        Object_Goto_NextStep(o);
+    }
+    return false;
+}
+
+static int var_of(Object *o, const char *name) { return find_var(o, name)->Data.i; }
+
+TEST(while_loop) {
+    Object *o = compile_and_load(
+        "object a { int y = 0; int steps = 0; states {\n"
+        "Main:\n"
+        "  while (y < 5) {\n"
+        "    none 2 VarInc(y)\n"
+        "    none 1 VarInc(steps)\n"
+        "  }\n"
+        "  Goto End\n"
+        "End: none 1 }}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(run_to_end(o));
+    CHECK_EQ(var_of(o, "y"), 5);
+    CHECK_EQ(var_of(o, "steps"), 5);
+    ObjectCore_Unload(o);
+}
+
+TEST(while_loop_that_never_runs) {
+    Object *o = compile_and_load(
+        "object a { int y = 9; states {\n"
+        "Main:\n"
+        "  while (y < 5) { none 1 VarInc(y) }\n"
+        "  Goto End\n"
+        "End: none 1 }}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(run_to_end(o));
+    CHECK_EQ(var_of(o, "y"), 9);
+    ObjectCore_Unload(o);
+}
+
+TEST(if_else_picks_one_branch) {
+    const char *tmpl =
+        "object a { int x = %d; int r = 0; states {\n"
+        "Main:\n"
+        "  if (x < 5) { none 0 VarAdd(r, 1) } else { none 0 VarAdd(r, 10) }\n"
+        "  Goto End\n"
+        "End: none 1 }}";
+    int xs[] = { 4, 5, 6 };
+    int expect[] = { 1, 10, 10 };
+    for (int i = 0; i < 3; i++) {
+        char text[512];
+        snprintf(text, sizeof(text), tmpl, xs[i]);
+        Object *o = compile_and_load(text);
+        CHECK(o != 0);
+        if (!o) return;
+        CHECK(run_to_end(o));
+        CHECK_EQ(var_of(o, "r"), expect[i]);
+        ObjectCore_Unload(o);
+    }
+}
+
+TEST(if_without_else_and_else_if_chain) {
+    const char *tmpl =
+        "object a { int x = %d; int r = 0; states {\n"
+        "Main:\n"
+        "  if (x == 1) { none 0 VarAdd(r, 1) }\n"
+        "  else if (x == 2) { none 0 VarAdd(r, 2) }\n"
+        "  else if (x == 3) { none 0 VarAdd(r, 3) }\n"
+        "  else { none 0 VarAdd(r, 100) }\n"
+        "  if (x > 2) { none 0 VarAdd(r, 1000) }\n"
+        "  Goto End\n"
+        "End: none 1 }}";
+    int xs[] = { 1, 2, 3, 4 };
+    int expect[] = { 1, 2, 1003, 1100 };
+    for (int i = 0; i < 4; i++) {
+        char text[700];
+        snprintf(text, sizeof(text), tmpl, xs[i]);
+        Object *o = compile_and_load(text);
+        CHECK(o != 0);
+        if (!o) return;
+        CHECK(run_to_end(o));
+        CHECK_EQ(var_of(o, "r"), expect[i]);
+        ObjectCore_Unload(o);
+    }
+}
+
+TEST(nested_while_and_if) {
+    // counts the even numbers from 0 to 9
+    Object *o = compile_and_load(
+        "object a { int i = 0; int even = 0; int odd = 0; states {\n"
+        "Main:\n"
+        "  while (i < 10) {\n"
+        "    if (i == 0 || i == 2 || i == 4 || i == 6 || i == 8) {\n"
+        "      none 1 VarInc(even)\n"
+        "    } else {\n"
+        "      none 1 VarInc(odd)\n"
+        "    }\n"
+        "    none 0 VarInc(i)\n"
+        "  }\n"
+        "  Goto End\n"
+        "End: none 1 }}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(run_to_end(o));
+    CHECK_EQ(var_of(o, "i"), 10);
+    CHECK_EQ(var_of(o, "even"), 5);
+    CHECK_EQ(var_of(o, "odd"), 5);
+    ObjectCore_Unload(o);
+}
+
+// The condition is compiled to chains of single comparisons. Compare the result with the
+// one C++ gives for every combination of a, b and c.
+static int cond_result(const char *cond, int a, int b, int c) {
+    char text[700];
+    snprintf(text, sizeof(text),
+        "object t { int a = %d; int b = %d; int c = %d; int r = 0; states {\n"
+        "Main:\n"
+        "  if (%s) { none 0 VarAdd(r, 1) }\n"
+        "  Goto End\n"
+        "End: none 1 }}", a, b, c, cond);
+    Object *o = compile_and_load(text);
+    CHECK(o != 0);
+    if (!o) return -1;
+    CHECK(run_to_end(o));
+    int r = var_of(o, "r");
+    ObjectCore_Unload(o);
+    return r;
+}
+
+TEST(logic_operators_match_c) {
+    struct Case { const char *text; bool (*eval)(bool, bool, bool); };
+    // each case is written twice: the script text and the same expression in C++
+    static const Case cases[] = {
+        { "a && b",                 [](bool a, bool b, bool)   { return a && b; } },
+        { "a || b",                 [](bool a, bool b, bool)   { return a || b; } },
+        { "!a",                     [](bool a, bool, bool)     { return !a; } },
+        { "a && b && c",            [](bool a, bool b, bool c) { return a && b && c; } },
+        { "a || b || c",            [](bool a, bool b, bool c) { return a || b || c; } },
+        { "a || b && c",            [](bool a, bool b, bool c) { return a || (b && c); } },
+        { "a && b || c",            [](bool a, bool b, bool c) { return (a && b) || c; } },
+        { "!(a && b) || c",         [](bool a, bool b, bool c) { return !(a && b) || c; } },
+        { "!a && !b",               [](bool a, bool b, bool)   { return !a && !b; } },
+        { "!(a || b)",              [](bool a, bool b, bool)   { return !(a || b); } },
+        { "(a || b) && (b || c)",   [](bool a, bool b, bool c) { return (a || b) && (b || c); } },
+        { "!(!a || !b)",            [](bool a, bool b, bool)   { return a && b; } },
+        { "a && (b || c) && !c",    [](bool a, bool b, bool c) { return a && (b || c) && !c; } },
+        { "!(a && (b || !c))",      [](bool a, bool b, bool c) { return !(a && (b || !c)); } },
+    };
+    for (size_t k = 0; k < sizeof(cases) / sizeof(cases[0]); k++) {
+        for (int bits = 0; bits < 8; bits++) {
+            int a = bits & 1, b = (bits >> 1) & 1, c = (bits >> 2) & 1;
+            int got = cond_result(cases[k].text, a, b, c);
+            int want = cases[k].eval(a != 0, b != 0, c != 0) ? 1 : 0;
+            if (got != want) printf("    (%s) with a=%d b=%d c=%d gave %d, expected %d\n", cases[k].text, a, b, c, got, want);
+            CHECK_EQ(got, want);
+        }
+    }
+}
+
+TEST(comparison_operators_in_conditions) {
+    struct Case { const char *cond; int expect; };
+    // x is 5
+    static const Case cases[] = {
+        { "x < 6", 1 },  { "x < 5", 0 },  { "x > 4", 1 },  { "x > 5", 0 },
+        { "x == 5", 1 }, { "x = 5", 1 },  { "x != 5", 0 }, { "x != 4", 1 },
+        { "x >= 5", 1 }, { "x >= 6", 0 }, { "x <= 5", 1 }, { "x <= 4", 0 },
+        { "x", 1 },      { "!x", 0 },     { "0", 0 },      { "7", 1 },
+        { "x < y", 1 },  { "y < x", 0 },  { "-3 < x", 1 }, { "(x) && (y)", 1 },
+    };
+    for (size_t k = 0; k < sizeof(cases) / sizeof(cases[0]); k++) {
+        char text[500];
+        snprintf(text, sizeof(text),
+            "object t { int x = 5; int y = 9; int r = 0; states { Main:\n"
+            "  if (%s) { none 0 VarAdd(r, 1) }\n"
+            "  Goto End\n"
+            "End: none 1 }}", cases[k].cond);
+        Object *o = compile_and_load(text);
+        CHECK(o != 0);
+        if (!o) return;
+        CHECK(run_to_end(o));
+        if (var_of(o, "r") != cases[k].expect) printf("    (%s) gave %d\n", cases[k].cond, var_of(o, "r"));
+        CHECK_EQ(var_of(o, "r"), cases[k].expect);
+        ObjectCore_Unload(o);
+    }
+}
+
+TEST(while_with_logic_operators) {
+    Object *o = compile_and_load(
+        "object a { int i = 0; int j = 10; int n = 0; states {\n"
+        "Main:\n"
+        "  while (i < 20 && j > 4) {\n"
+        "    none 1 VarInc(i)\n"
+        "    none 0 VarDec(j)\n"
+        "    none 0 VarInc(n)\n"
+        "  }\n"
+        "  Goto End\n"
+        "End: none 1 }}");
+    CHECK(o != 0);
+    if (!o) return;
+    CHECK(run_to_end(o));
+    CHECK_EQ(var_of(o, "n"), 6); // j goes 10 -> 4
+    CHECK_EQ(var_of(o, "i"), 6);
+    ObjectCore_Unload(o);
+}
+
+TEST(control_flow_at_the_end_of_a_state_wraps_to_the_first_frame) {
+    // the last frame of the state is the jump back of the while, a loop ends past the last frame
+    Object *o = compile_and_load(
+        "object a { int n = 0; states {\n"
+        "A:\n"
+        "  none 1\n"
+        "  if (n < 3) { none 1 VarInc(n) }\n"
+        "}}");
+    CHECK(o != 0);
+    if (!o) return;
+    for (int tick = 0; tick < 40; tick++) Object_Goto_NextStep(o);
+    CHECK_EQ(var_of(o, "n"), 3);
+    ObjectCore_Unload(o);
+}
+
+TEST(control_flow_errors) {
+    CHECK(has(error_of("object a { states { S:\n none 1 else { } }}"), "line 2: 'else' without 'if'"));
+    CHECK(has(error_of("object a { int x; states { S: while x < 1 { none 1 } }}"), "expected '('"));
+    CHECK(has(error_of("object a { int x; states { S: while (x < 1 { none 1 } }}"), "expected ')'"));
+    CHECK(has(error_of("object a { int x; states { S: while (x < 1) none 1 }}"), "expected '{'"));
+    CHECK(has(error_of("object a { int x; states { S: if (x < 1) { none 1 "), "expected '}'"));
+    CHECK(has(error_of("object a { int x; states { S: none 1 }"), "expected 'int', 'states' or '}'"));
+    CHECK(has(error_of("object a { int x; states { S: if (x <) { none 1 } }}"), "expected a var or a number"));
+    CHECK(has(error_of("object a { int x; states { S: if () { none 1 } }}"), "expected a var or a number"));
+    CHECK(has(error_of("object a { states { S: if (ghost < 1) { none 1 } }}"), "'ghost' is not a var or a state"));
+    CHECK(has(error_of("object a { int x; states { S: if (x & 1) { none 1 } }}"), "unexpected character '&'"));
+    CHECK(has(error_of("object a { int x; states { S: if (x < 1) { T: none 1 } }}"), "label cannot be inside a block"));
+    CHECK(has(error_of("object a { int x; states { S: none 1 if (x < 1) { none 1 } else }}"), "expected '{'"));
+}
+
 MT2D_TEST_MAIN()

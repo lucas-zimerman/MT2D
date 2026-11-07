@@ -89,6 +89,7 @@ std::vector<Tok> Tokenize(const char *p) {
                         Tok t; t.Type = T_PUNCT; t.Value = 0; t.Line = line;
                         t.Text = std::string(1, c);
                         if ((c == '=' || c == '!' || c == '<' || c == '>') && p[1] == '=') { t.Text += '='; p++; }
+                        else if ((c == '&' || c == '|') && p[1] == c) { t.Text += c; p++; }
                         else if (!strchr("{}(),;:<>=!", c)) Fail(line, std::string("unexpected character '") + c + "'");
                         p++;
                         out.push_back(t);
@@ -104,6 +105,21 @@ struct Arg { int Kind; long Value; std::string Text; int Line; }; /* 0 number, 1
 struct Frame { int Sprite; int Wait; int Fn; std::vector<Arg> Args; int Line; };
 struct State { std::string Name; int Line; std::vector<Frame> Frames; };
 struct VarRec { int Slot; std::string Name; long Value; };
+/* a condition tree: one comparison, && , || or ! */
+enum CondType { C_CMP, C_AND, C_OR, C_NOT };
+struct Cond { CondType Type; Arg L, R; long Op; int A, B; };
+
+/* the comparison that is true when "L op R" is false */
+long InverseOp(long op) {
+        switch (op) {
+        case '<': return 242;
+        case '>': return 243;
+        case '=': return '!';
+        case '!': return '=';
+        case 242: return '<';
+        default:  return '>'; /* 243 */
+        }
+}
 
 class Compiler {
 public:
@@ -179,6 +195,7 @@ private:
         size_t P;
         std::vector<VarRec> Vars;
         std::vector<State> States;
+        std::vector<Cond> Conds;
         std::vector<std::string> Sprites;
         std::map<std::string, int> SpriteIndex;
 
@@ -224,6 +241,10 @@ private:
                 Vars.push_back(v);
         }
 
+        bool AtLabel() const {
+                return Cur().Type == T_IDENT && Peek(1).Type == T_PUNCT && Peek(1).Text == ":";
+        }
+
         void ParseStates() {
                 P++; /* states */
                 ExpectPunct("{");
@@ -232,16 +253,204 @@ private:
                         st.Name = ExpectName("a state name");
                         ExpectPunct(":");
                         for (size_t i = 0; i < States.size(); i++) if (States[i].Name == st.Name) Fail(st.Line, "state '" + st.Name + "' is declared twice");
-                        while (!IsPunct("}") && !(Cur().Type == T_IDENT && Peek(1).Type == T_PUNCT && Peek(1).Text == ":" && !IsKeyword("none"))) {
-                                st.Frames.push_back(ParseFrame());
-                                if (IsPunct(";")) P++;
-                        }
+                        ParseStatements(st, 0);
                         if (st.Frames.empty()) Fail(st.Line, "state '" + st.Name + "' has no frames");
                         if (st.Frames.size() > 65535) Fail(st.Line, "state '" + st.Name + "' has too many frames");
                         if (States.size() >= 65535) Fail(st.Line, "too many states");
                         States.push_back(st);
                 }
                 P++;
+        }
+
+        /* frames, while and if until the closing '}' (or the next label when depth is 0) */
+        void ParseStatements(State &st, int depth) {
+                while (!IsPunct("}")) {
+                        if (Cur().Type == T_END) Fail(Cur().Line, "expected '}'");
+                        if (AtLabel()) {
+                                if (depth == 0) break;
+                                Fail(Cur().Line, "a state label cannot be inside a block");
+                        }
+                        if (IsKeyword("while")) ParseWhile(st, depth);
+                        else if (IsKeyword("if")) ParseIf(st, depth);
+                        else if (IsKeyword("else")) Fail(Cur().Line, "'else' without 'if'");
+                        else {
+                                st.Frames.push_back(ParseFrame());
+                                if (IsPunct(";")) P++;
+                        }
+                }
+        }
+
+        void ParseBlock(State &st, int depth) {
+                ExpectPunct("{");
+                ParseStatements(st, depth + 1);
+                ExpectPunct("}");
+        }
+
+        /* ---- control flow: every jump is a frame of JumpFrames/JumpFramesIfVar with wait 0 ---- */
+        /* A jump of N frames makes the object land on (its own index + N + 1), see Cscript_JumpFrames. */
+
+        Frame JumpFrame(const char *fn, int line) {
+                Frame f; f.Sprite = -1; f.Wait = 0; f.Line = line; f.Fn = FindFunction(fn);
+                Arg a; a.Kind = 0; a.Value = 0; a.Line = line;
+                f.Args.push_back(a);
+                return f;
+        }
+
+        /* the jumps listed will land on the next frame that is added to the state */
+        void PatchHere(State &st, std::vector<size_t> &jumps) {
+                for (size_t i = 0; i < jumps.size(); i++) {
+                        st.Frames[jumps[i]].Args[0].Value = (long)st.Frames.size() - (long)jumps[i] - 1;
+                }
+                jumps.clear();
+        }
+
+        void ParseIf(State &st, int depth) {
+                int line = Cur().Line;
+                P++; /* if */
+                std::vector<size_t> whenFalse;
+                ParseCondition(st, false, whenFalse);
+                ParseBlock(st, depth);
+                if (IsKeyword("else")) {
+                        P++;
+                        std::vector<size_t> toEnd;
+                        toEnd.push_back(st.Frames.size());
+                        st.Frames.push_back(JumpFrame("JumpFrames", line));
+                        PatchHere(st, whenFalse);
+                        if (IsKeyword("if")) ParseIf(st, depth);
+                        else ParseBlock(st, depth);
+                        PatchHere(st, toEnd);
+                }
+                else {
+                        PatchHere(st, whenFalse);
+                }
+        }
+
+        void ParseWhile(State &st, int depth) {
+                int line = Cur().Line;
+                P++; /* while */
+                size_t start = st.Frames.size();
+                std::vector<size_t> whenFalse;
+                ParseCondition(st, false, whenFalse);
+                ParseBlock(st, depth);
+                Frame back = JumpFrame("JumpFrames", line);
+                back.Args[0].Value = (long)start - (long)st.Frames.size() - 1;
+                st.Frames.push_back(back);
+                PatchHere(st, whenFalse);
+        }
+
+        /* ( condition ): adds the frames that jump (the frames are added to "jumps") when the
+           condition is jumpWhen, and continue with the next frame otherwise. */
+        void ParseCondition(State &st, bool jumpWhen, std::vector<size_t> &jumps) {
+                int line = Cur().Line;
+                ExpectPunct("(");
+                Conds.clear();
+                int root = ParseOr();
+                ExpectPunct(")");
+                EmitCond(st, root, jumpWhen, jumps, line);
+        }
+
+        int AddCond(CondType type, int a, int b) {
+                Cond c; c.Type = type; c.Op = 0; c.A = a; c.B = b;
+                c.L.Kind = 0; c.L.Value = 0; c.L.Line = 0;
+                c.R = c.L;
+                Conds.push_back(c);
+                return (int)Conds.size() - 1;
+        }
+
+        int ParseOr() {
+                int a = ParseAnd();
+                while (IsPunct("||")) { P++; int b = ParseAnd(); a = AddCond(C_OR, a, b); }
+                return a;
+        }
+
+        int ParseAnd() {
+                int a = ParseNot();
+                while (IsPunct("&&")) { P++; int b = ParseNot(); a = AddCond(C_AND, a, b); }
+                return a;
+        }
+
+        int ParseNot() {
+                if (IsPunct("!")) { P++; int a = ParseNot(); return AddCond(C_NOT, a, -1); }
+                return ParsePrimary();
+        }
+
+        Arg ParseOperand() {
+                Arg a; a.Value = 0; a.Line = Cur().Line; a.Kind = 0;
+                if (Cur().Type == T_INT) { a.Value = Cur().Value; P++; }
+                else if (Cur().Type == T_IDENT) { a.Kind = 1; a.Text = ExpectName("a var name"); }
+                else Fail(Cur().Line, "expected a var or a number");
+                return a;
+        }
+
+        int ParsePrimary() {
+                if (IsPunct("(")) {
+                        P++;
+                        int e = ParseOr();
+                        ExpectPunct(")");
+                        return e;
+                }
+                int id = AddCond(C_CMP, -1, -1);
+                Arg l = ParseOperand();
+                long op = '!'; /* a lone operand is true when it is not 0 */
+                Arg r; r.Kind = 0; r.Value = 0; r.Line = l.Line;
+                if (Cur().Type == T_PUNCT) {
+                        const std::string &t = Cur().Text;
+                        int found = 1;
+                        if (t == "<") op = '<';
+                        else if (t == ">") op = '>';
+                        else if (t == "=" || t == "==") op = '=';
+                        else if (t == "!=") op = '!';
+                        else if (t == ">=") op = 242;
+                        else if (t == "<=") op = 243;
+                        else found = 0;
+                        if (found) { P++; r = ParseOperand(); }
+                }
+                Conds[id].L = l; Conds[id].R = r; Conds[id].Op = op;
+                return id;
+        }
+
+        /* jumps to "out" when node is jumpWhen, falls through otherwise */
+        void EmitCond(State &st, int id, bool jumpWhen, std::vector<size_t> &out, int line) {
+                Cond c = Conds[id]; /* copy: the vector does not change while emitting, but keep it simple */
+                switch (c.Type) {
+                case C_CMP: {
+                        Frame f = JumpFrame("JumpFramesIfVar", line);
+                        Arg op; op.Kind = 0; op.Line = line; op.Value = jumpWhen ? c.Op : InverseOp(c.Op);
+                        f.Args.push_back(c.L);
+                        f.Args.push_back(op);
+                        f.Args.push_back(c.R);
+                        out.push_back(st.Frames.size());
+                        st.Frames.push_back(f);
+                        break;
+                }
+                case C_NOT:
+                        EmitCond(st, c.A, !jumpWhen, out, line);
+                        break;
+                case C_AND:
+                        if (!jumpWhen) { /* jump if any is false */
+                                EmitCond(st, c.A, false, out, line);
+                                EmitCond(st, c.B, false, out, line);
+                        }
+                        else { /* jump if both are true: a false A skips B and the jump */
+                                std::vector<size_t> skip;
+                                EmitCond(st, c.A, false, skip, line);
+                                EmitCond(st, c.B, true, out, line);
+                                PatchHere(st, skip);
+                        }
+                        break;
+                case C_OR:
+                        if (jumpWhen) { /* jump if any is true */
+                                EmitCond(st, c.A, true, out, line);
+                                EmitCond(st, c.B, true, out, line);
+                        }
+                        else { /* jump if both are false: a true A skips B and the jump */
+                                std::vector<size_t> skip;
+                                EmitCond(st, c.A, true, skip, line);
+                                EmitCond(st, c.B, false, out, line);
+                                PatchHere(st, skip);
+                        }
+                        break;
+                }
         }
 
         int SpriteId(const std::string &path, int line) {
@@ -290,6 +499,7 @@ private:
                 if (Cur().Type != T_INT || Cur().Value < 0 || Cur().Value > 65535) Fail(Cur().Line, "expected the wait (0 to 65535) after the sprite");
                 f.Wait = (int)T[P++].Value;
                 if (Cur().Type == T_IDENT && !IsKeyword("none") && !IsKeyword("goto") && !IsKeyword("stop") &&
+                        !IsKeyword("while") && !IsKeyword("if") && !IsKeyword("else") &&
                         !(Peek(1).Type == T_PUNCT && Peek(1).Text == ":")) {
                         ParseAction(f);
                 }
