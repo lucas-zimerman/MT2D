@@ -20,8 +20,10 @@ struct Sprite {
 
 // after
 struct Sprite {
-    MT2D_Text_Image *Text;      // ASCII image (type 0), same on every platform
-    MT2D_Internal_Image *Image; // platform specific image (type 1), NULL where unsupported
+    union {
+        MT2D_Text_Image *Text;      // type 0: ASCII image, same on every platform
+        MT2D_Internal_Image *Image; // type 1: platform specific image
+    };                              // `type` says which member is valid
     int SizeX, SizeY, ScaleX, ScaleY;
     char type;        // ASCII image = 0, Image = 1
     unsigned int refCount;
@@ -72,11 +74,11 @@ MT2D_SDL_Texture *t  = sprite->Image->Texture;
 MT2D_SDL_Texture *rt = sprite->Image->RotatedTexture;
 ```
 
-Only access `Image` when `sprite->type == 1`. On platforms without image support, `Load_Sprite_Image*` still returns the `<!>` placeholder ASCII sprite.
+`Text` and `Image` share the same memory, only access `Image` when `sprite->type == 1` (and `Text` when it is 0). On platforms without image support, `Load_Sprite_Image*` still returns the `<!>` placeholder ASCII sprite.
 
 ### Copying a Sprite struct
 
-Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text` and `Image` pointers, not the data. Don't `Sprite_Delete` both copies.
+Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text`/`Image` pointer, not the data. Don't `Sprite_Delete` both copies.
 
 ## New headers
 

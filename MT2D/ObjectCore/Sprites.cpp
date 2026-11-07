@@ -48,7 +48,6 @@ Sprite *Sprite_Create_Ascii_From_Cells(int SizeX, int SizeY, const char *cells) 
                 free(S);
                 return 0;
         }
-        S->Image = 0;
         S->SizeX = SizeX;
         S->SizeY = SizeY;
         S->ScaleX = 1;
@@ -124,7 +123,6 @@ static Sprite *Create_Image_Sprite(SDL_Surface *Img, int ScaleX, int ScaleY) {
         S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
         S->Image->Texture = MT2D_SDL_Create_Texture(Img);
         S->Image->RotatedTexture = MT2D_SDL_Create_Rotated_Texture(Img, S->Image->Texture);
-        S->Text = 0;
         S->SizeX = Img->w;
         S->SizeY = Img->h;
         S->ScaleX = ScaleX;
@@ -215,9 +213,11 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                          Me->refCount--;
                  }
                  if (Me->refCount == 0) {
-                         MT2D_Text_Image_Free(Me->Text);
+                         if (Me->type == 0) {
+                                 MT2D_Text_Image_Free(Me->Text);
+                         }
 #ifdef SDL_USE
-                         if (Me->Image) {
+                         else if (Me->Image) {
                                  if (Me->Image->RotatedTexture) {
                                          MT2D_SDL_DestroyTexture(Me->Image->RotatedTexture);
                                  }

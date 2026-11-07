@@ -6,7 +6,6 @@
 static Sprite make(int sx, int sy) {
     Sprite s;
     s.Text = 0;
-    s.Image = 0;
     s.SizeX = sx;
     s.SizeY = sy;
     s.ScaleX = 1;

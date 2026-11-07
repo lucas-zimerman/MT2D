@@ -6,8 +6,10 @@
 #include <MT2D/ObjectCore/MT2D_Internal_Image.h>
 
 struct Sprite{
-        MT2D_Text_Image *Text;       //ASCII image (type 0), compact slices, same on every platform
-        MT2D_Internal_Image *Image;  //platform specific image (type 1), NULL where unsupported
+        union {
+                MT2D_Text_Image *Text;       //type 0: ASCII image, compact slices, same on every platform
+                MT2D_Internal_Image *Image;  //type 1: platform specific image (SDL only for now)
+        };//which member is valid is defined by "type", keep them in sync
         int SizeX;//The size of the sprite
         int SizeY;//The size of the sprite
         int ScaleX;//the scale of the image applied to a 320x240 screen
