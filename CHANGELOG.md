@@ -46,6 +46,7 @@ ObjectPosX(Object) = 12;
 - Container refactor: data is no longer fully stored in memory, and it supports temporary files, updating, inserting and removing files, getting where the data is located, and clearing data/containers ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Add functions to create a matrix of vars of any size ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Add MS-DOS tooling notes (`Tools/msdos/readme.txt`) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
+- Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 
 ### Fixes
 
@@ -61,6 +62,13 @@ ObjectPosX(Object) = 12;
 - Fix SDL issues for MS-DOS/SDL builds and the full path handling ([#9](https://github.com/lucas-zimerman/MT2D/pull/9))
 - Code cleanup (tabs replaced by spaces, unused code removed) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
 - Fix memory leaks in the container, ObjectCore, input boxes and SDL code, plus a double free and a heap overflow in containers ([#16](https://github.com/lucas-zimerman/MT2D/pull/16))
+- Fix the Linux/macOS terminal (curses) backend: it never refreshed the screen, the clear/draw macros were swapped, `kbhit` ate keys, delays were 1000x too short and macOS did not build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix a missing `#` in `MT2D_Win_Debug.h` that broke every Windows terminal build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix backslashes in include paths and `Objectcore` letter case so the engine builds on Linux and macOS ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add `MT2D_SDL_Joystick_Init`/`Close`/`Update`, so the SDL joystick API works on desktop (arrow keys act as the left stick and held keys are tracked) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix SDL key releases that happened between two frames being lost (quick taps were never seen by the keyboard buffer) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- SDL builds now start in the executable folder, so the font and images are found when the program is launched from another directory ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add a silent `SDL_Beep` when SDL audio is disabled, so SDL builds link without SDL2_mixer ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 
 ## 2.0.1 - 2019-03-24
 

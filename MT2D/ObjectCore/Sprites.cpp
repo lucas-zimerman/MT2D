@@ -8,14 +8,14 @@
 #include <string.h>
 #ifndef __ANDROID__
 #include <MT2D/MT2D_Terminal_Define.h>
-#include <MT2D/Objectcore/Sprites.h>
+#include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/MT2D_Keyboard.h> // only used for taking the definition of the key enter
 #include <MT2D/MT2D.h> // for geting the display definition
 #include <MT2D/File/MT2D_File.h>
 #include <MT2D/ObjectCore/MT2D_Text_Image.h>
 #else
 #include "../MT2D_Terminal_Define.h"
-#include "../Objectcore/Sprites.h"
+#include "../ObjectCore/Sprites.h"
 #include "../MT2D_Keyboard.h" // only used for taking the definition of the key enter
 #include "../MT2D.h" // for geting the display definition
 #include "../File/MT2D_File.h"
@@ -37,7 +37,7 @@
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
-#include <MT2D\MT2D_Debug.h>
+#include <MT2D/MT2D_Debug.h>
 
 
 Sprite *Sprite_Create_Ascii_From_Cells(int SizeX, int SizeY, const char *cells) {

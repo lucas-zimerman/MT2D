@@ -1,0 +1,73 @@
+name: Examples
+
+# Builds every program in examples/ (see examples/README.md).
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+env:
+  DJGPP_URL: https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2
+  DJGPP_SHA256: 8464f17017d6ab1b2bb2df4ed82357b5bf692e6e2b7fee37e315638f3d505f00
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libncurses-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev
+      - name: Configure
+        run: cmake -S examples -B build/examples
+      - name: Build
+        run: cmake --build build/examples -j
+
+  djgpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache DJGPP
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/djgpp
+          key: djgpp-v3.4-gcc1220
+      - name: Download DJGPP
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL "$DJGPP_URL" -o /tmp/djgpp.tar.bz2
+          echo "$DJGPP_SHA256  /tmp/djgpp.tar.bz2" | sha256sum -c -
+          tar -xjf /tmp/djgpp.tar.bz2 -C ~
+      - name: Install the runtime libraries of the DJGPP tools
+        run: sudo apt-get update && sudo apt-get install -y libfl2
+      - name: Build the terminal examples for MS-DOS
+        run: |
+          export PATH="$HOME/djgpp/bin:$PATH"
+          cmake -S examples -B build/dos -DCMAKE_TOOLCHAIN_FILE="$PWD/examples/cmake/djgpp.cmake"
+          cmake --build build/dos -j
+
+  # macOS and Windows jobs were written without access to those systems, they do not block the PR yet.
+  macos:
+    runs-on: macos-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: brew install sdl2 sdl2_image sdl2_mixer
+      - name: Configure
+        run: cmake -S examples -B build/examples
+      - name: Build
+        run: cmake --build build/examples -j
+
+  windows:
+    runs-on: windows-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: vcpkg install sdl2:x64-windows sdl2-image:x64-windows sdl2-mixer:x64-windows
+      - name: Configure
+        run: cmake -S examples -B build/examples -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+      - name: Build
+        run: cmake --build build/examples --config Release

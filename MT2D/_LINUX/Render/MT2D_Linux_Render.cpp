@@ -1,25 +1,41 @@
-// MT2D Created By Lucas Zimerman Fraulob
-// This is the core of MT2D engine, with only this .cpp you can do everything
-// This file is related to almost all MT2D video interface, like draw, clear and update.
+// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#include "../../MT2D_Terminal_Define.h"
+// MT2D terminal (curses) renderer, used on Linux and macOS when SDL is not enabled.
+#include "../../MT2D_Terminal_Define.h"
 
-//#include <stdio.h>
-
-#if defined(linux) && !defined(__ANDROID__)
-#include "MT2D_Terminal_Define.h"
+#if defined(linux) && !defined(__ANDROID__) && !defined(SDL_USE)
 #include <cstdlib>
 #include <curses.h>
-#include <signal.h>
 #include <locale.h>
 #include "../../MT2D.h"
 
+static bool ncurses_started = false;
 
-static void finish(int sig);
+static void MT2D_Linux_Stop_Curses() {
+	if (ncurses_started) {
+		endwin();
+		ncurses_started = false;
+	}
+}
 
+void MT2D_Linux_Start_Curses() {
+	if (!ncurses_started) {
+		setlocale(LC_ALL, "");
+		initscr();
+		keypad(stdscr, TRUE);
+		nonl();
+		cbreak();
+		noecho();
+		curs_set(0);
+		ncurses_started = true;
+		atexit(MT2D_Linux_Stop_Curses);
+	}
+}
 
 void MT2D_Linux_Clear_Main_Window() {
 	int i = 0, j = 0;
 	while (i <= MAX_VER) {
-		while (j<MAX_HOR) {
+		while (j < MAX_HOR) {
 			WINDOW1[i][j] = ' ';
 			j++;
 		}
@@ -28,130 +44,47 @@ void MT2D_Linux_Clear_Main_Window() {
 	}
 }
 
-
-void MT2D_Linux_Draw_Window(int which) {
-	int x, y;
-	if (!ncurses_started) {
-		(void)signal(SIGINT, finish);
-		(void)initscr();
-		keypad(stdscr, TRUE);
-		(void)nonl();
-		(void)cbreak();
-		(void)echo();
-		setlocale(LC_ALL, "");
-		ncurses_started = true;
-	}
-
-	if (which == DISPLAY_WINDOW1) {
-		for (y = 0; y<24; y++) {
-			for (x = 0; x<80; x++) {
-				move(y, x);
-				if (WINDOW1[y][x] <= 127)
-					addch(WINDOW1[y][x]);
-				else {// no codepage 850 ;--;
-					if (WINDOW1[y][x] >= 176 && WINDOW1[y][x] <= 178)
-						addch(ACS_CKBOARD);
-					else if (WINDOW1[y][x] == 106 || WINDOW1[y][x] == 205)
-						addch(ACS_HLINE);
-					else if (WINDOW1[y][x] == 179 || WINDOW1[y][x] == 186)
-						addch(ACS_VLINE);
-					else if (WINDOW1[y][x] >= 219 && WINDOW1[y][x] <= 223)
-						addch(ACS_CKBOARD);
-					else if (WINDOW1[y][x] == 254)
-						addch(ACS_CKBOARD);
-					else if (WINDOW1[y][x] == 192 || WINDOW1[y][x] == 200)
-						addch(ACS_LLCORNER);
-					else if (WINDOW1[y][x] == 201 || WINDOW1[y][x] == 218)
-						addch(ACS_ULCORNER);
-					else if (WINDOW1[y][x] == 187 || WINDOW1[y][x] == 191)
-						addch(ACS_URCORNER);
-					else if (WINDOW1[y][x] == 188 || WINDOW1[y][x] == 217)
-						addch(ACS_LRCORNER);
-					else if (WINDOW1[y][x] == 204 || WINDOW1[y][x] == 195)
-						addch(ACS_LTEE);
-					else if (WINDOW1[y][x] == 180 || WINDOW1[y][x] == 185)
-						addch(ACS_RTEE);
-					else if (WINDOW1[y][x] == 193 || WINDOW1[y][x] == 202)
-						addch(ACS_BTEE);
-					else if (WINDOW1[y][x] == 194 || WINDOW1[y][x] == 203)
-						addch(ACS_TTEE);
-					else if (WINDOW1[y][x] == 197 || WINDOW1[y][x] == 206)
-						addch(ACS_PLUS);
-					else if (WINDOW1[y][x] == 167)
-						addch(ACS_DEGREE);
-					else if (WINDOW1[y][x] == 241)
-						addch(ACS_PLMINUS);
-					else if (WINDOW1[y][x] == 249 || WINDOW1[y][x] == 250)
-						addch(ACS_BULLET);
-					else if (WINDOW1[y][x] == 243)
-						addch(ACS_LEQUAL);
-					else if (WINDOW1[y][x] == 242)
-						addch(ACS_GEQUAL);
-					else if (WINDOW1[y][x] == 227)
-						addch(ACS_PI);
-					else
-						addch(32);
-				}
-			}
-		}
-	}
-	else {
-		for (y = 0; y<24; y++) {
-			for (x = 0; x<80; x++) {
-				move(y, x);
-				if (WINDOW2[y][x] <= 127)
-					addch(WINDOW2[y][x]);
-				else {// no codepage 850 ;--;
-					if (WINDOW2[y][x] >= 176 && WINDOW2[y][x] <= 178)
-						addch(ACS_CKBOARD);
-					else if (WINDOW2[y][x] == 106 || WINDOW2[y][x] == 205)
-						addch(ACS_HLINE);
-					else if (WINDOW2[y][x] == 179 || WINDOW2[y][x] == 186)
-						addch(ACS_VLINE);
-					else if (WINDOW2[y][x] >= 219 && WINDOW2[y][x] <= 223)
-						addch(ACS_CKBOARD);
-					else if (WINDOW2[y][x] == 254)
-						addch(ACS_CKBOARD);
-					else if (WINDOW2[y][x] == 192 || WINDOW2[y][x] == 200)
-						addch(ACS_LLCORNER);
-					else if (WINDOW2[y][x] == 201 || WINDOW2[y][x] == 218)
-						addch(ACS_ULCORNER);
-					else if (WINDOW2[y][x] == 187 || WINDOW2[y][x] == 191)
-						addch(ACS_URCORNER);
-					else if (WINDOW2[y][x] == 188 || WINDOW2[y][x] == 217)
-						addch(ACS_LRCORNER);
-					else if (WINDOW2[y][x] == 204 || WINDOW2[y][x] == 195)
-						addch(ACS_LTEE);
-					else if (WINDOW2[y][x] == 180 || WINDOW2[y][x] == 185)
-						addch(ACS_RTEE);
-					else if (WINDOW2[y][x] == 193 || WINDOW2[y][x] == 202)
-						addch(ACS_BTEE);
-					else if (WINDOW2[y][x] == 194 || WINDOW2[y][x] == 203)
-						addch(ACS_TTEE);
-					else if (WINDOW2[y][x] == 197 || WINDOW2[y][x] == 206)
-						addch(ACS_PLUS);
-					else if (WINDOW2[y][x] == 167)
-						addch(ACS_DEGREE);
-					else if (WINDOW2[y][x] == 241)
-						addch(ACS_PLMINUS);
-					else if (WINDOW2[y][x] == 249 || WINDOW2[y][x] == 250)
-						addch(ACS_BULLET);
-					else if (WINDOW2[y][x] == 243)
-						addch(ACS_LEQUAL);
-					else if (WINDOW2[y][x] == 242)
-						addch(ACS_GEQUAL);
-					else if (WINDOW2[y][x] == 227)
-						addch(ACS_PI);
-					else
-						addch(32);
-				}
-			}
-		}
+/* Converts a MS-DOS (code page 437/850) character to something curses can draw. */
+static void MT2D_Linux_Add_Char(unsigned char c) {
+	if (c >= 32 && c <= 126) { addch(c); return; }
+	switch (c) {
+	case 176: case 177: case 178: case 219: case 220: case 221: case 222: case 223: case 254:
+		addch(ACS_CKBOARD); break;
+	case 106: case 196: case 205: addch(ACS_HLINE); break;
+	case 179: case 186: addch(ACS_VLINE); break;
+	case 192: case 200: addch(ACS_LLCORNER); break;
+	case 201: case 218: addch(ACS_ULCORNER); break;
+	case 187: case 191: addch(ACS_URCORNER); break;
+	case 188: case 217: addch(ACS_LRCORNER); break;
+	case 204: case 195: addch(ACS_LTEE); break;
+	case 180: case 185: addch(ACS_RTEE); break;
+	case 193: case 202: addch(ACS_BTEE); break;
+	case 194: case 203: addch(ACS_TTEE); break;
+	case 197: case 206: addch(ACS_PLUS); break;
+	case 167: addch(ACS_DEGREE); break;
+	case 241: addch(ACS_PLMINUS); break;
+	case 249: case 250: addch(ACS_BULLET); break;
+	case 243: addch(ACS_LEQUAL); break;
+	case 242: addch(ACS_GEQUAL); break;
+	case 227: addch(ACS_PI); break;
+	case 24: addch(ACS_UARROW); break;
+	case 25: addch(ACS_DARROW); break;
+	case 26: addch(ACS_RARROW); break;
+	case 27: addch(ACS_LARROW); break;
+	default: addch(' '); break;
 	}
 }
 
-static void finish(int sig) {
-	endwin();
-	exit(0);
+void MT2D_Linux_Draw_Window(int which) {
+	int x, y;
+	unsigned char (*buffer)[MAX_HOR] = (which == DISPLAY_WINDOW1) ? WINDOW1 : WINDOW2;
+	MT2D_Linux_Start_Curses();
+	for (y = 0; y < 24; y++) {
+		move(y, 0);
+		for (x = 0; x < MAX_HOR; x++) {
+			MT2D_Linux_Add_Char(buffer[y][x]);
+		}
+	}
+	refresh();
 }
 #endif

@@ -33,7 +33,12 @@ typedef struct{
 }MT2D_Joystick;
 
 
-#ifdef WINDOWS_TARGET
+#if defined(SDL_USE) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#include "../SDL/IO/SDL_MT2D_Joystick.h"
+#define MT2D_Joystick_Init MT2D_SDL_Joystick_Init
+#define MT2D_Joystick_Close MT2D_SDL_Joystick_Close
+#define MT2D_Joystick_Update MT2D_SDL_Joystick_Update
+#elif defined(WINDOWS_TARGET)
 #include "../_WINDOWS/IO/MT2D_Win_Joystick.h"
 #define MT2D_Joystick_Init MT2D_Win_Joystick_Init
 #define MT2D_Joystick_Close  MT2D_Win_Joystick_Close

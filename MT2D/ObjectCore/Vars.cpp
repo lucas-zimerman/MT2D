@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-#include <MT2D/Objectcore/Vars.h>
+#include <MT2D/ObjectCore/Vars.h>
 
 
 MT2D_VAR_ERROR MT2D_Var_Last_Error = Var_No_Error;

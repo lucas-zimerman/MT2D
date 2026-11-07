@@ -19,7 +19,7 @@ void MT2D_SDL_REMOVE_Key_Buffer(int32_t Key) {
 		while (i < MainEvents.Keyboard_Buffer_Count && MainEvents.Keyboard_Buffer[i] != Key) {
 			i++;
 		}
-		if (MainEvents.Keyboard_Buffer[i] == Key) {
+		if (i < MainEvents.Keyboard_Buffer_Count && MainEvents.Keyboard_Buffer[i] == Key) {
 			/*We found that key so remove it*/
 			while (i < MainEvents.Keyboard_Buffer_Count - 1) {
 				/*Pass everything after that key one index before*/
@@ -33,8 +33,41 @@ void MT2D_SDL_REMOVE_Key_Buffer(int32_t Key) {
 	}
 }
 
+/*
+	Key releases are not applied right away: a quick tap (press + release inside the same frame) would
+	be gone before the joystick code reads the buffer. They are applied by MT2D_SDL_Flush_Key_Releases,
+	that the joystick update calls at the start of the next frame.
+*/
+#define MT2D_SDL_MAX_PENDING_RELEASES 32
+static int32_t PendingReleases[MT2D_SDL_MAX_PENDING_RELEASES];
+static int PendingReleaseCount = 0;
+
+void MT2D_SDL_Flush_Key_Releases() {
+	for (int i = 0; i < PendingReleaseCount; i++) {
+		MT2D_SDL_REMOVE_Key_Buffer(PendingReleases[i]);
+	}
+	PendingReleaseCount = 0;
+}
+
+static void MT2D_SDL_Defer_Key_Release(int32_t Key) {
+	if (PendingReleaseCount < MT2D_SDL_MAX_PENDING_RELEASES) {
+		PendingReleases[PendingReleaseCount++] = Key;
+	}
+	else {
+		MT2D_SDL_REMOVE_Key_Buffer(Key);
+	}
+}
+
 void MT2D_SDL_ADD_Key_Buffer(int32_t Key) {
 	int i = 0;
+	/*the key was pressed again before its release was applied, so it is still held*/
+	for (i = 0; i < PendingReleaseCount; i++) {
+		if (PendingReleases[i] == Key) {
+			PendingReleases[i] = PendingReleases[--PendingReleaseCount];
+			break;
+		}
+	}
+	i = 0;
 	while (i < MainEvents.Keyboard_Buffer_Count && MainEvents.Keyboard_Buffer[i] != Key) {
 		i++;
 	}
@@ -67,7 +100,7 @@ void MT2D_SDL_Event_Handler() {
 			MainEvents.Keyboard.windowID = Events.key.windowID;
 		}
 		else if (Events.type == SDL_KEYUP) {
-			MT2D_SDL_REMOVE_Key_Buffer(Events.key.keysym.sym);
+			MT2D_SDL_Defer_Key_Release(Events.key.keysym.sym);
 		}
 		else if (Events.type == SDL_WINDOWEVENT) {
 			if (Events.window.event == SDL_WINDOWEVENT_RESIZED || Events.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {

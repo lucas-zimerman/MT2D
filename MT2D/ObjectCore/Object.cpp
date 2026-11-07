@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <MT2D/MT2D.h>
 #include <MT2D/MT2D_Debug.h>
-#include <MT2D/Objectcore/Sprites.h>
+#include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/ObjectCore/State.h>
 

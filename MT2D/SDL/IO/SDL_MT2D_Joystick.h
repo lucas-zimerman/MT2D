@@ -9,5 +9,9 @@
 SDL_Joystick* SDL_LoadJoystick();
 void MT2D_SDL_Update_Keys(MT2D_Joystick *MyJosytick);
 void SDL_Joystick_Init();
+/* Desktop SDL implementation of MT2D_Joystick_Init / Close / Update (arrow keys act as the left stick) */
+void MT2D_SDL_Joystick_Init();
+void MT2D_SDL_Joystick_Close();
+void MT2D_SDL_Joystick_Update();
 #endif
 #endif

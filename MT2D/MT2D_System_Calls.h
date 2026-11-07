@@ -28,11 +28,11 @@ This file will contain some simple hardware calls
 #define MT2D_System_Delay MT2D_SDL_System_Delay
 #define MT2D_System_Beep MT2D_SDL_System_Beep
 #elif defined(_WIN32)
-#include "_WINDOWS\MT2D_Win_System_Calls.h"
+#include "_WINDOWS/MT2D_Win_System_Calls.h"
 #define MT2D_System_Delay MT2D_Win_System_Delay
 #define MT2D_System_Beep MT2D_Win_System_Beep
 #elif defined(__MSDOS__) || defined(__DOS__)
-#include <MT2D\_MSDOS\MT2D_Dos_System_Calls.h>
+#include <MT2D/_MSDOS/MT2D_Dos_System_Calls.h>
 #define MT2D_System_Delay MT2D_Dos_System_Delay
 #define MT2D_System_Beep MT2D_Dos_System_Beep
 #elif defined(linux)

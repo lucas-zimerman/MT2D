@@ -27,7 +27,7 @@
 //#include <queue>
 //#include <cmath>
 #include <time.h>
-#include <MT2D\File\MT2D_File.h>
+#include <MT2D/File/MT2D_File.h>
 
 extern bool nosound;
 

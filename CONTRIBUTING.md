@@ -26,7 +26,7 @@ Read the comments in that file before changing anything.
 
 ### Testing your change
 
-Run the automated tests (see [`tests/README.md`](tests/README.md)) with `cmake -S tests -B build/tests && cmake --build build/tests && ctest --test-dir build/tests --output-on-failure`. They cover the portable engine code only. Build one of the samples in `TestCase/` (e.g. `TestCase/ContainerTest`) against your modified engine and run it. If you touched platform specific code, say in the PR which platforms you tested; if you could not test a platform, say that too.
+Run the automated tests (see [`tests/README.md`](tests/README.md)) with `cmake -S tests -B build/tests && cmake --build build/tests && ctest --test-dir build/tests --output-on-failure`. They cover the portable engine code only. Build and run the programs in [`examples/`](examples/README.md) (e.g. `cmake -S examples/menu -B examples/menu/build && cmake --build examples/menu/build`) or one of the samples in `TestCase/` (e.g. `TestCase/ContainerTest`) against your modified engine. If you touched platform specific code, say in the PR which platforms you tested; if you could not test a platform, say that too.
 
 ## Contributing
 

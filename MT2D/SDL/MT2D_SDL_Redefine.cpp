@@ -6,7 +6,7 @@
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
-#include <MT2D\MT2D_Debug.h>
+#include <MT2D/MT2D_Debug.h>
 
 SDL_Surface *MT2D_SDL_Load_Image(char *Addr) {
 #if  !defined(MT2D_SDL_GPU) && !defined(__ANDROID__)

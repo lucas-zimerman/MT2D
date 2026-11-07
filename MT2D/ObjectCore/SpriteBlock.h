@@ -1,7 +1,7 @@
 #ifndef SPRITEBLOCK_
 #define SPRITEBLOCK_
 
-#include <MT2D/Objectcore/Sprites.h>
+#include <MT2D/ObjectCore/Sprites.h>
 
 typedef struct {
         Sprite *sprites; //start = 0

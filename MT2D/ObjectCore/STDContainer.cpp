@@ -4,7 +4,7 @@
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/Container/MT2D_Container.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>
-#include <MT2D\MT2D_Debug.h>
+#include <MT2D/MT2D_Debug.h>
 /*
 	VAR[0] = Sound Name
 	VAR[1] bool decrypt
