@@ -1,5 +1,5 @@
 /*#ifdef __MSDOS__
-#include "../../MT2D/MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #else
 #include "../MT2D_Terminal_Define.h"
 #endif
