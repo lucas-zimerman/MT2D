@@ -1,0 +1,38 @@
+name: DJGPP build
+
+# Compile-only check that the portable MS-DOS code still builds with DJGPP (GCC 12.2).
+# The toolchain (GPL, ~80 MB) is downloaded and cached instead of being stored in the repo.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+env:
+  DJGPP_URL: https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2
+  DJGPP_SHA256: 8464f17017d6ab1b2bb2df4ed82357b5bf692e6e2b7fee37e315638f3d505f00
+
+jobs:
+  djgpp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache DJGPP
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ~/djgpp
+          key: djgpp-v3.4-gcc1220
+      - name: Download DJGPP
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL "$DJGPP_URL" -o /tmp/djgpp.tar.bz2
+          echo "$DJGPP_SHA256  /tmp/djgpp.tar.bz2" | sha256sum -c -
+          tar -xjf /tmp/djgpp.tar.bz2 -C ~
+      - name: Compile portable sources
+        run: |
+          export PATH="$HOME/djgpp/bin:$PATH"
+          mkdir -p build/djgpp
+          # -std=gnu++98 + -Wall -Wextra approximates what old DOS compilers accept
+          i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -Wextra -Werror -I. \
+            -c MT2D/ObjectCore/MT2D_Text_Image.cpp -o build/djgpp/MT2D_Text_Image.o
