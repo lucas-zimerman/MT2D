@@ -55,4 +55,3 @@ Found while writing the tests (no test, to avoid crashing the run):
   writes out of bounds.
 * `Cscript_AddVar_ToObject` indexes `Var[i]` while looping over the object's vars.
 * `Cscript_Empty` does not initialise `_void`.
-* `MT2D_Object_Set_Var(Var, int/char*/bool/...)` overloads never store the value.

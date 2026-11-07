@@ -53,18 +53,18 @@ void Object_Delete(Object *Me, bool deleteStates);
 void Object_Add_Variable(Object* object, MT2D_VAR* variable);
 void Object_Add_Variables(Object* object, MT2D_VAR* variables, int total);
 
-#define ObjectPosXRef(object) ((int*)((Object*)object)->User_Vars[Object_PosX_Var_Index].Data)
-#define ObjectPosYRef(object) ((int*)((Object*)object)->User_Vars[Object_PosY_Var_Index].Data)
-#define ObjectAcelXRef(object) ((int*)((Object*)object)->User_Vars[Object_AcelX_Var_Index].Data)
-#define ObjectAcelYRef(object) ((int*)((Object*)object)->User_Vars[Object_AcelY_Var_Index].Data)
-#define ObjectSizeXRef(object) ((int*)((Object*)object)->User_Vars[Object_SizeX_Var_Index].Data)
-#define ObjectSizeYRef(object) ((int*)((Object*)object)->User_Vars[Object_SizeY_Var_Index].Data)
+#define ObjectPosXRef(object) (&((Object*)object)->User_Vars[Object_PosX_Var_Index].Data.i)
+#define ObjectPosYRef(object) (&((Object*)object)->User_Vars[Object_PosY_Var_Index].Data.i)
+#define ObjectAcelXRef(object) (&((Object*)object)->User_Vars[Object_AcelX_Var_Index].Data.i)
+#define ObjectAcelYRef(object) (&((Object*)object)->User_Vars[Object_AcelY_Var_Index].Data.i)
+#define ObjectSizeXRef(object) (&((Object*)object)->User_Vars[Object_SizeX_Var_Index].Data.i)
+#define ObjectSizeYRef(object) (&((Object*)object)->User_Vars[Object_SizeY_Var_Index].Data.i)
 
-#define ObjectPosX(object)  (*(int*)(((Object*)object)->User_Vars[Object_PosX_Var_Index].Data))
-#define ObjectPosY(object)  (*(int*)((Object*)object)->User_Vars[Object_PosY_Var_Index].Data)
-#define ObjectAcelX(object) (*(int*)((Object*)object)->User_Vars[Object_AcelX_Var_Index].Data)
-#define ObjectAcelY(object) (*(int*)((Object*)object)->User_Vars[Object_AcelY_Var_Index].Data)
-#define ObjectSizeX(object) (*(int*)((Object*)object)->User_Vars[Object_SizeX_Var_Index].Data)
-#define ObjectSizeY(object) (*(int*)((Object*)object)->User_Vars[Object_SizeY_Var_Index].Data)
+#define ObjectPosX(object)  (((Object*)object)->User_Vars[Object_PosX_Var_Index].Data.i)
+#define ObjectPosY(object)  (((Object*)object)->User_Vars[Object_PosY_Var_Index].Data.i)
+#define ObjectAcelX(object) (((Object*)object)->User_Vars[Object_AcelX_Var_Index].Data.i)
+#define ObjectAcelY(object) (((Object*)object)->User_Vars[Object_AcelY_Var_Index].Data.i)
+#define ObjectSizeX(object) (((Object*)object)->User_Vars[Object_SizeX_Var_Index].Data.i)
+#define ObjectSizeY(object) (((Object*)object)->User_Vars[Object_SizeY_Var_Index].Data.i)
 
 #endif

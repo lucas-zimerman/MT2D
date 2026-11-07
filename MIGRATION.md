@@ -80,6 +80,47 @@ MT2D_SDL_Texture *rt = sprite->Image->RotatedTexture;
 
 Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text`/`Image` pointer, not the data. Don't `Sprite_Delete` both copies.
 
+## Var value and name are inline (Unreleased)
+
+`MT2D_VAR.Data` is a union stored inside the var (not a pointer to a separate allocation) and `MT2D_VAR.Name` is a fixed `char[MT2D_VAR_NAME_MAX]` array (not a `char*`). A var is now one allocation instead of three: less RAM, less fragmentation and fewer pointer hops, which matters on MS-DOS. On 32 bit targets `sizeof(MT2D_VAR)` is 24 bytes.
+
+### Data
+
+```c
+// before
+int x = *(int*)var->Data;     *(int*)var->Data = 5;
+Object *o = (Object*)ptrVar->Data;
+
+// after
+int x = var->Data.i;          var->Data.i = 5;      // Data.c for VAR_CHAR, Data.f for VAR_FLOAT
+Object *o = (Object*)ptrVar->Data.p;                 // VAR_POINTER, never owned by the var
+```
+
+- `MT2D_Object_Get_Var_Data` still returns a pointer to the value, so `*(int*)MT2D_Object_Get_Var_Data(v)` keeps working.
+- Do not `free(var->Data)` anymore. `MT2D_VAR_Free(var, constName)` releases everything the var owns (`constName` is ignored now).
+- `MT2D_Object_Set_Var(var, &value, type)` copies `value` (it used to take ownership of a malloc'd pointer).
+- Copying an `MT2D_VAR` by value now copies the name and the value. The exception is `VAR_STRING`: the copies share the text, release it only once.
+
+### Name limit
+
+A name can have at most `MT2D_VAR_NAME_MAX - 1` characters (18 by default). A longer name is **not truncated**: `MT2D_Object_Create_Var_*` returns `NULL` and `MT2D_Var_Last_Error` is `Var_Name_Too_Long`. Check the result of the constructors if the names come from outside your code.
+
+If you used a long name as data (the most common case is a sound/music file path), put it in a `VAR_STRING` value instead:
+
+```c
+// before: the name of the var was the file
+MT2D_VAR *Explosion = MT2D_Object_Create_Var_Pointer("Sounds/explosion.ogg");
+
+// after: short name, the path is the value (any length, copied)
+MT2D_VAR *Explosion = MT2D_Object_Create_Var_String("Explosion", "Sounds/explosion.ogg");
+```
+
+- `Cscript_PlaySound`, `Cscript_PlayMusic` and the `...FromContainer` versions read the path from a `VAR_STRING` var (`MT2D_Object_VAR_GetPath`), or from the name of any other var, so short names such as `named("hit.wav")` keep working.
+- `MT2D_Object_Create_Var_String`, `MT2D_Object_Set_Var_String`, `MT2D_Object_Get_Var_String` and `MT2D_VAR_ReleaseData` are new. `VAR_STRING` vars are not numbers: `MT2D_Object_VAR_GetInt/GetBool` report `Var_Type_Not_Supported`, and `ADD`/`SUB`/`SetVar` ignore them.
+- `MT2D_VAR_CLONE` duplicates the text. `Object_Delete` releases the text of the object's vars. If you replace `User_Vars` by hand, call `MT2D_VAR_ReleaseData` on each var before freeing the array.
+- The `...FromContainer` functions no longer cache the loaded file in the `Data` of the var: the cache is internal (by container id), so the var can hold the path.
+- State names must fit in the name limit too when they are carried by a var (`Cscript_Object_SetState` compares the var name with the state name).
+
 ## Cscript constructors (Unreleased)
 
 `Cscript_New1`..`Cscript_New4` and `MT2D_VAR_Create_Matrix1`..`4` are replaced, at call sites, by a single `Cscript_New(fn, ...)`. The old functions still exist, so existing code keeps building. See [#22](https://github.com/lucas-zimerman/MT2D/pull/22).

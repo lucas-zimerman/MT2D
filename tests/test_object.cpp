@@ -60,7 +60,7 @@ TEST(add_variable_and_variables) {
     Object_Add_Variable(o, health);
     CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index + 1);
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index].Name, "Health");
-    CHECK_EQ(*(int *)o->User_Vars[Object_First_User_Var_Index].Data, 20);
+    CHECK_EQ(o->User_Vars[Object_First_User_Var_Index].Data.i, 20);
 
     MT2D_VAR extra[2];
     extra[0] = *MT2D_Object_Create_Var_Int("Ammo", 3);
@@ -69,7 +69,7 @@ TEST(add_variable_and_variables) {
     CHECK_EQ(o->User_Vars_Count, Object_First_User_Var_Index + 3);
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index + 1].Name, "Ammo");
     CHECK_STR_EQ(o->User_Vars[Object_First_User_Var_Index + 2].Name, "Score");
-    CHECK_EQ(*(int *)o->User_Vars[Object_First_User_Var_Index + 2].Data, 4);
+    CHECK_EQ(o->User_Vars[Object_First_User_Var_Index + 2].Data.i, 4);
 }
 
 TEST(next_step_waits_then_runs_functions) {

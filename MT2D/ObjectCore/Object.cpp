@@ -27,8 +27,8 @@ void Object_Render(Object *obj) {
                 Sprite_Render_on_Window(
                         obj->State[obj->ActualState]->Sprites[obj->ActualFrame],
                         DISPLAY_WINDOW1,
-                        *(int*)obj->User_Vars[Object_PosX_Var_Index].Data,
-                        *(int*)obj->User_Vars[Object_PosY_Var_Index].Data
+                        obj->User_Vars[Object_PosX_Var_Index].Data.i,
+                        obj->User_Vars[Object_PosY_Var_Index].Data.i
                 );
         }
 }
@@ -138,7 +138,7 @@ void Object_Goto_NextStep(Object *O) {
                                 O = O;
                         }
                         if(O->User_Vars != 0){
-                                sprintf(debugbuff,"function Object %p Timeout %d State [%s] Frame %d\n",O, *(int*)O->User_Vars[0].Data, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
+                                sprintf(debugbuff,"function Object %p Timeout %d State [%s] Frame %d\n",O, O->User_Vars[0].Data.i, (O->ActualState == 0 ? "spawn" : (O->ActualState == 1 ? "dead" : (O->ActualState == 2 ? "check fire" : "fire"))), O->ActualFrame);
                                 MT2D_Ide_Printf(debugbuff);
                         }
                         else {
@@ -206,8 +206,7 @@ void Object_Delete(Object *Me, bool deleteStates) {
         if (Me != 0) {
                 if (Me->User_Vars_Count) {
                         for (i = 0; i < Me->User_Vars_Count; i++) {
-                                free(Me->User_Vars[i].Data);
-                                free(Me->User_Vars[i].Name);
+                                MT2D_VAR_ReleaseData(&Me->User_Vars[i]);
                         }
                 }
                 free(Me->User_Vars);

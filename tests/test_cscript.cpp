@@ -101,7 +101,7 @@ TEST(remove_from_memory_accepts_null_and_valid) {
     // TempVars (the array of pointers) is released, the vars themselves are not.
     Cscript *c = Cscript_New3(MT2D_VAR_Create_Matrix1(v), fn_vars);
     Cscript_RemoveFromMemory(c);
-    CHECK_EQ(*(int *)v->Data, 1);
+    CHECK_EQ(v->Data.i, 1);
     MT2D_VAR_Free(v, 1);
 }
 
