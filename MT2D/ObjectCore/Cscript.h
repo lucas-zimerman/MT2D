@@ -67,6 +67,27 @@ Cscript *Cscript_New2(void(*Function)(struct Object *));
 Cscript *Cscript_New3(MT2D_VAR **ObjVarPointer, void(*Function)(struct Object*, MT2D_VAR **));
 Cscript *Cscript_New4(struct Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(struct Object *, struct Object*, MT2D_VAR **));
 
+/**
+        Generic constructor, the same name for every kind of function:
+
+                Cscript_New(Cscript_Move)                                  -> void f(Object*)
+                Cscript_New(Cscript_VAR_INC, var1)                         -> void f(Object*, MT2D_VAR**)
+                Cscript_New(Cscript_JumpToStateIfVarEq, var1, var2, var3)  -> same, any amount of vars
+                Cscript_New(Cscript_CreateObject, model, var1, var2)       -> void f(Object*, Object*, MT2D_VAR**)
+
+        The overload is chosen by the type of the function. Up to CSCRIPT_MAX_ARGS arguments after the function.
+        (Variadic macros: GCC/DJGPP extension in C++98.)
+**/
+#define CSCRIPT_MAX_ARGS 16
+#define CSCRIPT_NARGS_(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,N,...) N
+#define CSCRIPT_NARGS(...) CSCRIPT_NARGS_(0, ##__VA_ARGS__, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
+#define Cscript_New(fn, ...) Cscript_NewV((fn), CSCRIPT_NARGS(__VA_ARGS__), ##__VA_ARGS__)
+
+Cscript *Cscript_NewV(void(*Function)(), int count, ...);
+Cscript *Cscript_NewV(void(*Function)(struct Object *), int count, ...);
+Cscript *Cscript_NewV(void(*Function)(struct Object *, MT2D_VAR **), int count, ...);
+Cscript *Cscript_NewV(void(*Function)(struct Object *, struct Object *, MT2D_VAR **), int count, ...);
+
 void Cscript_RemoveFromMemory(Cscript *Me);
 void Cscript_Execute(Object *caller, Cscript *f);
 #endif

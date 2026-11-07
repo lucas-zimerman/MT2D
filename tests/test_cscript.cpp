@@ -106,3 +106,28 @@ TEST(remove_from_memory_accepts_null_and_valid) {
 }
 
 MT2D_TEST_MAIN()
+
+TEST(generic_new_picks_overload_and_counts_vars) {
+    reset();
+    Object o;
+    MT2D_VAR *a = MT2D_Object_Create_Var_Int("a", 1);
+    MT2D_VAR *b = MT2D_Object_Create_Var_Int("b", 2);
+    MT2D_VAR *c = MT2D_Object_Create_Var_Int("c", 3);
+
+    Cscript *s0 = Cscript_New(fn_void);
+    CHECK(s0->_void == fn_void);
+    Cscript *s1 = Cscript_New(fn_obj);
+    CHECK(s1->_Obj == fn_obj);
+
+    Cscript *s3 = Cscript_New(fn_vars, a, b, c);
+    CHECK(s3->_Obj_Vars == fn_vars);
+    CHECK(s3->TempVars[0] == a && s3->TempVars[1] == b && s3->TempVars[2] == c);
+    Cscript_Execute(&o, s3);
+    CHECK_EQ(calls_vars, 1);
+
+    Cscript *s4 = Cscript_New(fn_obj_obj_vars, &o, a, b);
+    CHECK(s4->_Obj_Obj_Vars == fn_obj_obj_vars);
+    CHECK(s4->TempObj == &o);
+    CHECK(s4->TempVars[0] == a && s4->TempVars[1] == b);
+    free(s0); free(s1); free(s3->TempVars); free(s3); free(s4->TempVars); free(s4);
+}

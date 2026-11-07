@@ -49,11 +49,11 @@ static MT2D_VAR *number(int value)
 static ObjectState *make_walk_state(const char *name, Sprite *a, Sprite *b, int delay, const char *turn_state, int limit, bool going_right)
 {
     ObjectState *state = MT2D_OBJECT_CREATE_STATE((char *)name);
-    MT2D_ObjectState_ADD(state, a, delay, Cscript_New2(Cscript_Move));
-    MT2D_ObjectState_ADD(state, b, delay, Cscript_New2(Cscript_Move));
+    MT2D_ObjectState_ADD(state, a, delay, Cscript_New(Cscript_Move));
+    MT2D_ObjectState_ADD(state, b, delay, Cscript_New(Cscript_Move));
     MT2D_ObjectState_ADD(state, b, 0,
-        Cscript_New3(MT2D_VAR_Create_Matrix3(named(turn_state), named("Pos_X"), number(limit)),
-                     going_right ? Cscript_JumpToStateIfVarHigherEq : Cscript_JumpToStateIfVarLowerEq));
+        Cscript_New(going_right ? Cscript_JumpToStateIfVarHigherEq : Cscript_JumpToStateIfVarLowerEq,
+                    named(turn_state), named("Pos_X"), number(limit)));
     return state;
 }
 
@@ -61,9 +61,9 @@ static ObjectState *make_walk_state(const char *name, Sprite *a, Sprite *b, int 
 static ObjectState *make_turn_state(const char *name, Sprite *a, int new_speed, const char *next_state)
 {
     ObjectState *state = MT2D_OBJECT_CREATE_STATE((char *)name);
-    MT2D_ObjectState_ADD(state, a, 0, Cscript_New2(count_turn));
-    MT2D_ObjectState_ADD(state, a, 0, Cscript_New3(MT2D_VAR_Create_Matrix2(named("Acel_X"), number(new_speed)), Cscript_Set_Var));
-    MT2D_ObjectState_ADD(state, a, 0, Cscript_New3(MT2D_VAR_Create_Matrix1(named(next_state)), Cscript_Object_SetState));
+    MT2D_ObjectState_ADD(state, a, 0, Cscript_New(count_turn));
+    MT2D_ObjectState_ADD(state, a, 0, Cscript_New(Cscript_Set_Var, named("Acel_X"), number(new_speed)));
+    MT2D_ObjectState_ADD(state, a, 0, Cscript_New(Cscript_Object_SetState, named(next_state)));
     return state;
 }
 
@@ -86,19 +86,17 @@ static ObjectState **make_rocket_states(Sprite *idle, Sprite *fly)
     states[0] = MT2D_OBJECT_CREATE_STATE((char *)"Wait");
     MT2D_ObjectState_ADD(states[0], idle, 3, 0);
     /* rand() % 8 <= 1: 2 in 8 chance to jump to the "Dash" state every time this frame runs */
-    MT2D_ObjectState_ADD(states[0], idle, 0, Cscript_New3(MT2D_VAR_Create_Matrix3(named("Dash"), number(1), number(8)),
-                                                         Cscript_JumpToStateIfRandom));
+    MT2D_ObjectState_ADD(states[0], idle, 0, Cscript_New(Cscript_JumpToStateIfRandom, named("Dash"), number(1), number(8)));
 
     /* (a random jump lands on frame 1 of the new state, so frame 0 is only a placeholder) */
     states[1] = MT2D_OBJECT_CREATE_STATE((char *)"Dash");
     MT2D_ObjectState_ADD(states[1], fly, 0, 0);
-    MT2D_ObjectState_ADD(states[1], fly, 1, Cscript_New2(Cscript_Move));
-    MT2D_ObjectState_ADD(states[1], fly, 0, Cscript_New3(MT2D_VAR_Create_Matrix3(named("Reset"), named("Pos_X"), number(54)),
-                                                        Cscript_JumpToStateIfVarHigherEq));
+    MT2D_ObjectState_ADD(states[1], fly, 1, Cscript_New(Cscript_Move));
+    MT2D_ObjectState_ADD(states[1], fly, 0, Cscript_New(Cscript_JumpToStateIfVarHigherEq, named("Reset"), named("Pos_X"), number(54)));
 
     states[2] = MT2D_OBJECT_CREATE_STATE((char *)"Reset");
-    MT2D_ObjectState_ADD(states[2], idle, 0, Cscript_New3(MT2D_VAR_Create_Matrix2(named("Pos_X"), number(2)), Cscript_Set_Var));
-    MT2D_ObjectState_ADD(states[2], idle, 0, Cscript_New3(MT2D_VAR_Create_Matrix1(named("Wait")), Cscript_Object_SetState));
+    MT2D_ObjectState_ADD(states[2], idle, 0, Cscript_New(Cscript_Set_Var, named("Pos_X"), number(2)));
+    MT2D_ObjectState_ADD(states[2], idle, 0, Cscript_New(Cscript_Object_SetState, named("Wait")));
     return states;
 }
 
