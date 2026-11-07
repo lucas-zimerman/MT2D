@@ -49,3 +49,6 @@ Temporary Items
 /performance_msdos.xlsx
 *.bak
 **/_short/*/*.cpp
+
+# Test build output
+build/
