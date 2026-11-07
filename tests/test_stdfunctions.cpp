@@ -216,6 +216,42 @@ TEST(jump_to_state_if_var_eq) {
     CHECK_EQ(p->ActualState, 0);
 }
 
+TEST(jump_to_state_if_var_lower) {
+    Object *o = three_state_object();
+    MT2D_VAR *yes[3] = {named("Moving"), integer(2), integer(3)};
+    Cscript_JumpToStateIfVarLower(o, yes);
+    CHECK_EQ(o->ActualState, 1);
+
+    Object *p = three_state_object();
+    MT2D_VAR *no[3] = {named("Moving"), integer(3), integer(3)};
+    Cscript_JumpToStateIfVarLower(p, no);
+    CHECK_EQ(p->ActualState, 0);
+}
+
+TEST(jump_to_state_if_var_higher) {
+    Object *o = three_state_object();
+    MT2D_VAR *yes[3] = {named("Dead"), integer(4), integer(3)};
+    Cscript_JumpToStateIfVarHigher(o, yes);
+    CHECK_EQ(o->ActualState, 2);
+
+    Object *p = three_state_object();
+    MT2D_VAR *no[3] = {named("Dead"), integer(3), integer(3)};
+    Cscript_JumpToStateIfVarHigher(p, no);
+    CHECK_EQ(p->ActualState, 0);
+}
+
+TEST(jump_to_state_if_var_not_eq) {
+    Object *o = three_state_object();
+    MT2D_VAR *yes[3] = {named("Dead"), integer(1), integer(2)};
+    Cscript_JumpToStateIfVarNotEq(o, yes);
+    CHECK_EQ(o->ActualState, 2);
+
+    Object *p = three_state_object();
+    MT2D_VAR *no[3] = {named("Dead"), integer(2), integer(2)};
+    Cscript_JumpToStateIfVarNotEq(p, no);
+    CHECK_EQ(p->ActualState, 0);
+}
+
 TEST(jump_to_state_compares_object_vars) {
     Object *o = three_state_object();
     MT2D_VAR *vars[3] = {named("Moving"), integer(0), named("Pos_X")};
@@ -285,6 +321,45 @@ TEST(jump_next_frame_if_var_higher_eq) {
     Object *p = frames_object();
     MT2D_VAR *no[2] = {integer(1), integer(2)};
     Cscript_JumpNextFrameIfVarHigherEq(p, no);
+    CHECK_EQ(p->ActualFrame, 0);
+}
+
+TEST(jump_next_frame_if_var_lower) {
+    Object *o = frames_object();
+    MT2D_VAR *yes[2] = {integer(1), integer(2)};
+    Cscript_JumpNextFrameIfVarLower(o, yes);
+    CHECK_EQ(o->ActualFrame, 1);
+    CHECK_EQ(o->ActualFrameWait, 10);
+
+    Object *p = frames_object();
+    MT2D_VAR *no[2] = {integer(2), integer(2)};
+    Cscript_JumpNextFrameIfVarLower(p, no);
+    CHECK_EQ(p->ActualFrame, 0);
+}
+
+TEST(jump_next_frame_if_var_higher) {
+    Object *o = frames_object();
+    MT2D_VAR *yes[2] = {integer(3), integer(2)};
+    Cscript_JumpNextFrameIfVarHigher(o, yes);
+    CHECK_EQ(o->ActualFrame, 1);
+    CHECK_EQ(o->ActualFrameWait, 10);
+
+    Object *p = frames_object();
+    MT2D_VAR *no[2] = {integer(2), integer(2)};
+    Cscript_JumpNextFrameIfVarHigher(p, no);
+    CHECK_EQ(p->ActualFrame, 0);
+}
+
+TEST(jump_next_frame_if_var_not_eq) {
+    Object *o = frames_object();
+    MT2D_VAR *yes[2] = {integer(1), integer(2)};
+    Cscript_JumpNextFrameIfVarNotEq(o, yes);
+    CHECK_EQ(o->ActualFrame, 1);
+    CHECK_EQ(o->ActualFrameWait, 10);
+
+    Object *p = frames_object();
+    MT2D_VAR *no[2] = {integer(2), integer(2)};
+    Cscript_JumpNextFrameIfVarNotEq(p, no);
     CHECK_EQ(p->ActualFrame, 0);
 }
 

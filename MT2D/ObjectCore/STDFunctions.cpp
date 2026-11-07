@@ -333,6 +333,87 @@ void Cscript_JumpNextFrameIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
         }
 }
 
+/* Jumps to the state called like Name, does nothing if there is none. */
+static void Cscript_Private_GotoStateByName(Object *object, const char *Name) {
+        for (int i = 0; i < object->States_Count; i++) {
+                if (strcmp(object->State[i]->Name, Name) == 0) {
+                        object->ActualState = i;
+                        object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first frame.
+                        object->ActualFrameWait = object->State[i]->WaitSprites[0];
+                        return;
+                }
+        }
+}
+
+/*
+Vars:
+[0] = the name of the state to be jumped
+[1] < [2], jump if true
+*/
+void Cscript_JumpToStateIfVarLower(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[1]) < Cscript_VAR_Get_Integer(object, Vars[2])) {
+                Cscript_Private_GotoStateByName(object, Vars[0]->Name);
+        }
+}
+
+/*
+Vars:
+[0] = the name of the state to be jumped
+[1] > [2], jump if true
+*/
+void Cscript_JumpToStateIfVarHigher(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[1]) > Cscript_VAR_Get_Integer(object, Vars[2])) {
+                Cscript_Private_GotoStateByName(object, Vars[0]->Name);
+        }
+}
+
+/*
+Vars:
+[0] = the name of the state to be jumped
+[1] != [2], jump if true
+*/
+void Cscript_JumpToStateIfVarNotEq(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[1]) != Cscript_VAR_Get_Integer(object, Vars[2])) {
+                Cscript_Private_GotoStateByName(object, Vars[0]->Name);
+        }
+}
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Vars:
+[0] = Left
+[1] = Right
+Skips the next frame if Left < Right.
+*/
+void Cscript_JumpNextFrameIfVarLower(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[0]) < Cscript_VAR_Get_Integer(object, Vars[1])) {
+                object->ActualFrame++;
+                object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame - 1];
+        }
+}
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Skips the next frame if Left > Right.
+*/
+void Cscript_JumpNextFrameIfVarHigher(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[0]) > Cscript_VAR_Get_Integer(object, Vars[1])) {
+                object->ActualFrame++;
+                object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame - 1];
+        }
+}
+
+/*
+NOTE: Do not use this function in the last function of a state.
+Skips the next frame if Left != Right.
+*/
+void Cscript_JumpNextFrameIfVarNotEq(Object *object, MT2D_VAR **Vars) {
+        if (Cscript_VAR_Get_Integer(object, Vars[0]) != Cscript_VAR_Get_Integer(object, Vars[1])) {
+                object->ActualFrame++;
+                object->ActualFrameWait = object->State[object->ActualState]->WaitSprites[object->ActualFrame - 1];
+        }
+}
+
 /**
 It'll only mark that this object wants to be deleted, so you can manually do that or let
 the Scenecontrol to do that automatically.
