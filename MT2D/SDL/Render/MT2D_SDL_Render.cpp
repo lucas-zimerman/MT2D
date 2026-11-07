@@ -4,6 +4,7 @@
 
 #include "../../SDL/MT2D_SDL_Redefine.h"
 #include "../../SDL/MT2D_SDL_Event_Handler.h"
+#include "../../SDL/MT2D_SDL_Internal_Image.h"
 #include "../../MT2D.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -323,7 +324,7 @@ void SDL_Render_Sprites() {
 //			renderQuad.y = MainEvents.SpriteBuffer[i].ScaleX /2  +((MainEvents.SpriteBufferX[i] + 0) * mode.h) / 240;
 			renderQuad.h = (MainEvents.SpriteBuffer[i].ScaleX * mode.h ) / 320;
 			renderQuad.w = (MainEvents.SpriteBuffer[i].ScaleY * mode.w ) / 240;
-			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_HORIZONTAL);
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, MainEvents.SpriteBuffer[i].Image->RotatedTexture, &Original, &renderQuad,0,0, SDL_FLIP_HORIZONTAL);
 		}
  		else {
 			Original.h = MainEvents.SpriteBuffer[i].SizeY;
@@ -334,7 +335,7 @@ void SDL_Render_Sprites() {
 			renderQuad.y = (MainEvents.SpriteBufferY[i] * mode.h) / 240;
 			renderQuad.w = (MainEvents.SpriteBuffer[i].ScaleX * mode.w ) / 320;
 			renderQuad.h = (MainEvents.SpriteBuffer[i].ScaleY * mode.h) / 240;
-			MT2D_SDL_RenderCopyEx(MainEvents.Render, (MT2D_SDL_Texture*)MainEvents.SpriteBuffer[i].Data, &Original, &renderQuad, 0, NULL, SDL_FLIP_NONE);
+			MT2D_SDL_RenderCopyEx(MainEvents.Render, MainEvents.SpriteBuffer[i].Image->Texture, &Original, &renderQuad, 0, NULL, SDL_FLIP_NONE);
 		}
 		i++;
 	}

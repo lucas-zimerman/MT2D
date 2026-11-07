@@ -5,20 +5,7 @@
 #include <MT2D/ObjectCore/Sprites.h>
 #include <stdlib.h>
 
-static Sprite *new_sprite() {
-    Sprite *s = (Sprite *)malloc(sizeof(Sprite));
-    s->SizeX = 1;
-    s->SizeY = 1;
-    s->ScaleX = 1;
-    s->ScaleY = 1;
-    s->type = 0;
-    s->refCount = 0;
-    s->Data = (char **)malloc(sizeof(char *));
-    s->Data[0] = (char *)malloc(2);
-    s->Data[0][0] = 'x';
-    s->Data[0][1] = 0;
-    return s;
-}
+static Sprite *new_sprite() { return Sprite_Create_Ascii_From_Cells(1, 1, "x"); }
 
 static void dummy_fn(Object *) {}
 
@@ -90,7 +77,7 @@ TEST(shared_sprite_refcount_grows_and_survives_state_delete) {
     // Deleting a state releases one reference, the sprite is still alive for the other state.
     MT2D_ObjectState_Delete(a);
     CHECK_EQ(shared->refCount, 1);
-    CHECK_EQ(shared->Data[0][0], 'x');
+    CHECK_EQ(Sprite_Get_Char(shared, 0, 0), 'x');
     MT2D_ObjectState_Delete(b);
 }
 

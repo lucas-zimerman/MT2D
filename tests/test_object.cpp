@@ -12,18 +12,7 @@ static int count_a = 0, count_b = 0;
 static void fn_a(Object *) { count_a++; }
 static void fn_b(Object *) { count_b++; }
 
-static Sprite *make_sprite(const char *text) {
-    Sprite *s = (Sprite *)malloc(sizeof(Sprite));
-    s->SizeX = (int)strlen(text);
-    s->SizeY = 1;
-    s->ScaleX = s->ScaleY = 1;
-    s->type = 0;
-    s->refCount = 0;
-    s->Data = (char **)malloc(sizeof(char *));
-    s->Data[0] = (char *)malloc(s->SizeX + 1);
-    strcpy(s->Data[0], text);
-    return s;
-}
+static Sprite *make_sprite(const char *text) { return Sprite_Create_Ascii_From_Cells((int)strlen(text), 1, text); }
 
 static void clear_window() { memset(WINDOW1, 0, sizeof(WINDOW1)); }
 
