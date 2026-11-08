@@ -22,6 +22,10 @@ void MT2D_Ems_Joystick_Init(void) {
 	GlobalJoystickHandler->Button_Pressed[1] = false;
 	GlobalJoystickHandler->Button_Pressed[2] = false;
 	GlobalJoystickHandler->Button_Pressed[3] = false;
+	GlobalJoystickHandler->Mapped_Button[0] = 0;
+	GlobalJoystickHandler->Mapped_Button[1] = 0;
+	GlobalJoystickHandler->Mapped_Button[2] = 0;
+	GlobalJoystickHandler->Mapped_Button[3] = 0;
 	GlobalJoystickHandler->Left_Modified = false;
 	GlobalJoystickHandler->Left_X_axis = 0;
 	GlobalJoystickHandler->Left_Y_axis = 0;
@@ -59,6 +63,7 @@ void MT2D_Ems_Joystick_Update(void) {
 	GlobalJoystickHandler->Right_X_axis = 0;
 	GlobalJoystickHandler->Right_Y_axis = 0;
 #ifdef SDL_USE
+	MT2D_SDL_Flush_Key_Releases(); /* keys released during the last frame were already seen by it, without this they stay held forever */
 	MT2D_SDL_Event_Handler();
 	MT2D_SDL_Update_Keys(GlobalJoystickHandler);
 #endif

@@ -30,7 +30,7 @@ What each target can and cannot do.
 * Images are always drawn over the text, there is no "text over image" layer.
 * Image coordinates are 320x240 virtual pixels, not window pixels.
 * Rotating on smartphones is not supported: lock the screen to landscape.
-* Audio: either the beeper or audio files per run (`SDL_SOUND_TYPE`). Emscripten has no audio yet.
+* Audio: either the beeper or audio files per run (`SDL_SOUND_TYPE`). On Emscripten the audio starts after the first click or key press (browser rule), and `MT2D_System_Beep` does not wait for the tone to end.
 * The SDL key list (`Keyboard_Buffer`) is shared by the keyboard and joystick code; key releases are applied one frame late.
 * The SDL font/size values live in globals (`SCREEN_WIDTH`, `FONT_SIZEX`, ...), not in a config struct.
 * The engine has no hotkeys of its own: F1..F12 are returned to your program as key codes ([../general/keyboard.md](../general/keyboard.md)).
