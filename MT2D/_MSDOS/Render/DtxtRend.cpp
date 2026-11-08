@@ -14,7 +14,7 @@
 
 
 #ifdef MSDOS_USE_GRAPHICS
-#include <MT2D\_MSDOS\Render\dVgaRen.h>
+#include <MT2D/_MSDOS/Render/dVgaRen.h>
 #endif
 
 #include <MT2D/MT2D.h>

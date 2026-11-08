@@ -28,13 +28,11 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
         -https://github.com/grimfang4/sdl-gpu
 ===================================================================*/
 
-#pragma region MSDOS_USER_SETTINGS
 /*Only enable MSDOS_USE_GRAPHICS only if you really need to render graphic sprites*/
 /*By default MSDOS target doesn't need any define to be enabled*/
 #define MSDOS_USE_GRAPHICS /** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this*/
 //#define MSDOS_USE_DOUBLE_BUFFER /** Only enable this if MSDOS_USE_GRAPHICS is enabled, this avoid flickering on screen at the cost of 64KB of ram*/
 #define MSDOS_USE_SPRITE_TILE_RENDER /** Uses a special method of rendering sprites on screeen, works for normal and double buffer mode**/
-#pragma endregion
 
 
 //#define SDL_USE_AUDIO
@@ -48,13 +46,10 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 
 //#define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE
 
-#pragma endregion
 
-#pragma region MT2D Settings
 
 #define MT2D_USING_CONTAINER /** Enables the container system */
 
-#pragma endregion
 
 /****************************** The below defines are MT2D settings that you should not touch!!! ****************************************/
 

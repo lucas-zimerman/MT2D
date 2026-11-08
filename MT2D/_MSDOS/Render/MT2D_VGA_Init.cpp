@@ -12,7 +12,7 @@
 #include <MT2D/_MSDOS/Render/MT2D_VGA_Init.h>
 
 #ifdef MSDOS_USE_SPRITE_TILE_RENDER
-#include <MT2D/_MSDOS/Render/VGAsprTI.h>
+#include <MT2D/_MSDOS/Render/VGAsprTi.h>
 SpritesTilesRender SpriteTiles[25][80];/*8KB of initial data ,will expand from size when needed*/
 #endif
 
