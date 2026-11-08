@@ -9,7 +9,7 @@
 **/
 
 #include <MT2D/MT2D_Terminal_Define.h>
-#ifdef MSDOS_USE_SPRITE_TILE_RENDER &&  SpritesTilesRenderH
+#if defined(MSDOS_USE_SPRITE_TILE_RENDER) && !defined(SpritesTilesRenderH)
 #define SpritesTilesRenderH
 
 typedef struct {

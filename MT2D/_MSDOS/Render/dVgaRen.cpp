@@ -19,7 +19,11 @@
 #include <MT2D/MT2D_Terminal_Define.h>
 #ifdef MSDOS_USE_GRAPHICS
 #include <dos.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
 #include <MT2D/ObjectCore/Sprites.h>
+#include <MT2D/_MSDOS/Render/DosImg.h>
 #include <MT2D/_MSDOS/Render/font.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,16 +67,16 @@ void Dos_Clear_ImgBuffer(){
    	/*Clears the text buffer where the image is going to be placed on screen.*/
    	int i =0;
    	int i0;// = X >> 2; //(X*80)/320 ->  x/4  -> x>>2
-   	int i1;// = (X+IMG->size.X) >> 2;
+   	int i1;// = (X+IMG->SizeX) >> 2;
    	int j0;// = Y >> 3; //(Y*25)/200 -> Y/8  -> Y>>3
-   	int j1;// = (Y+IMG->size.Y) >> 3;
+   	int j1;// = (Y+IMG->SizeY) >> 3;
       int tmp;
    	while(i < VGASpritesCnt){
 
    		i0 = VGASpriteX[i] >> 2; //(X*80)/320 ->  x/4  -> x>>2
-   		i1 = 1 + ((VGASpriteX[i]+VGASpritesToRender[i].size.X) >> 2);
+   		i1 = 1 + ((VGASpriteX[i]+VGASpritesToRender[i].SizeX) >> 2);
    		j0 = VGASpriteY[i] >> 3; //(Y*25)/200 -> Y/8  -> Y>>3
-   		j1 = 1 + ((VGASpriteY[i]+VGASpritesToRender[i].size.Y) >> 3);
+   		j1 = 1 + ((VGASpriteY[i]+VGASpritesToRender[i].SizeY) >> 3);
 
 			/*If for some reason the sprite went out of screen, lets just avoid to clear stuff outside our memory block :) */
          if(j0 < 0){
@@ -137,8 +141,8 @@ and render it when the main render call is requested.*/
    #ifdef MSDOS_USE_SPRITE_TILE_RENDER
    int X2 = (X > 0 ? X : 0);
 	int Xtmp;
-   int EndX = X + IMG->size.X;
-   int EndY = Y + IMG->size.Y;
+   int EndX = X + IMG->SizeX;
+   int EndY = Y + IMG->SizeY;
    int NewX,NewY;
    int *Address = (int*)(IMG);
    if(EndX > 320){
@@ -214,7 +218,7 @@ void MT2D_Dos_Render_VGA_ASCII(unsigned char BUFFER[][80]){
 
       timer++;
 		t2 = time(NULL);
-		if (abs(t2)-abs(t1) > 0) {
+		if (t2 - t1 > 0) {
 
 			fps = timer;
 			timer = 0;
@@ -340,7 +344,7 @@ void MT2D_Dos_Render_Sprites()
 
         screen_offset = ((VGASpriteY[ActualSprite] < 0 ? 0 : VGASpriteY[ActualSprite])<<8)+((VGASpriteY[ActualSprite] < 0 ? 0 : VGASpriteY[ActualSprite])<<6)+(VGASpriteX[ActualSprite] < 0 ? 0 : VGASpriteX[ActualSprite]);
         ImgFinal = 0;
-        data = VGASpritesToRender[ActualSprite].Data[0];
+        data = VGASpritesToRender[ActualSprite].Image->Pixels;
         i=0;
         if(VGASpriteY[ActualSprite]< 0){
             Yoffset[0] = -VGASpriteY[ActualSprite]; // we jump the vertical part of the sprite thats outside the screen
@@ -355,23 +359,23 @@ void MT2D_Dos_Render_Sprites()
             Xoffset[0] = 0; //no need to skip
         }
         /*if the sprite start is after the top right of the screen area, the srite code will filter that and will not send it to render here*/
-        if(VGASpriteY[ActualSprite]+VGASpritesToRender[ActualSprite].size.Y> 200){
+        if(VGASpriteY[ActualSprite]+VGASpritesToRender[ActualSprite].SizeY> 200){
             //the final part of the sprite will go below the screen, so we'll filter that
             Yoffset[1] = 200 - VGASpriteY[ActualSprite];
         }
         else{
-            Yoffset[1] = VGASpritesToRender[ActualSprite].size.Y;
+            Yoffset[1] = VGASpritesToRender[ActualSprite].SizeY;
         }
-        if(VGASpriteX[ActualSprite]+VGASpritesToRender[ActualSprite].size.X> 320){
+        if(VGASpriteX[ActualSprite]+VGASpritesToRender[ActualSprite].SizeX> 320){
             //the final part of the sprite will go below the screen, so we'll filter that
             Xoffset[1] = 320 -VGASpriteX[ActualSprite];
         }
         else{
-            Xoffset[1] = VGASpritesToRender[ActualSprite].size.X;
+            Xoffset[1] = VGASpritesToRender[ActualSprite].SizeX;
         }
-        Yoffset[0]*VGASpritesToRender[ActualSprite].size.X - Xoffset[0];
+        Yoffset[0]*VGASpritesToRender[ActualSprite].SizeX - Xoffset[0];
         /*Jump the vertical data that's before the vertical line of the video ram*/
-        i = Yoffset[0]*VGASpritesToRender[ActualSprite].size.X;
+        i = Yoffset[0]*VGASpritesToRender[ActualSprite].SizeX;
         bitmap_offset = i;
         for(imgY=Yoffset[0];imgY<Yoffset[1];imgY++){
             ImgMemArea[0] = -1;
@@ -408,8 +412,8 @@ void MT2D_Dos_Render_Sprites()
                 ImgMemArea[0] = -1;
             }
             screen_offset+=320;
-            bitmap_offset+=VGASpritesToRender[ActualSprite].size.X;
-            i+= (VGASpritesToRender[ActualSprite].size.X-Xoffset[1]);
+            bitmap_offset+=VGASpritesToRender[ActualSprite].SizeX;
+            i+= (VGASpritesToRender[ActualSprite].SizeX-Xoffset[1]);
         }
         ActualSprite++;
     }
@@ -434,16 +438,16 @@ void RenderSpritesTile(unsigned char *Tmp,SpritesTilesRender *SpriteTile, int ti
 		Id = SpriteTile->Ids[PreviousSprite]; /*We go from the top to below to avoid overdrawn*/
 		/*There's a sprite touching a 4x8 but it may not be touching one of the 4x2 sub grid so the next if filter that kind of sprites*/
 		if(tileXtoPixel + 4 > VGASpriteX[Id] && scrYoffset +  2 > VGASpriteY[Id] &&
-		tileXtoPixel     < VGASpriteX[Id] + VGASpritesToRender[Id].size.X && scrYoffset <  VGASpriteY[Id] + VGASpritesToRender[Id].size.Y
+		tileXtoPixel     < VGASpriteX[Id] + VGASpritesToRender[Id].SizeX && scrYoffset <  VGASpriteY[Id] + VGASpritesToRender[Id].SizeY
 		){
 			/*Limit the start/end of the sprite in case it ends before the Tile End*/
 			SpritClipX[0] = (tileXtoPixel < VGASpriteX[Id] ?  VGASpriteX[Id] : tileXtoPixel);
-			SpritClipX[1] = (tileXtoPixel + 4 > VGASpriteX[Id] + VGASpritesToRender[Id].size.X ? VGASpriteX[Id] + VGASpritesToRender[Id].size.X : tileXtoPixel + 4);
+			SpritClipX[1] = (tileXtoPixel + 4 > VGASpriteX[Id] + VGASpritesToRender[Id].SizeX ? VGASpriteX[Id] + VGASpritesToRender[Id].SizeX : tileXtoPixel + 4);
 			SpritClipY[0] = (scrYoffset < VGASpriteY[Id] ? VGASpriteY[Id] : scrYoffset);
-			SpritClipY[1] = (scrYoffset + 2 > VGASpriteY[Id] + VGASpritesToRender[Id].size.Y ? VGASpriteY[Id] + VGASpritesToRender[Id].size.Y : scrYoffset + 2);
+			SpritClipY[1] = (scrYoffset + 2 > VGASpriteY[Id] + VGASpritesToRender[Id].SizeY ? VGASpriteY[Id] + VGASpritesToRender[Id].SizeY : scrYoffset + 2);
 
 			i = SpritClipX[0];/*Backup from ScrX*/
-			data = VGASpritesToRender[Id].Data[0]; /*Matrix to simple array convertion*/
+			data = VGASpritesToRender[Id].Image->Pixels; /*Matrix to simple array convertion*/
 
 			if(tileXtoPixel < VGASpriteX[Id]){
 			GridOffset =  VGASpriteX[Id] - tileXtoPixel; /*Value goes from 0 to 4*/
@@ -454,7 +458,7 @@ void RenderSpritesTile(unsigned char *Tmp,SpritesTilesRender *SpriteTile, int ti
 			j = GridOffset;
 			PixelOffset = tileXtoPixel + GridOffset - VGASpriteX[Id];
 			if(scrYoffset > VGASpriteY[Id]){			
-				PixelOffset +=  (scrYoffset - VGASpriteY[Id]) * VGASpritesToRender[Id].size.X;
+				PixelOffset +=  (scrYoffset - VGASpriteY[Id]) * VGASpritesToRender[Id].SizeX;
 			}	
 			while(SpritClipY[0] != SpritClipY[1]){
 				while(SpritClipX[0] != SpritClipX[1]){
@@ -471,7 +475,7 @@ void RenderSpritesTile(unsigned char *Tmp,SpritesTilesRender *SpriteTile, int ti
 					SpritClipX[0]++;
 					j++;
 				}
-				PixelOffset += VGASpritesToRender[Id].size.X  - (4 - GridOffset ) ;/*Go to the next line*/
+				PixelOffset += VGASpritesToRender[Id].SizeX  - (4 - GridOffset ) ;/*Go to the next line*/
 				SpritClipX[0] = i;
 				SpritClipY[0]++;
 				j += 4-j + GridOffset;

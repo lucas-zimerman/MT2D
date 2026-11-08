@@ -29,6 +29,8 @@
 #include <dos.h>
 #include <mem.h>
 #include <MT2D/ObjectCore/Sprites.h>
+#include <MT2D/_MSDOS/Render/DosImg.h>
+#include <MT2D/_MSDOS/Files/bmp.h>
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -63,32 +65,32 @@ void fskip(FILE *fp, int num_bytes)
  *    Loads a bitmap file into memory.                                    *
  **************************************************************************/
 
-void MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
+int MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
 {
-  long index;
   word num_colors;
   unsigned char *data;
-  long Offset;
-  int x;
+  long Offset = 0;
+  unsigned short Width = 0, Height = 0;
+  unsigned char Padding;
+  unsigned int FlippedIndex;
+  int i, j;
 
   /* check to see if it is a valid bitmap file */
-/*2 2*/  if (fgetc(file)!='B' || fgetc(file)!='M')  //ID 16 bits
+  if (fgetc(file)!='B' || fgetc(file)!='M')  /* ID 16 bits */
   {
-    fclose(file);
-    printf("%s is not a bitmap file.\n",file);
-    exit(1);
+    return 0;
   }
 
   /* read in the width and height of the image, and the
      number of colors used; ignore the rest */
-/*10 8*/  fskip(file,8);/*Skip 8 bytes from the header*/
-/*14 4*/  fread(&Offset, sizeof(long), 1, file);
+  fskip(file,8);/*Skip 8 bytes from the header*/
+  fread(&Offset, sizeof(long), 1, file);
 
-/*22 4*/  fskip(file,4);/*Skip 4 bytes*/
-  fread(&S->size.X, sizeof(unsigned short), 1, file);/*read 2 bytes of size X I Width of the bitmap in pixel;*/
-  fskip(file,2);                                     /*jump 2 bytes from the rest of the bitmap size*/
-  fread(&S->size.Y,sizeof(unsigned short), 1, file);/*read 2 bytes of size Y I Height of the bitmap in pixels*/
-	fskip(file,22);
+  fskip(file,4);/*Skip 4 bytes*/
+  fread(&Width, sizeof(unsigned short), 1, file);/*Width of the bitmap in pixels*/
+  fskip(file,2);                                 /*jump 2 bytes from the rest of the bitmap size*/
+  fread(&Height,sizeof(unsigned short), 1, file);/*Height of the bitmap in pixels*/
+  fskip(file,22);
   /*
     2  2 bytes from the rest of the Y size
     4  2 bytes from  the number of color planes
@@ -100,41 +102,38 @@ void MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
   */
   fread(&num_colors,sizeof(unsigned short), 1, file);
   fskip(file,6);
-  /*
-    4 4 bytes from 0 important colors
-    6 2 bytes from idk
-  */
+  if (Width == 0 || Height == 0) return 0;
 
   /* assume we are working with an 8-bit file */
   if (num_colors==0) num_colors=256;
 
-  S->Data = (unsigned char**)malloc(sizeof(unsigned char*));
-  S->Data[0] = (unsigned char *) malloc((S->size.X*S->size.Y)*sizeof(unsigned char));
-  data = S->Data[0];
-  /* Ignore the palette information for now.
-     See palette.c for code to read the palette info. */
-  //fskip(file,num_colors*4);
+  S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
+  if (!S->Image) return 0;
+  S->Image->Pixels = (unsigned char *) malloc((size_t)Width*Height);
+  if (!S->Image->Pixels) {
+    free(S->Image);
+    S->Image = 0;
+    return 0;
+  }
+  S->SizeX = Width;
+  S->SizeY = Height;
+  S->type = 1;
+  data = S->Image->Pixels;
+  /* Ignore the palette information for now. */
 
   /* jump to where the image is*/
-  unsigned char Padding = 4 - (S->size.X%4);
-  unsigned int FlippedIndex = S->size.Y*S->size.X - S->size.X;
+  Padding = (unsigned char)((4 - (Width%4)) % 4);
+  FlippedIndex = (unsigned int)Height*Width - Width;
   fseek(file,Offset,SEEK_SET);
-  if(Padding == 4) Padding = 0;
-  /* read the bitmap */
-  index=0;
-  for(int i=0;i<S->size.Y;i++){
-    	for(int j=0;j<S->size.X;j++,index++){
-      	fread(&data[FlippedIndex + /*S->size.X - */j],sizeof(unsigned char),1,file);
-    	}
-   	FlippedIndex= FlippedIndex -  S->size.X;
-      fskip(file,Padding);
+  /* read the bitmap (BMP rows are stored bottom up) */
+  for(i=0;i<Height;i++){
+    for(j=0;j<Width;j++){
+      fread(&data[FlippedIndex + j],sizeof(unsigned char),1,file);
+    }
+    FlippedIndex -= Width;
+    fskip(file,Padding);
   }
-  index =0;
-  for(int i=0;i<S->size.Y;i++){
-    	for(int j=0;j<S->size.X;j++,index++){
-    	}
-  }
-  fclose(file);
+  return 1;
 }
 
 #endif

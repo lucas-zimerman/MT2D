@@ -46,3 +46,12 @@ jobs:
             -c MT2D/ObjectCore/ObjectLoader.c -o build/djgpp/ObjectLoader.o
           i586-pc-msdosdjgpp-gcc -std=gnu99 -Wall -Wextra -Werror -I. \
             -c MT2D/ObjectCore/ObjectGlobals.c -o build/djgpp/ObjectGlobals.o
+      - name: Compile VGA render (experimental, warnings allowed)
+        run: |
+          export PATH="$HOME/djgpp/bin:$PATH"
+          mkdir -p build/djgpp
+          for f in MT2D/ObjectCore/Sprites.cpp MT2D/_MSDOS/Files/bmp.cpp \
+                   MT2D/_MSDOS/Render/dVgaRen.cpp MT2D/_MSDOS/Render/MT2D_VGA_Init.cpp \
+                   MT2D/_MSDOS/Render/DtxtRend.cpp; do
+            i586-pc-msdosdjgpp-g++ -std=gnu++98 -Wall -I. -c "$f" -o "build/djgpp/$(basename "$f").o"
+          done

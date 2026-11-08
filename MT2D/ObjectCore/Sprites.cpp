@@ -34,6 +34,12 @@
 #include "../SDL/MT2D_SDL_Internal_Image.h"
 #endif
 
+#if defined(MSDOS_USE_GRAPHICS)
+#include <MT2D/_MSDOS/Render/DosImg.h>
+#include <MT2D/_MSDOS/Render/dVgaRen.h>
+#include <MT2D/_MSDOS/Files/bmp.h>
+#endif
+
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
@@ -132,7 +138,32 @@ static Sprite *Create_Image_Sprite(SDL_Surface *Img, int ScaleX, int ScaleY) {
         SDL_FreeSurface(Img);
         return S;
 }
-#else
+#elif defined(MSDOS_USE_GRAPHICS)
+static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY);
+/* VGA: loads an 8 bit BMP into a pixel buffer */
+static Sprite *Load_Dos_Image_Sprite(char *file, int ScaleX, int ScaleY) {
+        Sprite *S;
+        FILE *fl = fopen(file, "rb");
+        if (!fl) return 0;
+        S = (Sprite*)malloc(sizeof(Sprite));
+        if (!S) {
+                fclose(fl);
+                return 0;
+        }
+        S->Image = 0;
+        if (!MT2D_Dos_Load_BMP(fl, S)) {
+                fclose(fl);
+                free(S);
+                return Create_Placeholder_Sprite(ScaleX, ScaleY);
+        }
+        fclose(fl);
+        S->ScaleX = ScaleX;
+        S->ScaleY = ScaleY;
+        S->refCount = 0;
+        return S;
+}
+#endif
+#ifndef SDL_USE
 static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY) {
 #pragma message ("Sprites with image are not supported so we'll return a blank image...")
         Sprite *S = Sprite_Create_Ascii_From_Cells(3, 1, "<!>");
@@ -159,6 +190,8 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
                 S = Create_Image_Sprite(MT2D_SDL_Load_Image(file), ScaleX, ScaleY);
         }//else return a null sprite
         return S;
+#elif defined(MSDOS_USE_GRAPHICS)
+        return Load_Dos_Image_Sprite(file, ScaleX, ScaleY);
 #else
         return Create_Placeholder_Sprite(ScaleX, ScaleY);
 #endif
@@ -200,6 +233,11 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                          if (pos_x <= 320 && pos_x + img->ScaleX >= 0) {
                                  SDL_Add_ImagetoBuffer(img, pos_x, pos_y);
                          }
+#elif defined(MSDOS_USE_GRAPHICS)
+                         if (img->Image && witch_window == DISPLAY_WINDOW1) {
+                                 Dos_Add_ImagetoBuffer(img, pos_x, pos_y);
+                                 out = true;
+                         }
 #endif
                  }
          }
@@ -224,6 +262,11 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                                  if (Me->Image->Texture) {
                                          MT2D_SDL_DestroyTexture(Me->Image->Texture);
                                  }
+                                 free(Me->Image);
+                         }
+#elif defined(MSDOS_USE_GRAPHICS)
+                         else if (Me->Image) {
+                                 free(Me->Image->Pixels);
                                  free(Me->Image);
                          }
 #endif
