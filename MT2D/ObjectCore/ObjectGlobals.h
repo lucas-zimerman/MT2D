@@ -50,6 +50,7 @@ bool ObjectCore_RemoveGlobalObject(const char *Name);
 bool ObjectCore_AddGlobalSprite(const char *Path, Sprite *Spr);
 bool ObjectCore_RemoveGlobalSprite(const char *Path);
 void ObjectCore_ClearGlobalSprites(void);   /* Remove all of them (shutdown) */
+int ObjectCore_CountGlobalSprites(void);    /* How many sprites are registered */
 
 /* Your own Cscript functions. ArgCount is how many arguments a script has to write (for the
    Object* + vars signature the object counts as the first one), -1 accepts any amount. */

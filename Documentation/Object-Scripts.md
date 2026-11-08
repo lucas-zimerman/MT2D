@@ -263,6 +263,7 @@ ObjectCore_AddGlobalCScriptObjVars("Spawn", Spawn, 3);    // void f(Object *call
   ObjectCore_AddGlobalSprite("smoke.txt", Load_Sprite("smoke.txt"));   // every Show "smoke.txt" now shares it
   ...
   ObjectCore_RemoveGlobalSprite("smoke.txt");   // or ObjectCore_ClearGlobalSprites() on shutdown
+  int n = ObjectCore_CountGlobalSprites();      // how many are registered
   ```
 
   The registry holds a reference of its own, so unloading the objects never frees the sprite and

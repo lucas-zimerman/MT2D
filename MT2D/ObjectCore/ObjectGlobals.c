@@ -144,6 +144,8 @@ bool ObjectCore_RemoveGlobalSprite(const char *Path) {
         return false;
 }
 
+int ObjectCore_CountGlobalSprites(void) { return Global_SpriteCount; }
+
 void ObjectCore_ClearGlobalSprites(void) {
         while (Global_SpriteCount > 0) ObjectCore_RemoveGlobalSprite(Global_Sprites[Global_SpriteCount - 1].Path);
 }

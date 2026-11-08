@@ -111,20 +111,26 @@ TEST(global_sprites_add_find_remove) {
     Sprite *a = Sprite_Create_Ascii_From_Cells(2, 1, "AB");
     Sprite *b = Sprite_Create_Ascii_From_Cells(2, 1, "CD");
     CHECK(ObjectCore_FindGlobalSprite("a.txt") == 0);
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 0);
     CHECK(ObjectCore_AddGlobalSprite("a.txt", a));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);
     CHECK_EQ(a->refCount, 1);                        // the reference of the registry
     CHECK(!ObjectCore_AddGlobalSprite("a.txt", b));  // duplicate
     CHECK(!ObjectCore_AddGlobalSprite("", b));
     CHECK(!ObjectCore_AddGlobalSprite(0, b));
     CHECK(!ObjectCore_AddGlobalSprite("b.txt", 0));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);    // the failed adds did not count
     CHECK(ObjectCore_AddGlobalSprite("b.txt", b));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 2);
     CHECK(ObjectCore_FindGlobalSprite("a.txt") == a);
     CHECK(ObjectCore_FindGlobalSprite("b.txt") == b);
     CHECK(ObjectCore_RemoveGlobalSprite("a.txt"));   // frees a, nothing else holds it
     CHECK(ObjectCore_FindGlobalSprite("a.txt") == 0);
     CHECK(!ObjectCore_RemoveGlobalSprite("a.txt"));
     CHECK(!ObjectCore_RemoveGlobalSprite(0));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);
     ObjectCore_ClearGlobalSprites();                 // frees b
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 0);
     CHECK(ObjectCore_FindGlobalSprite("b.txt") == 0);
 }
 
