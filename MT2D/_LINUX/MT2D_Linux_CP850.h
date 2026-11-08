@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*===================================================================
 MT2D_Linux_CP850.h / MT2D_Linux_CP850.cpp
 
@@ -16,9 +17,11 @@ This file does not depend on curses.
 
 /* Unicode code point of a CP850 byte, the way the IBM PC video memory shows it:
    1..31 and 127 are the graphical symbols (smiley, arrows...), 0 and 255 are blank. */
+MT2D_C_BEGIN
 unsigned int MT2D_CP850_To_Unicode(unsigned char c);
 
 /* CP850 byte of a Unicode code point, or -1 when CP850 has no such character. */
 int MT2D_Unicode_To_CP850(unsigned int unicode);
+MT2D_C_END
 
 #endif

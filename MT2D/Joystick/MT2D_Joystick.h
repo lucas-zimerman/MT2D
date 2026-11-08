@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /**
         Created by: Lucas Zimerman Fraulob
         This code deals with joystick and also with keyboard where you can read multiple keys at once.
@@ -63,17 +64,19 @@ typedef struct{
 #error "No code was done for this platform"
 #endif
 
-bool MT2D_Joystick_Touched();
-bool MT2D_Joystick_ArrowKey_Touched();
-bool MT2D_Joystick_LeftArrow_Touched();
-bool MT2D_Joystick_RightArrow_Touched();
+MT2D_C_BEGIN
+bool MT2D_Joystick_Touched(void);
+bool MT2D_Joystick_ArrowKey_Touched(void);
+bool MT2D_Joystick_LeftArrow_Touched(void);
+bool MT2D_Joystick_RightArrow_Touched(void);
 void MT2D_Joystick_Map_Button01(int Keyboard_Key);
 void MT2D_Joystick_Map_Button02(int Keyboard_Key);
 void MT2D_Joystick_Map_Button03(int Keyboard_Key);
 void MT2D_Joystick_Map_Button04(int Keyboard_Key);
 bool MT2D_Joystick_Button_Touched(int ID);
-int MT2D_Joystick_Get_LeftAxisX();
-int MT2D_Joystick_Get_LeftAxisY();
-int MT2D_Joystick_Get_RightAxisX();
-int MT2D_Joystick_Get_RightAxisY();
+int MT2D_Joystick_Get_LeftAxisX(void);
+int MT2D_Joystick_Get_LeftAxisY(void);
+int MT2D_Joystick_Get_RightAxisX(void);
+int MT2D_Joystick_Get_RightAxisY(void);
+MT2D_C_END
 #endif

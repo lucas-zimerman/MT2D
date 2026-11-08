@@ -4,6 +4,9 @@
 
 ### Breaking
 
+- The engine is now written in C: every `.cpp` of `MT2D/` outside `ObjectCore/` became a `.c` file (same names, so build lists must be updated), and the headers have C linkage (`extern "C"`), so C++ projects keep working. `ObjectCore` is still C++ for now, see [MIGRATION.md](MIGRATION.md) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
+- `close()` in `SDL/MT2D_SDL_main` was renamed `MT2D_SDL_Close()` (it clashed with `close()` from `<unistd.h>` in C) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
+- The Windows UWP accelerometer code (C++/CX) moved from `_WINDOWS/IO/MT2D_Win_Joystick` to `_WINDOWS/IO/MT2D_Win_Uwp.cpp`, the only engine file outside `ObjectCore` that stays C++; UWP projects must add it to the build ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
 - `MT2D_VAR.Data` is now an inline union (`Data.i`, `Data.c`, `Data.f`, `Data.p`) and `MT2D_VAR.Name` an inline `char[MT2D_VAR_NAME_MAX]`: one allocation per var instead of three, see [MIGRATION.md](MIGRATION.md).
 - Var names are limited to `MT2D_VAR_NAME_MAX - 1` (18) characters. Longer names are rejected: the constructors return `NULL` and set `Var_Name_Too_Long`. Store long texts (e.g. sound paths) in a `VAR_STRING` var.
 - `MT2D_Object_Set_Var(Var, void*, Type)` copies the value instead of taking ownership of the pointer, and the `int`/`float`/`bool` overloads now store their value. The `char*`, `unsigned` and the never implemented `Create_Var_UInt/UChar` were removed.
@@ -35,6 +38,7 @@ ObjectPosX(Object) = 12;
 - The CI compiles the VGA files with DJGPP, and the ANSI C check allows C++ under `MT2D/_MSDOS/` for now. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
 
 - New `desert` example: a scripted demoscene (monster truck, sand worm, radar and particles are object scripts) showing globals, `CreateObject`, `GotoStateIfHitObject`, `random()` and `PlayMusic`/`PlaySound` (original chase theme and sound effects). ([#27](https://github.com/lucas-zimerman/MT2D/pull/27))
+- Global sprites: `ObjectCore_AddGlobalSprite(path, sprite)` registers a sprite that the object loader uses instead of loading the file a script has in `Show`, see [Object-Scripts.md](Documentation/Object-Scripts.md#globals). The registry holds its own reference, `ObjectCore_RemoveGlobalSprite` and `ObjectCore_ClearGlobalSprites` release it and `ObjectCore_CountGlobalSprites` returns how many are registered. ([#28](https://github.com/lucas-zimerman/MT2D/pull/28))
 - New Cscript functions: `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}`, `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`) and the relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`). ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Object scripts: describe an object (vars, states, sprites, behaviour) in a text file, compile it with `cscriptc` and load it with `ObjectCore_Load("movingdot.mto")`, see [Object-Scripts.md](https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/Object-Scripts.md) ([#3](https://github.com/lucas-zimerman/MT2D/issues/3)) ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them

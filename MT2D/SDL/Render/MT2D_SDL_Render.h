@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*==============================================================================================
 SDL_MT2D_Render.cpp / SDL_MT2D_Render.h
 
@@ -14,15 +15,17 @@ With this code you'll be able to render a terminal like user interface into an o
 #include "../../MT2D.h"
 #include "../../ObjectCore/Sprites.h"
 
-void Clean_Render();
+MT2D_C_BEGIN
+void Clean_Render(void);
 void Render_New(unsigned char BUFFER[][MAX_HOR]);
-void SDL_Render();
+void SDL_Render(void);
 
 void SDL_Add_ImagetoBuffer(struct Sprite *IMG, int X, int Y);
-void SDL_Clear_RenderBuffers();
+void SDL_Clear_RenderBuffers(void);
 
 /**/
-void MT2D_SDL_Clear_Main_Window();
+void MT2D_SDL_Clear_Main_Window(void);
 void MT2D_SDL_Draw_Window(int which);
+MT2D_C_END
 
 #endif

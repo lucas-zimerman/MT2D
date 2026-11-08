@@ -20,7 +20,7 @@
 #include <MT2D/MT2D.h>
 
 
-void MT2D_Dos_Clear_Main_Window() {
+void MT2D_Dos_Clear_Main_Window(void) {
 	unsigned int x, y, offset;
 	for (x = 0; x<80; x++) {
 		for (y = 0; y <= 24; y++) {//should be 25 but the windows code isn't ready for that

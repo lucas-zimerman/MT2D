@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*===================================================================
 SDL_MT2DBeep.h SDL_MT2DBeep.cpp created by: Lucas Zimerman Fraulob
 
@@ -7,4 +8,6 @@ SDL_MT2DBeep.h SDL_MT2DBeep.cpp created by: Lucas Zimerman Fraulob
 	and a delayed timing that the beep will occur
 ===================================================================*/
 
+MT2D_C_BEGIN
 void SDL_Beep(int frequency, int TimeMS);
+MT2D_C_END

@@ -56,6 +56,10 @@ struct AES_ctx
 #endif
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void AES_init_ctx(struct AES_ctx* ctx, const uint8_t* key);
 #if defined(CBC) && (CBC == 1)
 void AES_init_ctx_iv(struct AES_ctx* ctx, const uint8_t* key, const uint8_t* iv);
@@ -94,5 +98,9 @@ void AES_CTR_xcrypt_buffer(struct AES_ctx* ctx, uint8_t* buf, uint32_t length);
 
 #endif // #if defined(CTR) && (CTR == 1)
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //_AES_H_

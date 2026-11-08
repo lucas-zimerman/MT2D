@@ -42,7 +42,7 @@ void MSDOS_Call_Functionn(unsigned char ah, unsigned char al){
   int86(0x10,&regs,&regs); /*execute the asm call*/
 }
 
-bool MT2D_Dos_VGA_Init(){
+bool MT2D_Dos_VGA_Init(void){
   #ifdef __DJGPP__
   if (!__djgpp_nearptr_enable()) {
     return false; /* no near pointer access (DPMI host refused) */
@@ -78,7 +78,7 @@ bool MT2D_Dos_VGA_Init(){
   return true;
 }
 
-void MT2D_Dos_VGA_Close(){
+void MT2D_Dos_VGA_Close(void){
   MSDOS_Call_Functionn(0x00,0x03);
   #ifdef __DJGPP__
   __djgpp_nearptr_disable();

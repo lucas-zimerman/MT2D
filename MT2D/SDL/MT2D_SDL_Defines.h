@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*===================================================================
 	MT2D_SDL_Defines Created by: Lucas Zimerman Fraulob
 
@@ -15,6 +16,7 @@
 #ifndef SDL_DEFINES
 #define SDL_DEFINES
 //Screen dimension
+MT2D_C_BEGIN
 extern int SCREEN_WIDTH;//640
 extern int SCREEN_HEIGHT;//200
 extern int SCREEN_MISSING_WIDTH;
@@ -26,4 +28,5 @@ extern int FONT_RESIZEX;//how many pixels it'll increase/decrease
 extern int FONT_RESIZEY;
 
 extern char SDL_SOUND_TYPE;// -1 not defined, 0 BEEPER, 1 AUDIO FILE
+MT2D_C_END
 #endif

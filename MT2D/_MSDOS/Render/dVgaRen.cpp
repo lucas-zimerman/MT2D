@@ -62,7 +62,7 @@ unsigned char VGA_ASCII_Backup[25][80];/*2KB of RAM here*/
 #ifdef MSDOS_USE_SPRITE_TILE_RENDER
 void RenderSpritesTile(unsigned char *Tmp,SpritesTilesRender *SpriteTile, int tileX,int scrYoffset);
 #else
-void MT2D_Dos_Render_Sprites();
+void MT2D_Dos_Render_Sprites(void);
 #endif
 extern unsigned char VGA_ASCII_COLORS[2]; /*store the index of the colors to be used by a char*/
 
@@ -78,7 +78,7 @@ void MT2D_Dos_Set_Palette(const unsigned char *bgra, int count){
 	}
 }
 
-void Dos_Clear_ImgBuffer(){
+void Dos_Clear_ImgBuffer(void){
 	if (VGASpritesCnt > 0) {
    	/*Clears the text buffer where the image is going to be placed on screen.*/
    	int i =0;
@@ -342,7 +342,7 @@ void MT2D_Dos_Render_VGA_ASCII(unsigned char BUFFER[][80]){
 
 #if !defined(MSDOS_USE_SPRITE_TILE_RENDER)
 /* Render all the sprites requested to be rendered by the code*/
-void MT2D_Dos_Render_Sprites()
+void MT2D_Dos_Render_Sprites(void)
 {
     int imgX,imgY,i;
     unsigned short bitmap_offset;

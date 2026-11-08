@@ -1,4 +1,5 @@
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 #if defined(SDL_USE)
 #include <MT2D/SDL/Render/MT2D_SDL_Render.h>
@@ -17,7 +18,9 @@
 #define MT2D_Clear_Main_Window MT2D_Linux_Clear_Main_Window
 #define MT2D_Draw_Window MT2D_Linux_Draw_Window
 #else
-void MT2D_Clear_Main_Window();
+MT2D_C_BEGIN
+void MT2D_Clear_Main_Window(void);
 void MT2D_Draw_Window(int which);
+MT2D_C_END
 #endif
 

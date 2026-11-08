@@ -2,6 +2,7 @@
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/ObjectGlobals.h>
 #include <string.h>
+#include <MT2D/ObjectCore/State.h>
 
 static void f_obj(Object *) {}
 static void f_vars(Object *, MT2D_VAR **) {}
@@ -104,6 +105,45 @@ TEST(vars_objects_and_functions_are_separate_names) {
     CHECK(ObjectCore_RemoveGlobalVar("Same"));
     CHECK(ObjectCore_RemoveGlobalCScript("Same"));
     MT2D_VAR_Free(v, 1);
+}
+
+TEST(global_sprites_add_find_remove) {
+    Sprite *a = Sprite_Create_Ascii_From_Cells(2, 1, "AB");
+    Sprite *b = Sprite_Create_Ascii_From_Cells(2, 1, "CD");
+    CHECK(ObjectCore_FindGlobalSprite("a.txt") == 0);
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 0);
+    CHECK(ObjectCore_AddGlobalSprite("a.txt", a));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);
+    CHECK_EQ(a->refCount, 1);                        // the reference of the registry
+    CHECK(!ObjectCore_AddGlobalSprite("a.txt", b));  // duplicate
+    CHECK(!ObjectCore_AddGlobalSprite("", b));
+    CHECK(!ObjectCore_AddGlobalSprite(0, b));
+    CHECK(!ObjectCore_AddGlobalSprite("b.txt", 0));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);    // the failed adds did not count
+    CHECK(ObjectCore_AddGlobalSprite("b.txt", b));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 2);
+    CHECK(ObjectCore_FindGlobalSprite("a.txt") == a);
+    CHECK(ObjectCore_FindGlobalSprite("b.txt") == b);
+    CHECK(ObjectCore_RemoveGlobalSprite("a.txt"));   // frees a, nothing else holds it
+    CHECK(ObjectCore_FindGlobalSprite("a.txt") == 0);
+    CHECK(!ObjectCore_RemoveGlobalSprite("a.txt"));
+    CHECK(!ObjectCore_RemoveGlobalSprite(0));
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 1);
+    ObjectCore_ClearGlobalSprites();                 // frees b
+    CHECK_EQ(ObjectCore_CountGlobalSprites(), 0);
+    CHECK(ObjectCore_FindGlobalSprite("b.txt") == 0);
+}
+
+TEST(global_sprite_keeps_alive_while_a_state_uses_it) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(1, 1, "X");
+    CHECK(ObjectCore_AddGlobalSprite("x.txt", s));
+    ObjectState *st = MT2D_OBJECT_CREATE_STATE((char*)"S");
+    MT2D_ObjectState_ADD(st, s, 1, 0);
+    CHECK_EQ(s->refCount, 2);
+    CHECK(ObjectCore_RemoveGlobalSprite("x.txt"));   // only drops the registry reference
+    CHECK_EQ(s->refCount, 1);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'X');         // still valid
+    MT2D_ObjectState_Delete(st);                     // the last reference frees it
 }
 
 TEST(last_error_text) {

@@ -55,6 +55,7 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #define MT2D_HEADER
 
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h> /* C linkage macros and "bool" */
 
 #ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
         #ifdef WINDOWS_TARGET
@@ -65,9 +66,6 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
     #include <SDL.h>
     #endif
 #endif
-#ifndef  bool
-//#include <stdbool.h>
-#endif
 
 #define DISPLAY_WINDOW1 1
 #define DISPLAY_WINDOW2 0
@@ -75,13 +73,15 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #define MAX_VER 25
 #define MT2D_WINDOWED_MODE // Can be disabled : set the initial window size, if not defines it starts in fullscreen mode
 
+MT2D_C_BEGIN
 extern unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
 extern unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
-void transfer_window1_to_window2();
-void transfer_window2_to_window1();
+void transfer_window1_to_window2(void);
+void transfer_window2_to_window1(void);
 void insert_string_on_display(char *x, int pos_ver, int pos_hor, bool which);
 void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
+MT2D_C_END
 
 #ifdef WINDOWS_DESKTOP_TARGET
         #ifdef SDL_USE

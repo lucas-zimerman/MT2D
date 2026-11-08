@@ -5,11 +5,8 @@
 #ifndef MT2D_CURSOR_H
 #define MT2D_CURSOR_H
 
-#ifndef __MSDOS__
 #include <MT2D/MT2D_Terminal_Define.h>
-#else
-#include <MT2D/MT2D_Terminal_Define.h>
-#endif
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 #if defined(SDL_USE)
 #define MT2D_Cursor_goto_topscreen
@@ -31,8 +28,10 @@
 #define MT2D_Cursor_goto_topscreen MT2D_Droid_Cursor_goto_topscreen
 #define MT2D_Cursor_Set_Position MT2D_Droid_Cursor_Set_Position
 #else
-void MT2D_Cursor_goto_topscreen();
+MT2D_C_BEGIN
+void MT2D_Cursor_goto_topscreen(void);
 void MT2D_Cursor_Set_Position(int line, int column);
+MT2D_C_END
 #endif
 
 #endif
