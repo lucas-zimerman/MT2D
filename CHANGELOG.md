@@ -4,6 +4,9 @@
 
 ### Breaking
 
+- The engine is now written in C: every `.cpp` of `MT2D/` outside `ObjectCore/` became a `.c` file (same names, so build lists must be updated), and the headers have C linkage (`extern "C"`), so C++ projects keep working. `ObjectCore` is still C++ for now, see [MIGRATION.md](MIGRATION.md)
+- `close()` in `SDL/MT2D_SDL_main` was renamed `MT2D_SDL_Close()` (it clashed with `close()` from `<unistd.h>` in C)
+- The Windows UWP accelerometer code (C++/CX) moved from `_WINDOWS/IO/MT2D_Win_Joystick` to `_WINDOWS/IO/MT2D_Win_Uwp.cpp`, the only engine file outside `ObjectCore` that stays C++; UWP projects must add it to the build
 - `MT2D_VAR.Data` is now an inline union (`Data.i`, `Data.c`, `Data.f`, `Data.p`) and `MT2D_VAR.Name` an inline `char[MT2D_VAR_NAME_MAX]`: one allocation per var instead of three, see [MIGRATION.md](MIGRATION.md).
 - Var names are limited to `MT2D_VAR_NAME_MAX - 1` (18) characters. Longer names are rejected: the constructors return `NULL` and set `Var_Name_Too_Long`. Store long texts (e.g. sound paths) in a `VAR_STRING` var.
 - `MT2D_Object_Set_Var(Var, void*, Type)` copies the value instead of taking ownership of the pointer, and the `int`/`float`/`bool` overloads now store their value. The `char*`, `unsigned` and the never implemented `Create_Var_UInt/UChar` were removed.

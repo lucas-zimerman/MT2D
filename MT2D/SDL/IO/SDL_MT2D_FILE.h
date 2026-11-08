@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #ifndef SDL_MT2DFil
 #define SDL_MT2DFil
 
@@ -7,6 +8,7 @@
 
 #define MT2D_FILE SDL_RWops
 
+MT2D_C_BEGIN
 int MT2D_SDL_FILE_EOF(MT2D_FILE *file);
 MT2D_FILE *MT2D_SDL_FILE_OPEN(const char*filePath, const char *mode);
 int MT2D_SDL_FILE_CLOSE(MT2D_FILE *file);
@@ -16,5 +18,6 @@ unsigned char MT2D_SDL_FILE_READ_BYTE(MT2D_FILE *file);
 size_t MT2D_SDL_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count);
 size_t MT2D_SDL_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data);
 long int MT2D_SDL_FILE_TELL(MT2D_FILE *file);
+MT2D_C_END
 #endif
 #endif

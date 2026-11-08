@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*===================================================================
 MT2D_Win_Init.h/ MT2D_Win_Init.cpp created By Lucas Zimerman Fraulob
 
@@ -13,7 +14,9 @@ engine.
 
 #include "../MT2D_Terminal_Define.h"
 
-bool MT2D_Win_Init();
+MT2D_C_BEGIN
+bool MT2D_Win_Init(void);
+MT2D_C_END
 
 #ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
 #include <SDL.h>

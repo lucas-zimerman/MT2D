@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #ifndef MT2D_SDL_EH
 #define MT2D_SDL_EH
 
@@ -8,7 +9,7 @@
 #include "MT2D_SDL_Redefine.h"
 #include "../ObjectCore/Sprites.h"
 
-struct MT2D_SDL_Events {
+typedef struct MT2D_SDL_Events {
 	SDL_KeyboardEvent Keyboard;
 	bool Keyboard_Pressed;
 	bool Keyboard_Consumed;
@@ -26,11 +27,13 @@ struct MT2D_SDL_Events {
 
 	MT2D_SDL_Renderer *Render;
 	bool RequestRender;
-};
+} MT2D_SDL_Events;
 
-void MT2D_SDL_Event_Handler();
-void MT2D_SDL_Flush_Key_Releases();/*applies the key releases that were postponed (called by the joystick update)*/
-void MT2D_SDL_Event_Handler_NoLoop();
+MT2D_C_BEGIN
+void MT2D_SDL_Event_Handler(void);
+void MT2D_SDL_Flush_Key_Releases(void);/*applies the key releases that were postponed (called by the joystick update)*/
+void MT2D_SDL_Event_Handler_NoLoop(void);
+MT2D_C_END
 #endif
 
 #endif

@@ -19,9 +19,9 @@ Read the comments in that file before changing anything.
 
 ### Platforms
 
-- **Windows / Linux / macOS**: add all `.cpp` files under `MT2D/` (including the `Audio`, `Container`, `Cursor`, ... subfolders) to your compiler or IDE project. When `SDL_USE` is enabled, also link SDL2, SDL2_image and SDL2_mixer.
+- **Windows / Linux / macOS**: add all `.c` files (and the remaining `ObjectCore/*.cpp` C++ files) under `MT2D/` (including the `Audio`, `Container`, `Cursor`, ... subfolders) to your compiler or IDE project. When `SDL_USE` is enabled, also link SDL2, SDL2_image and SDL2_mixer.
 - **Android**: `Android.mk` at the repo root builds the engine as a module. It expects `SDL`, `SDL2_image` and `SDL2_mixer` next to the project. See `TestCase/Use Android Studio.txt` for a full walkthrough.
-- **MS-DOS**: built with Open Watcom. File names must follow the 8.3 format (e.g. `M2Render.cpp`, `M2Init.cpp`). See `Tools/msdos/readme.txt` for the helper scripts used when debugging.
+- **MS-DOS**: built with Open Watcom. File names must follow the 8.3 format (e.g. `M2Render.c`, `M2Init.c`). See `Tools/msdos/readme.txt` for the helper scripts used when debugging.
 - **Emscripten**: supported through SDL (no audio yet).
 
 ### Testing your change

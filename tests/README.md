@@ -23,17 +23,17 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 | `test_objectloader.cpp` | `ObjectCore/ObjectLoader.c` (compiled `.mto` files, truncated/invalid input) |
 | `test_objectglobals.cpp` | `ObjectCore/ObjectGlobals.c` (registry of global vars, objects and functions) |
 | `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.c` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
-| `test_container.cpp` | `Container/MT2D_Container.cpp` |
-| `test_aes.cpp` | `Container/aes.cpp` (NIST known answers) |
-| `test_display.cpp` | display buffers in `MT2D.cpp` |
-| `test_layout.cpp` | `MT2D_Layout.cpp`, `Tools/Video/MT2D_Generic_Line.cpp` |
+| `test_container.cpp` | `Container/MT2D_Container.c` |
+| `test_aes.cpp` | `Container/aes.c` (NIST known answers) |
+| `test_display.cpp` | display buffers in `MT2D.c` |
+| `test_layout.cpp` | `MT2D_Layout.c`, `Tools/Video/MT2D_Generic_Line.c` |
 
 ## Not covered
 
 Code that needs a terminal, a window, a joystick or an OS API cannot run in a
 headless test: `SDL/`, `_WINDOWS/`, `_LINUX/`, `_MSDOS/`, `_ANDROID/`,
 `_EMNISCRIPT/`, `Audio` playback, `Cursor`, `Joystick`, `InputBox`,
-`MessageBox`, `Tools/UserInterface/MT2D_Menu.cpp` and
+`MessageBox`, `Tools/UserInterface/MT2D_Menu.c` and
 `ObjectCore/STDContainer.cpp` (needs SDL audio).
 
 ## How it builds

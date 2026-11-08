@@ -32,19 +32,21 @@ Line X+3,...,Y: Data
 #include <stdlib.h>
 #include <MT2D/Container/MT2D_ContainerFile.h>
 #include <MT2D/Container/MT2D_ContainerFilePath.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 #define BYTE unsigned char
 
-#pragma region  Container Struct
+/* Container Struct */
 
-enum MT2D_Container_DataStore_Type
+typedef enum MT2D_Container_DataStore_Type
 {
 	MT2D_CONT_DATATYPE_MEM = -1,
 	MT2D_CONT_DATATYPE_CONT = 0,
 	MT2D_CONT_DATATYPE_FILE
-};
+} MT2D_Container_DataStore_Type;
 
-
+typedef struct MT2D_ContainerFilePath MT2D_ContainerFilePath;
+typedef struct MT2D_ContainerFile MT2D_ContainerFile;
 
 struct MT2D_ContainerFilePath{
 	char* file;//if refCount is -1 it points to a memory address
@@ -74,17 +76,18 @@ typedef struct{
 	int count[15];
 }MT2D_ContainerHash;
 
-#pragma endregion Container Struct 
+/* end of Container Struct */
 
-#pragma region Container User Struct
+/* Container User Struct */
 struct ContainerData
 {
 	unsigned char* Data;
 	int Length;
 	int Id;
 };
-#pragma endregion Container User Struct
+/* end of Container User Struct */
 
+MT2D_C_BEGIN
 
 int MT2D_Container_Get_FileId(char *name);
 int MT2D_Container_Get_FileLength(int id);
@@ -101,11 +104,11 @@ bool MT2D_Container_Update(int id, BYTE * data, int length, bool encrypt);
 */
 void MT2D_Container_Delete_Data(int id);
 
-void MT2D_Container_Init();
+void MT2D_Container_Init(void);
 /**
 Free the loaded files
 **/
-void MT2D_Container_Clear();
+void MT2D_Container_Clear(void);
 /**
 Can load one or more Containers under the main container struct
 **/
@@ -134,12 +137,14 @@ bool MT2D_Container_Export_as_File(int index, char * NewName, char *Path, bool d
  * return false if the container wasn't found
  **/
 bool MT2D_Container_Export_into_Container(int dataId, char *containerName, bool encrypt);
-void MT2D_Container_Password_Init();
+void MT2D_Container_Password_Init(void);
 void MT2D_Container_Password_AddKey(unsigned char Key);
-int MT2D_Container_Count_Files();
+int MT2D_Container_Count_Files(void);
 /*Return a new filename string*/
 char *MT2D_Container_Get_FileName_By_ID(int id);
 /*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
 BYTE * MT2D_Container_Get_Data(int id, bool decrypt);
+
+MT2D_C_END
 
 #endif

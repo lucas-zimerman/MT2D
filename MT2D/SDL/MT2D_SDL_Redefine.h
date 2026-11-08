@@ -2,6 +2,7 @@
 #define _MT2D_SDL_RED_H
 
 #include "../MT2D_Terminal_Define.h"
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 #ifdef SDL_USE // if you'll not use SDL dont load this file on your project
 #include <stdio.h>
@@ -53,7 +54,6 @@
     #include "MT2D_SDL_Defines.h"
 #endif
 
-#pragma region TYPES
 #ifdef MT2D_SDL_GPU
 	#define IMG_INIT_PNG true
 	//============
@@ -67,12 +67,12 @@
 	#define MT2D_SDL_Renderer SDL_Renderer
 	#define MT2D_SDL_Window SDL_Window
 #endif
-#pragma endregion
 
 #ifdef MT2D_SDL_GPU
 	#define IMG_Load GPU_LoadSurface
 #endif
 
+MT2D_C_BEGIN
 #if defined(MT2D_USING_CONTAINER)
 SDL_Surface *MT2D_SDL_Load_Image_From_Container(int Id);
 #endif
@@ -117,7 +117,7 @@ int IMG_Init(int i);
 
 void SDL_DestroyWindow(MT2D_SDL_Window *window) {}
 
-void IMG_Quit();
+void IMG_Quit(void);
 #endif
 
 void MT2D_SDL_DestroyRenderer(MT2D_SDL_Renderer *renderer);
@@ -131,5 +131,6 @@ void MT2D_SDL_SetWindowFullscreen(MT2D_SDL_Window * window, Uint32 flags);
 void MT2D_SDL_SetWindowSize(MT2D_SDL_Window * window, int w, int h);
 
 int MT2D_SDL_SetRenderTarget(MT2D_SDL_Renderer *renderer, MT2D_SDL_Texture *texture);
+MT2D_C_END
 #endif
 #endif
