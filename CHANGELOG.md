@@ -76,7 +76,6 @@ ObjectPosX(Object) = 12;
 - Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 - MS-DOS VGA: the renderer writes each changed 4x8 tile once to the video memory, so the 64 KB double buffer is not needed anymore (`MSDOS_USE_DOUBLE_BUFFER` is ignored), it makes no `malloc`/`free` per frame and uses about 40 KB less static memory. The spaceship game runs about 1.8x faster in DOSBox. Optional `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace before drawing. ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
-- Add `bench/bench_vga.c` and `bench/ship`, DOSBox benchmarks of the VGA renderer that also compare the screen with a per pixel reference painter ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
 
 ### Fixes
 
