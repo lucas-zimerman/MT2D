@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <MT2D/ObjectCore/Sprites.h>
+#include <MT2D/_MSDOS/Render/dVgaRen.h> /* gives the functions C linkage, as the callers expect */
 #ifdef __DJGPP__
 #include <pc.h> /* outportb */
 #else

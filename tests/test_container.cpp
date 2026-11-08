@@ -263,4 +263,40 @@ TEST(export_as_file_fails_on_invalid_path) {
     CHECK(!MT2D_Container_Export_as_File(id, (char *)"x.txt", (char *)"/definitely/not/a/dir", false));
 }
 
+TEST(read_pieces_of_memory_file) {
+    reset();
+    MT2D_Container_Load_File_From_Memory(dup("song"), (BYTE *)dup("0123456789"), 10);
+    int id = MT2D_Container_Get_FileId((char *)"song");
+    BYTE buf[16];
+    CHECK_EQ(MT2D_Container_Read(id, 0, buf, 4), 4);
+    CHECK(memcmp(buf, "0123", 4) == 0);
+    CHECK_EQ(MT2D_Container_Read(id, 8, buf, 16), 2);  // clamped to the end
+    CHECK(memcmp(buf, "89", 2) == 0);
+    CHECK_EQ(MT2D_Container_Read(id, 10, buf, 4), 0);  // at the end
+}
+
+TEST(read_pieces_of_disk_file) {
+    reset();
+    write_file("readme.bin", "abcdefghij");
+    CHECK(MT2D_Container_Load_File((char *)"readme.bin"));
+    int id = MT2D_Container_Get_FileId((char *)"readme.bin");
+    BYTE buf[16];
+    CHECK_EQ(MT2D_Container_Read(id, 3, buf, 4), 4);
+    CHECK(memcmp(buf, "defg", 4) == 0);
+    CHECK_EQ(MT2D_Container_Read(id, 8, buf, 16), 2);
+    CHECK(memcmp(buf, "ij", 2) == 0);
+    remove("readme.bin");
+}
+
+TEST(read_rejects_bad_arguments) {
+    reset();
+    BYTE buf[4];
+    CHECK_EQ(MT2D_Container_Read(-1, 0, buf, 4), -1);
+    load_memory("x", "abc");
+    int id = MT2D_Container_Get_FileId((char *)"x");
+    CHECK_EQ(MT2D_Container_Read(id, 0, 0, 4), -1);
+    CHECK_EQ(MT2D_Container_Read(id, -1, buf, 4), -1);
+    CHECK_EQ(MT2D_Container_Read(0x7f0 | 5, 0, buf, 4), -1);  // unknown id
+}
+
 MT2D_TEST_MAIN()

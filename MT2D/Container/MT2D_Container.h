@@ -144,6 +144,12 @@ int MT2D_Container_Count_Files(void);
 char *MT2D_Container_Get_FileName_By_ID(int id);
 /*return a new array of bytes containing the decrypted data. return 0 in case of not found*/
 BYTE * MT2D_Container_Get_Data(int id, bool decrypt);
+/*
+ * Copy up to n raw bytes of the file starting at pos (no decryption, no allocation).
+ * Works for memory and disk files, so it can be used to stream a file in small pieces.
+ * return the number of bytes copied (0 at the end of the file), -1 if the id or arguments are invalid.
+ */
+int MT2D_Container_Read(int id, long pos, BYTE *dst, int n);
 
 MT2D_C_END
 

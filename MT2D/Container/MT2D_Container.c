@@ -921,3 +921,39 @@ BYTE * MT2D_Container_Get_Data(int id, bool decrypt) {
 	return data;
 }
 
+
+/*Copy a piece of the raw file data into dst, see the header*/
+int MT2D_Container_Read(int id, long pos, BYTE *dst, int n) {
+	int hashIndex, hashOffset, length, copied;
+	MT2D_ContainerFile *entry;
+	if (id < 0 || dst == NULL || n < 0 || pos < 0) {
+		return -1;
+	}
+	hashIndex = get_Hash_Index(id);
+	hashOffset = get_Hash_File_Index(id);
+	if (hashIndex >= 15 || hashOffset >= ContainerHash.count[hashIndex]) {
+		return -1;
+	}
+	entry = ContainerHash.hash[hashIndex][hashOffset];
+	length = (int)entry->length;
+	if (pos >= length || n == 0) {
+		return 0;
+	}
+	if (n > length - (int)pos) {
+		n = length - (int)pos;
+	}
+	if (entry->DataFileId->refCount == MT2D_CONT_DATATYPE_MEM) {
+		memcpy(dst, (BYTE*)entry->DataFileId->file + pos, n);
+		return n;
+	}
+	else {
+		MT2D_FILE *file = MT2D_FILE_OPEN((const char*)entry->DataFileId->file, "rb");
+		if (!file) {
+			return -1;
+		}
+		MT2D_FILE_SEEK(file, entry->fileDataOffset + pos, SEEK_SET);
+		copied = (int)MT2D_FILE_READ(file, dst, 1, n);
+		MT2D_FILE_CLOSE(file);
+		return copied;
+	}
+}

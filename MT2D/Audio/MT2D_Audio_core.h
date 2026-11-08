@@ -25,6 +25,17 @@
 #define MT2D_PlayMusicFromMemory SDL_PlayMusicFromMemory
 #define MT2D_Audio_Init() SDL_Start_Sound_System()
 #define MT2D_Audio_Close SDL_Close_Sound_System
+#elif defined(__DJGPP__)
+/* MS-DOS: IMF songs on the OPL2 chip (Adlib / Sound Blaster), see _MSDOS/M2Music.h.
+   MT2D_Play_Music("ode.ogg") plays d/ode.imf, like the images (png -> d/xxx.bmp). */
+#include <MT2D/_MSDOS/M2Music.h>
+#define MT2D_Audio_Init() MT2D_Dos_Music_Init()
+#define MT2D_Audio_Close() MT2D_Dos_Music_Close()
+#define MT2D_Play_Audio(name)
+#define MT2D_Play_Music(name) MT2D_Dos_Music_PlayFile(name)
+#define MT2D_PlayAudioFromMemory(audio, size, free)
+#define MT2D_PlayMusicFromMemory(music, size, free) MT2D_Dos_Music_PlayMemory((music), (size), (free), MT2D_MUSIC_LOOP)
+#define MT2D_PlaySoundFromMemory(memoryBlock, size, free)
 #else
 #ifndef MT2D_AUIDO_WARN
 #define MT2D_AUIDO_WARN
