@@ -43,7 +43,9 @@ What each target can and cannot do.
 * BMP must be **uncompressed 8 bit**. The palette of each loaded image is sent to the VGA, so all images of a
   program should share one palette. Index 0 = transparent, indexes 16 and 31 = text colours (black, white).
 * Use `examples/tools/png2dos.py` to convert (cyan pixels become transparent).
-* Sprites are drawn in tiles of 4x8 pixels (`MSDOS_USE_SPRITE_TILE_RENDER`); `MSDOS_USE_DOUBLE_BUFFER` stops flicker for 64 KB.
+* Sprites are drawn in tiles of 4x8 pixels: a tile is built in a small buffer and written once, only when its char or
+  its sprites changed, so there is no flicker and no 64 KB double buffer (`MSDOS_USE_DOUBLE_BUFFER` no longer works, it does nothing: remove it, see [MIGRATION.md](../../MIGRATION.md)).
+  The renderer uses about 18 KB of static memory plus the sprite list, which grows when needed and is reused every frame.
 * Audio: music as IMF on OPL2, effects as 8/16 bit PCM mono `.wav` through a Sound Blaster, max 3 at once
   ([../general/audio.md](../general/audio.md)). The `desert` object scripts only play the soundtrack on DOS.
 * `MT2D/_MSDOS/` stays C++ (DJGPP style) for now.

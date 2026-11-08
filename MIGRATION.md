@@ -109,6 +109,22 @@ unsigned char *pixels = sprite->Image->Pixels;   int w = sprite->SizeX;
 
 Index 0 is transparent. `Load_Sprite_Image("x.png", ...)` loads `d/x.bmp` on MS-DOS, see `examples/README.md`.
 
+### MS-DOS VGA: the double buffer was removed
+
+`MSDOS_USE_DOUBLE_BUFFER` no longer works: it is still accepted, but it does nothing. The VGA renderer builds each changed
+4x8 tile (text and sprites) in a small local buffer and writes it once to the video memory, so there is no flicker and no
+64 KB buffer. What to do:
+
+- Remove `-DMSDOS_USE_DOUBLE_BUFFER` (or the `#define`) from your build; the 64 KB of RAM it used is free now.
+- `MSDOS_USE_SPRITE_TILE_RENDER` is gone, the tile renderer is the only one. Do not test for it.
+- Code that touched the renderer internals must be updated: `MT2D_Dos_Render_Sprites()`, `DOUBLE_BUFFER`, `ChangedMasks`,
+  `SpriteTiles` and `MT2D/_MSDOS/Render/VGAsprTi.h` do not exist anymore. Use `Dos_Add_ImagetoBuffer`,
+  `Dos_Clear_ImgBuffer` and `MT2D_Dos_Render_VGA_ASCII` (the public calls did not change). If you write to the video memory
+  yourself, call `MT2D_Dos_Render_Invalidate()` so the next frame redraws every tile.
+- The renderer copies what it needs from a `Sprite` when `Dos_Add_ImagetoBuffer` is called, as before. A tile is redrawn when its
+  char or the sprites over it (image pointer, position, size) change: to animate a sprite, change its image pointer; changing
+  the pixels in place is not seen.
+
 ### Copying a Sprite struct
 
 Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text`/`Image` pointer, not the data. Don't `Sprite_Delete` both copies.

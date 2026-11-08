@@ -37,3 +37,36 @@ another number as the second argument). Results are deterministic: the same bina
 DOSBox executes a flat instruction rate and does not model caches or memory timing. It is good for comparing how much work two
 builds do on a Pentium class CPU (DJGPP's real `malloc`/`free` run), not for predicting absolute times, and it understates
 gains that come from fewer memory accesses.
+
+## VGA renderer (MS-DOS, mode 13h)
+
+`bench_vga.c` draws scripted scenes (idle text, changing text, aligned / unaligned / many sprites) through the real
+renderer in VGA mode and prints, per scene, the time of one frame, a checksum of the 320x200 screen, `badpixels` (pixels
+that differ from an independent per-pixel reference painter, 0 = the picture is right) and the `malloc`/`realloc` calls per
+frame. The last line is the heap growth (`sbrk`) and the number of allocation calls. `size` of the `.exe` shows the static data.
+
+```sh
+git worktree add /tmp/mt2d-old master
+DJGPP=~/djgpp bench/build_vga.sh /tmp/mt2d-old /tmp/dosrun/OLD.EXE            # the renderer of that checkout
+DJGPP=~/djgpp bench/build_vga.sh .             /tmp/dosrun/NEW.EXE
+bench/run_dosbox.sh /tmp/dosrun
+```
+
+Pass `-DMSDOS_USE_DOUBLE_BUFFER` to build an old checkout with its double buffer (it does nothing in a checkout with the new renderer). DOSBox does not charge the slow video
+memory bus, so removing writes to the video memory is understated.
+
+### Spaceship game (`bench/ship`)
+
+`ship/ship.c` is the main loop of `examples/graphics` (two full screen scrolling layers, planets, a rock, coins and the ship)
+without the 30 ms delay, the beep and the keyboard: the ship follows a fixed path for 400 frames. It prints the time of a
+frame, the allocation calls per frame, the heap growth, the screen checksum and `badpixels` (the last frame compared with the
+reference painter). It is built like an example, then the exe is run with the `d` folder of `examples/graphics` next to it:
+
+```sh
+cmake -S bench/ship -B /tmp/ship-new -DCMAKE_TOOLCHAIN_FILE=$PWD/examples/cmake/djgpp.cmake -DMT2D_DOS_VGA=ON
+cmake --build /tmp/ship-new          # writes bench/ship/bin/shipbench.exe (git ignored)
+mkdir /tmp/shiprun && cp -r examples/graphics/d CWSDPMI.EXE /tmp/shiprun/ && cp bench/ship/bin/shipbench.exe /tmp/shiprun/NEW.EXE
+bench/run_dosbox.sh /tmp/shiprun
+```
+
+For the old renderer copy `bench/ship` into a `master` worktree and build it there (`-DCMAKE_CXX_FLAGS=-DMSDOS_USE_DOUBLE_BUFFER` for the double buffer variant).
