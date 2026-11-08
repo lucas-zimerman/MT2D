@@ -6,7 +6,7 @@
 #include <MT2D/_WINDOWS/MT2D_Win_Debug.h>
 #define MT2D_Ide_Printf MT2D_Win_Ide_Printf
 #elif !defined(MT2D_DEBUG_ENABLED)
-#define MT2D_Ide_Printf
+#define MT2D_Ide_Printf(text)
 #else
 #error "code not developed for your IDE/OS"
 #endif

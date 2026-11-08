@@ -21,6 +21,7 @@ This file will contain some simple hardware calls
 #define MT2D_SYSC_H
 
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 #if defined(SDL_USE)
 #include "SDL/MT2D_SDL_System_Calls.h"
@@ -40,8 +41,10 @@ This file will contain some simple hardware calls
 #define MT2D_System_Delay MT2D_Linux_System_Delay
 #define MT2D_System_Beep MT2D_Linux_System_Beep
 #else
+MT2D_C_BEGIN
 void MT2D_System_Delay(int time_milisecond);
 void MT2D_System_Beep(int frequency, int time_milisecond);
+MT2D_C_END
 #endif
 
 #endif

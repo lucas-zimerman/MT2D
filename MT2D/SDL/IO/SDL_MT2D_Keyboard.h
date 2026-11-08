@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*==============================================================================================
 SDL_MT2D_Keyboard.cpp / SDL_MT2D_Keyboard.h
 
@@ -19,5 +20,7 @@ _key was pressed and then witch _key was pressed.
 Return: Key pressed (ansi char)
 ==============================================================================================*/
 
-int SDL_getkeyboard();
-int SDL_Keyboard_touched();
+MT2D_C_BEGIN
+int SDL_getkeyboard(void);
+int SDL_Keyboard_touched(void);
+MT2D_C_END

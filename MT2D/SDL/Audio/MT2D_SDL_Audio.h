@@ -1,3 +1,4 @@
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 /*===================================================================
 SDL_MT2DAudio.h SDL_MT2DAudio.cpp created by:Lucas Zimerman Fraulob
 
@@ -14,10 +15,12 @@ SDL_MT2DAudio.h SDL_MT2DAudio.cpp created by:Lucas Zimerman Fraulob
 ===================================================================*/
 #ifndef HEADER_AUDIO
 #define HEADER_AUDIO
+MT2D_C_BEGIN
 	void SDL_Play_Music(char *Name);
 	void SDL_Play_Sound(char *Name);
 	void SDL_Start_Sound_System();
 	void SDL_Close_Sound_System();
 	void SDL_PlayMusicFromMemory(void* music, unsigned int size, bool free);
 	void SDL_PlaySoundFromMemory(void* memoryBlock, unsigned int size, bool free);
+MT2D_C_END
 #endif

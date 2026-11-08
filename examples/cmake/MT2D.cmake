@@ -97,17 +97,17 @@ endmacro()
 # Engine libraries: mt2d (terminal) and mt2d_sdl
 # --------------------------------------------------------------------------------------------
 set(MT2D_COMMON_SOURCES
-    MT2D.cpp
-    MT2D_Layout.cpp
-    Audio/MT2D_Audio_core.cpp
-    Container/aes.cpp
-    Container/MT2D_Container.cpp
-    Cursor/Cursor.cpp
-    InputBox/MT2D_InputBox_Integer.cpp
-    InputBox/MT2D_InputBox_Password.cpp
-    InputBox/MT2D_InputBox_String.cpp
-    MessageBox/MT2D_MessageBox.cpp
-    MessageBox/MT2D_MessageBox_With_Result.cpp
+    MT2D.c
+    MT2D_Layout.c
+    Audio/MT2D_Audio_core.c
+    Container/aes.c
+    Container/MT2D_Container.c
+    Cursor/Cursor.c
+    InputBox/MT2D_InputBox_Integer.c
+    InputBox/MT2D_InputBox_Password.c
+    InputBox/MT2D_InputBox_String.c
+    MessageBox/MT2D_MessageBox.c
+    MessageBox/MT2D_MessageBox_With_Result.c
     ObjectCore/Cscript.cpp
     ObjectCore/MT2D_Text_Image.cpp
     ObjectCore/Object.cpp
@@ -119,8 +119,8 @@ set(MT2D_COMMON_SOURCES
     ObjectCore/STDContainer.cpp
     ObjectCore/STDFunctions.cpp
     ObjectCore/Vars.cpp
-    Tools/UserInterface/MT2D_Menu.cpp
-    Tools/Video/MT2D_Generic_Line.cpp
+    Tools/UserInterface/MT2D_Menu.c
+    Tools/Video/MT2D_Generic_Line.c
 )
 
 # New engine code is C (ObjectLoader, ObjectGlobals), the example projects only declare CXX.
@@ -131,47 +131,47 @@ function(mt2d_engine_target target backend)
     set(sources ${MT2D_COMMON_SOURCES})
     if(backend STREQUAL "sdl")
         list(APPEND sources
-            Joystick/MT2D_Joystick.cpp
-            SDL/IO/SDL_MT2D_Joystick.cpp
-            SDL/MT2D_SDL_Debug.cpp
-            SDL/MT2D_SDL_Defines.cpp
-            SDL/MT2D_SDL_Event_Handler.cpp
-            SDL/MT2D_SDL_main.cpp
-            SDL/MT2D_SDL_Redefine.cpp
-            SDL/MT2D_SDL_System_Calls.cpp
-            SDL/Audio/MT2D_SDL_Beep.cpp
-            SDL/IO/SDL_MT2D_FILE.cpp
-            SDL/IO/SDL_MT2D_Keyboard.cpp
-            SDL/Render/MT2D_SDL_Render.cpp
+            Joystick/MT2D_Joystick.c
+            SDL/IO/SDL_MT2D_Joystick.c
+            SDL/MT2D_SDL_Debug.c
+            SDL/MT2D_SDL_Defines.c
+            SDL/MT2D_SDL_Event_Handler.c
+            SDL/MT2D_SDL_main.c
+            SDL/MT2D_SDL_Redefine.c
+            SDL/MT2D_SDL_System_Calls.c
+            SDL/Audio/MT2D_SDL_Beep.c
+            SDL/IO/SDL_MT2D_FILE.c
+            SDL/IO/SDL_MT2D_Keyboard.c
+            SDL/Render/MT2D_SDL_Render.c
         )
         if(MT2D_HAS_MIXER)
-            list(APPEND sources SDL/Audio/MT2D_SDL_Audio.cpp)
+            list(APPEND sources SDL/Audio/MT2D_SDL_Audio.c)
         endif()
     elseif(MT2D_DOS)
         list(APPEND sources
-            _MSDOS/M2Cursor.cpp
-            _MSDOS/M2Init.cpp
-            _MSDOS/M2SysCal.cpp
-            _MSDOS/Render/M2Render.cpp
-            _MSDOS/IO/M2Keybd.cpp
+            _MSDOS/M2Cursor.c
+            _MSDOS/M2Init.c
+            _MSDOS/M2SysCal.c
+            _MSDOS/Render/M2Render.c
+            _MSDOS/IO/M2Keybd.c
         )
     elseif(WIN32)
         list(APPEND sources
-            _WINDOWS/MT2D_Win_Cursor.cpp
-            _WINDOWS/MT2D_Win_Debug.cpp
-            _WINDOWS/MT2D_Win_Init.cpp
-            _WINDOWS/MT2D_Win_System_Calls.cpp
-            _WINDOWS/IO/MT2D_Win_Keyboard.cpp
-            _WINDOWS/Render/MT2D_Win_Render.cpp
+            _WINDOWS/MT2D_Win_Cursor.c
+            _WINDOWS/MT2D_Win_Debug.c
+            _WINDOWS/MT2D_Win_Init.c
+            _WINDOWS/MT2D_Win_System_Calls.c
+            _WINDOWS/IO/MT2D_Win_Keyboard.c
+            _WINDOWS/Render/MT2D_Win_Render.c
         )
     else()
         list(APPEND sources
-            _LINUX/MT2D_Linux_CP850.cpp
-            _LINUX/MT2D_Linux_Cursor.cpp
-            _LINUX/MT2D_Linux_Init.cpp
-            _LINUX/MT2D_Linux_System_Calls.cpp
-            _LINUX/Render/MT2D_Linux_Render.cpp
-            _LINUX/IO/MT2D_Linux_Keyboard.cpp
+            _LINUX/MT2D_Linux_CP850.c
+            _LINUX/MT2D_Linux_Cursor.c
+            _LINUX/MT2D_Linux_Init.c
+            _LINUX/MT2D_Linux_System_Calls.c
+            _LINUX/Render/MT2D_Linux_Render.c
+            _LINUX/IO/MT2D_Linux_Keyboard.c
         )
     endif()
     if(MT2D_CSCRIPT_PARSER)
@@ -220,7 +220,8 @@ function(mt2d_engine_target target backend)
         check_cxx_compiler_flag(-fpermissive MT2D_HAS_FPERMISSIVE)
         target_compile_options(${target} PRIVATE -w)
         if(MT2D_HAS_FPERMISSIVE)
-            target_compile_options(${target} PRIVATE -fpermissive)
+            # only the C++ sources left (ObjectCore) need it, gcc warns about it for C
+            target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
         endif()
     endif()
 endfunction()

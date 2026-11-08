@@ -91,7 +91,7 @@ static inline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) 
         return fopen(fileName, mode);
 }
 
-static inline MT2D_FILE *MT2D_FILE_OPEN_TEMP() {
+static inline MT2D_FILE *MT2D_FILE_OPEN_TEMP(void) {
         return tmpfile();
 }
 

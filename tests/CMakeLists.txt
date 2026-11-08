@@ -26,11 +26,11 @@ file(WRITE "${SHADOW}/MT2D\\MT2D.h" "#include <MT2D/MT2D.h>\n")
 file(WRITE "${SHADOW}/MT2D\\MT2D_Debug.h" "#include <MT2D/MT2D_Debug.h>\n")
 
 add_library(mt2d_engine STATIC
-    ${ENGINE}/MT2D.cpp
-    ${ENGINE}/MT2D_Layout.cpp
-    ${ENGINE}/Audio/MT2D_Audio_core.cpp
-    ${ENGINE}/Container/aes.cpp
-    ${ENGINE}/Container/MT2D_Container.cpp
+    ${ENGINE}/MT2D.c
+    ${ENGINE}/MT2D_Layout.c
+    ${ENGINE}/Audio/MT2D_Audio_core.c
+    ${ENGINE}/Container/aes.c
+    ${ENGINE}/Container/MT2D_Container.c
     ${ENGINE}/ObjectCore/Cscript.cpp
     ${ENGINE}/ObjectCore/MT2D_Text_Image.cpp
     ${ENGINE}/ObjectCore/ObjectGlobals.c
@@ -41,8 +41,8 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/ObjectCore/State.cpp
     ${ENGINE}/ObjectCore/STDFunctions.cpp
     ${ENGINE}/ObjectCore/Vars.cpp
-    ${ENGINE}/Tools/Video/MT2D_Generic_Line.cpp
-    ${ENGINE}/_LINUX/MT2D_Linux_CP850.cpp
+    ${ENGINE}/Tools/Video/MT2D_Generic_Line.c
+    ${ENGINE}/_LINUX/MT2D_Linux_CP850.c
 )
 # compat first so its MT2D/MT2D.h wins over the real one.
 target_include_directories(mt2d_engine PUBLIC

@@ -40,9 +40,12 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 #if !defined(_MT2D_SDL_MAIN_H) && defined(SDL_USE)
 	#define _MT2D_SDL_MAIN_H	
     #include <MT2D/SDL/MT2D_SDL_Redefine.h>
-	void MT2D_SDL_Init();
-	void close();
-	void free_Texture();
+	#include <MT2D/ObjectCore/MT2D_CDecl.h>
+	MT2D_C_BEGIN
+	void MT2D_SDL_Init(void);
+	void MT2D_SDL_Close(void); /* was "close", which clashes with close() of <unistd.h> in C */
+	void free_Texture(void);
 	MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface);
 	MT2D_SDL_Texture *MT2D_SDL_Create_Rotated_Texture(SDL_Surface *Surface, MT2D_SDL_Texture *newTexture);
+	MT2D_C_END
 #endif
