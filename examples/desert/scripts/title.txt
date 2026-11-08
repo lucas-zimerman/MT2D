@@ -1,0 +1,39 @@
+// The title: it starts the music, drops in from the top of the screen, stays a while and leaves.
+object title
+{
+    int Pos_X = 56;
+    int Pos_Y = 0;
+
+    states
+    {
+    Drop:
+        PlayMusic("desert.ogg")   // streamed and looped by the engine (needs SDL2_mixer, silent without it)
+        Pos_Y -= 24
+        Acel_Y = 3
+        while (Pos_Y < 10)
+        {
+            Show image "title.png" 208 18
+            Wait 1
+            Move
+        }
+        Acel_Y = 0
+        Goto Hold
+
+    Hold:
+        Show image "title.png" 208 18
+        Wait 150
+        Goto Leave
+
+    Leave:
+        Acel_Y = -3
+        while (Pos_Y > -30)
+        {
+            Show image "title.png" 208 18
+            Wait 1
+            Move
+        }
+        Show none
+        Wait 1
+        Stop   // after a Wait: a Stop right after a loop that never waits would spin forever
+    }
+}

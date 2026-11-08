@@ -1,0 +1,25 @@
+// An invisible box that follows the truck. When the worm enters it, the truck is in danger.
+object radar
+{
+    int Size_X = 150;
+    int Size_Y = 130;
+
+    states
+    {
+    Watch:
+        Show none
+        Wait 1
+        Pos_X = 90
+        Pos_Y = global TruckY
+        Pos_Y -= 40
+        GotoStateIfHitObject(global Worm, Alarm)
+
+    Alarm:
+        global Dodge = 1
+        global Alert = 1
+        PlaySound("alert.wav")
+        Show none
+        Wait 100
+        Goto Watch
+    }
+}

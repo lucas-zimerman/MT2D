@@ -1,0 +1,28 @@
+// A banner that blinks when the radar raises the alert.
+object alert
+{
+    int Pos_X = 92;
+    int Pos_Y = 34;
+    int blinks = 0;
+
+    states
+    {
+    Idle:
+        Show none
+        Wait 1
+        if (global Alert == 1) { Goto Blink }
+
+    Blink:
+        global Alert = 0
+        blinks = 0
+        while (blinks < 5)
+        {
+            Show image "alert.png" 136 18
+            Wait 6
+            Show none
+            Wait 4
+            blinks++
+        }
+        Goto Idle
+    }
+}
