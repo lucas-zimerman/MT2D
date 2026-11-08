@@ -1,5 +1,6 @@
 #if defined(__MSDOS__) || defined(__DOS__)
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h> /* bool */
 #include <conio.h>
 
 bool MT2D_Dos_Keyboard_touched(void) {//Generic function, easy to be replaced for porting

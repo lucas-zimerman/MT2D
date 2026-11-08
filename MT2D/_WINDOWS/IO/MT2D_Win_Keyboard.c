@@ -1,6 +1,7 @@
 #include "../../MT2D_Terminal_Define.h"
 #if defined(_WIN32) && !defined(SDL_USE)
 #include <stdio.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h> /* bool */
 #include <conio.h>
 
 
