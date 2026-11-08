@@ -9,11 +9,14 @@ Only the Python standard library is needed.
 import math
 import os
 import random
+import shutil
 import struct
 import wave
 
 RATE = 22050
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
+# MS-DOS plays the same files from the "d" folder (PlaySound("roar.wav") -> d/roar.wav, names of 8 characters)
+DOS_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "d")
 rnd = random.Random(11)
 
 
@@ -27,6 +30,8 @@ def save(name, samples, gain=0.9):
         w.setsampwidth(2)
         w.setframerate(RATE)
         w.writeframes(b"".join(struct.pack("<h", int(x / peak * gain * 32000)) for x in samples))
+    os.makedirs(DOS_OUT, exist_ok=True)
+    shutil.copyfile(os.path.join(OUT, name + ".wav"), os.path.join(DOS_OUT, name + ".wav"))
 
 
 def lowpass(xs, k):

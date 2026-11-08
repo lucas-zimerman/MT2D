@@ -10,7 +10,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `inputpopup` | terminal | Message box, text input, number input and a two option question |
 | `menu` | terminal | `MT2D_Short_Menu` / `MT2D_Menu` |
 | `playpcspeaker` | terminal | PC speaker: sound effects and two public domain songs (Beethoven) made of beeps |
-| `playsound` | SDL + SDL2_mixer | `MT2D_Play_Audio`: plays `.wav` / `.ogg` sound effects, many at the same time |
+| `playsound` | SDL + SDL2_mixer, MS-DOS | `MT2D_Play_Audio`: plays `.wav` / `.ogg` sound effects, many at the same time (on MS-DOS the `.wav` files of `d` through the Sound Blaster) |
 | `playmusic` | SDL + SDL2_mixer, MS-DOS | `MT2D_Play_Music`: streams and loops a song with a visualizer (`.ogg` with SDL2_mixer; on MS-DOS an IMF song on the OPL2 chip, see [`playmusic/NOTICE.md`](playmusic/NOTICE.md) for its credits) |
 | `asciigraphics` | terminal | Plasma, starfield and spiral drawn with the MS-DOS block characters |
 | `graphics` | SDL | PNG images drawn on top of the text screen, parallax scrolling, smooth movement with the joystick API |
@@ -19,7 +19,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `desert` | SDL, MS-DOS (VGA) | Object scripts (`ObjectCore_LoadScript`, globals, `CreateObject`, `GotoStateIfHitObject`, `random()`): a monster truck drifts away from a leaping sand worm over parallax scenery, with a looping soundtrack and sound effects played by the scripts (`PlayMusic`, `PlaySound`, need SDL2_mixer; MS-DOS only plays the soundtrack, as IMF music on the OPL2 chip) |
 
 The terminal examples use the engine's native text backend, the SDL ones open a window that emulates the
-text screen and can also draw images (see `MT2D/MT2D_Terminal_Define.h`). SDL examples are only built for DJGPP when the experimental VGA mode is on (see [MS-DOS](#ms-dos-djgpp)), and without sound effects (the music of `playmusic` and `desert` plays as IMF on the OPL2 chip).
+text screen and can also draw images (see `MT2D/MT2D_Terminal_Define.h`). SDL examples are only built for DJGPP when the experimental VGA mode is on (see [MS-DOS](#ms-dos-djgpp)), and the music of `playmusic` and `desert` plays as IMF on the OPL2 chip (`playsound` plays its effects through the Sound Blaster).
 
 ## Building
 
@@ -129,6 +129,11 @@ Songs that fit the 32 KB song buffer are loaded whole, bigger ones are streamed 
 the example: `playmus.exe` shows its menu (Ode to Joy, Fur Elise and "Bad Apple!!") and `playmus.exe d/other.imf` plays any IMF file. Make IMF files from MIDI
 files with `playmusic/tools/midi2imf.py`. "Bad Apple!!", the third song, is a fan work with its own credits, see
 [`playmusic/NOTICE.md`](playmusic/NOTICE.md).
+
+Sound effects (`MT2D_Play_Audio("coin.ogg")`) play `d/coin.wav` (same naming rule) through the **Sound Blaster** (2.0 or newer,
+found with the `BLASTER` environment variable, DOSBox sets it): PCM mono `.wav` files, 8 or 16 bit, up to 3 at the same time (playing the same sound again restarts its voice instead of using another one),
+mixed in software and sent by auto-init DMA at 22050 Hz, 8 bit (a file with another rate is converted when it is loaded).
+`playsound` is the example (`playsnd.exe`); `playsound/tools/make_assets.py` also writes its `d` folder.
 
 ## Assets
 

@@ -163,6 +163,10 @@ function(mt2d_engine_target target backend)
             Audio/MT2D_Music.c
             _MSDOS/M2Opl.c
             _MSDOS/M2Music.c
+            # sound effects (MT2D_Play_Audio): software mixer + Sound Blaster DMA, see _MSDOS/M2Sound.h
+            Audio/MT2D_Mixer.c
+            Audio/MT2D_Wav.c
+            _MSDOS/M2Sound.c
         )
         if(MT2D_DOS_VGA)
             list(APPEND sources Joystick/MT2D_Joystick.c _MSDOS/IO/MT2D_Dos_Joystick.c)
@@ -257,7 +261,8 @@ endfunction()
 #   * SDL examples are skipped (with a message) when building with DJGPP, unless they also pass DOS_VGA
 #     and the build uses -DMT2D_DOS_VGA=ON (the VGA renderer then draws their images, see tools/png2dos.py)
 #   * DOS_MUSIC: an SDL example that only needs audio files also builds with DJGPP (terminal backend): the engine plays
-#     the IMF songs of its "d" folder on the OPL2 chip, in place of the .ogg files (ode.ogg -> d/ode.imf)
+#     the IMF songs of its "d" folder on the OPL2 chip, in place of the .ogg files (ode.ogg -> d/ode.imf), and the
+#     .wav sound effects of its "d" folder on the Sound Blaster, in place of the .wav/.ogg files (jump.ogg -> d/jump.wav)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
     cmake_parse_arguments(EX "SDL;DOS_VGA;DOS_MUSIC" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
