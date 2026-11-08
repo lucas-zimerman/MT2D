@@ -33,6 +33,7 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Examples for the browser (Emscripten): `web-tui` (text mode, PC speaker effects) and `web-gui` (images, sound effects and music). `mt2d_add_example` got the `WEB` and `PRELOAD` options, and `CONTRIBUTING.md` explains how to set up Emscripten and build for the web. ([#36](https://github.com/lucas-zimerman/MT2D/pull/36))
 - MS-DOS: music with DJGPP, IMF songs (type 0 and 1) played on the OPL2 chip (Adlib / Sound Blaster). `MT2D_Play_Music("x.ogg")` loops `d/x.imf` (8.3 name, like the images), `MT2D_PlayMusicFromMemory` plays a song from memory, and `MT2D_Audio_Init()` returns 1 when an OPL chip is found. A timer interrupt plays the song and keeps the DOS clock at its normal speed. Sound effects (`MT2D_Play_Audio`) are still ignored on MS-DOS. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
 - `MT2D/Audio/MT2D_Music.{h,c}`: portable IMF decoder in C. Songs that fit the buffer (32 KB, `MT2D_DOS_MUSIC_BUF`) are loaded whole, bigger ones are streamed from the disk or from a container through a ring buffer (`MT2D_Music_Update`, called by `MT2D_System_Delay` on MS-DOS). Songs are not decrypted. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
 - `MT2D_Container_Read(id, pos, dst, n)` reads a piece of a container file without loading it all (no decryption). ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
