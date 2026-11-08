@@ -1,4 +1,4 @@
-#include "../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 
 #if defined(__MSDOS__)
 
