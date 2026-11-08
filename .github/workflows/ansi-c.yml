@@ -16,7 +16,8 @@ jobs:
 
       - name: Reject C++ source files
         run: |
-          found=$(git ls-files 'MT2D/*' | grep -iE '\.(cpp|cc|cxx|c\+\+|hpp|hh|hxx|ipp|tpp)$' || true)
+          # MT2D/_MSDOS is temporarily allowed to keep DJGPP-style C++ (VGA render, BMP loader).
+          found=$(git ls-files 'MT2D/*' | grep -iE '\.(cpp|cc|cxx|c\+\+|hpp|hh|hxx|ipp|tpp)$' | grep -v '^MT2D/_MSDOS/' || true)
           if [ -n "$found" ]; then
             echo "::error::C++ files found in MT2D/ (ANSI C only):"
             echo "$found" | while read -r f; do echo "::error file=$f::C++ file not allowed"; done
