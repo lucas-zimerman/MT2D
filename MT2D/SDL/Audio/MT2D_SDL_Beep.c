@@ -97,7 +97,7 @@ static void Beeper_GenerateSamples(Sint16 *stream, int length)
 		bo->samplesLeft -= samplesToDo - i;
 
 		while (i < samplesToDo) {
-			stream[i] = AMPLITUDE * (Sint16)sin(beeperV * 2 * M_PI / FREQUENCY);
+			stream[i] = (Sint16)(AMPLITUDE * sin(beeperV * 2 * M_PI / FREQUENCY));
 			i++;
 			beeperV += bo->freq;
 		}
@@ -152,7 +152,13 @@ static void audio_callback(void *_beeper, Uint8 *_stream, int _length)
 
 void SDL_Beep(int frequency, int TimeMS) {
 	Beeper_Beep(frequency, TimeMS);
+#ifndef __EMSCRIPTEN__
 	Beeper_Wait();
+#else
+	/* A browser tab cannot block: the audio callback only runs when the page returns to the browser,
+	   so waiting here would freeze the page forever. The beep stays in the queue and plays by itself. */
+	(void)Beeper_Wait;
+#endif
 }
 
 #else

@@ -78,6 +78,9 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
+- Emscripten: `MT2D_System_Beep` no longer waits for the tone to end (it froze the page), the beeps are queued. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
+- Emscripten: arrow keys stayed pressed forever with the joystick code (key releases were never applied), and `Mapped_Button` was not initialised. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
 - MS-DOS VGA mode: `MT2D_Dos_Draw_Window`, `MT2D_Dos_Clear_Main_Window` and the sprite/palette functions had C++ linkage (their `.cpp` files did not include their `extern "C"` headers), so VGA programs did not link. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
 
 - `Cscript_Empty` now initialises `_void`. ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
