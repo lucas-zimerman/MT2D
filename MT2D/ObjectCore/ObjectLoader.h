@@ -11,7 +11,8 @@
    The states are shared data: to create more objects with the same behaviour use
         Object_Create(solid, renderOnly, sx, sy, x, y, movingDot->State, movingDot->States_Count)
    and release the model with ObjectCore_Unload(model) only when no other object uses its states.
-   Sprites are loaded once per file name and shared by the frames that use it.
+   Sprites are loaded once per file name and shared by the frames that use it. A sprite the game
+   registered with ObjectCore_AddGlobalSprite under the same path is used instead of the file.
 
    File format (all numbers little endian):
 

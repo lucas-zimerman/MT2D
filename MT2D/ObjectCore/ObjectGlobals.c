@@ -15,6 +15,10 @@ static ObjSlot *Global_Objects = 0;
 static int Global_ObjectCount = 0;
 static FnSlot *Global_Functions = 0;
 static int Global_FunctionCount = 0;
+typedef struct { char *Path; Sprite *Spr; } SprSlot;
+static SprSlot *Global_Sprites = 0;
+static int Global_SpriteCount = 0;
+#define GLOBAL_SPRITE_PATH_MAX 255
 static char Global_LastError[96] = "";
 
 void ObjectCore_ClearLastError(void) { Global_LastError[0] = 0; }
@@ -95,6 +99,53 @@ bool ObjectCore_RemoveGlobalObject(const char *Name) {
                 }
         }
         return false;
+}
+
+/* ---- sprites ------------------------------------------------------------- */
+Sprite *ObjectCore_FindGlobalSprite(const char *Path) {
+        if (!Path) return 0;
+        for (int i = 0; i < Global_SpriteCount; i++) {
+                if (strcmp(Global_Sprites[i].Path, Path) == 0) return Global_Sprites[i].Spr;
+        }
+        return 0;
+}
+
+bool ObjectCore_AddGlobalSprite(const char *Path, Sprite *Spr) {
+        size_t n = Path ? strlen(Path) : 0;
+        SprSlot *grown;
+        char *copy;
+        if (!Spr || n < 1 || n > GLOBAL_SPRITE_PATH_MAX || ObjectCore_FindGlobalSprite(Path)) return false;
+        copy = (char*)malloc(n + 1);
+        if (!copy) return false;
+        grown = (SprSlot*)realloc(Global_Sprites, (Global_SpriteCount + 1) * sizeof(SprSlot));
+        if (!grown) { free(copy); return false; }
+        memcpy(copy, Path, n + 1);
+        Global_Sprites = grown;
+        Global_Sprites[Global_SpriteCount].Path = copy;
+        Global_Sprites[Global_SpriteCount].Spr = Spr;
+        Global_SpriteCount++;
+        Spr->refCount++; /* the reference of the registry */
+        return true;
+}
+
+bool ObjectCore_RemoveGlobalSprite(const char *Path) {
+        if (!Path) return false;
+        for (int i = 0; i < Global_SpriteCount; i++) {
+                if (strcmp(Global_Sprites[i].Path, Path) == 0) {
+                        Sprite *spr = Global_Sprites[i].Spr;
+                        free(Global_Sprites[i].Path);
+                        for (int j = i; j < Global_SpriteCount - 1; j++) Global_Sprites[j] = Global_Sprites[j + 1];
+                        Global_SpriteCount--;
+                        if (Global_SpriteCount == 0) { free(Global_Sprites); Global_Sprites = 0; }
+                        Sprite_Delete(spr); /* frees it when no state uses it */
+                        return true;
+                }
+        }
+        return false;
+}
+
+void ObjectCore_ClearGlobalSprites(void) {
+        while (Global_SpriteCount > 0) ObjectCore_RemoveGlobalSprite(Global_Sprites[Global_SpriteCount - 1].Path);
 }
 
 /* ---- functions ----------------------------------------------------------- */

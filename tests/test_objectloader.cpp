@@ -171,6 +171,44 @@ TEST(sprites_are_loaded_once_and_shared) {
     ObjectCore_Unload(o);
 }
 
+TEST(registered_global_sprite_replaces_the_file) {
+    Sprite *g = Sprite_Create_Ascii_From_Cells(1, 1, "G");
+    CHECK(ObjectCore_AddGlobalSprite("not_on_disk.txt", g));
+    Bin b;
+    b.magic().u16(1).u8(0).str("not_on_disk.txt");   // the file does not exist
+    b.u16(1).str("Idle").u16(2);
+    b.u16(0).u16(1).u16(0xFFFF);
+    b.u16(0).u16(1).u16(0xFFFF);
+    b.u8(0).u8(0);
+    Object *o = b.load();
+    CHECK(o != 0);
+    if (o) {
+        CHECK(o->State[0]->Sprites[0] == g);
+        CHECK_EQ(g->refCount, 3);                    // registry + 2 frames
+        ObjectCore_Unload(o);
+    }
+    CHECK_EQ(g->refCount, 1);                        // still registered and alive
+    Object *o2 = b.load();                           // and usable again
+    CHECK(o2 != 0);
+    if (o2) ObjectCore_Unload(o2);
+    ObjectCore_ClearGlobalSprites();
+}
+
+TEST(unused_registered_sprite_is_not_released_by_the_loader) {
+    Sprite *g = Sprite_Create_Ascii_From_Cells(1, 1, "G");
+    CHECK(ObjectCore_AddGlobalSprite("unused.txt", g));
+    Bin b;
+    b.magic().u16(1).u8(0).str("unused.txt");
+    b.u16(1).str("Idle").u16(1).u16(0xFFFF).u16(1).u16(0xFFFF);   // no frame shows it
+    b.u8(0).u8(0);
+    Object *o = b.load();
+    CHECK(o != 0);
+    if (o) ObjectCore_Unload(o);
+    CHECK(ObjectCore_FindGlobalSprite("unused.txt") == g);
+    CHECK_EQ(g->refCount, 1);
+    ObjectCore_ClearGlobalSprites();
+}
+
 TEST(missing_sprite_file_fails) {
     Bin b;
     b.magic().u16(1).u8(0).str("nope_not_here.txt");

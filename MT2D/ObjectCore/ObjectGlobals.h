@@ -12,6 +12,10 @@
    ObjectCore_Load return NULL, ObjectCore_GetLastError() tells which one. The names of a kind
    (vars, objects, functions) are unique and can have 18 characters (MT2D_VAR_NAME_MAX - 1).
 
+   Sprites are different: nothing is written in the script. Register a sprite under the path a
+   script uses in Show ("SPRITEX", image "a.png" 2 2, container "a.png" 2 2) and the loader uses it
+   instead of loading that file. The registry holds a reference of its own (see below).
+
    A loaded object keeps the pointer it found, nothing is looked up while the object runs. The
    Remove functions always work and leave the control to you: unload (or never run again) the
    objects that use a global before you remove it or free what it points to.
@@ -23,6 +27,7 @@
 #include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/ObjectCore/Vars.h>
+#include <MT2D/ObjectCore/Sprites.h>
 
 MT2D_C_BEGIN
 
@@ -35,6 +40,16 @@ bool ObjectCore_RemoveGlobalVar(const char *Name);
    GotoStateIfHitObject). The loaded frames keep the pointer they see when the file is loaded. */
 bool ObjectCore_AddGlobalObject(const char *Name, Object *Obj);
 bool ObjectCore_RemoveGlobalObject(const char *Name);
+
+/* A sprite the loader uses instead of loading the file called Path (the text a script has in Show,
+   up to 255 characters, any kind of Show). The registry takes a reference (refCount++) so the
+   objects that unload never free it, do not call Sprite_Delete on it yourself. A sprite that
+   was registered keeps the scale it was created with, the w h of the script are ignored.
+   Remove releases that reference: the sprite is freed when the last state that uses it is gone.
+   Returns false for a NULL sprite, a bad path or a duplicate. */
+bool ObjectCore_AddGlobalSprite(const char *Path, Sprite *Spr);
+bool ObjectCore_RemoveGlobalSprite(const char *Path);
+void ObjectCore_ClearGlobalSprites(void);   /* Remove all of them (shutdown) */
 
 /* Your own Cscript functions. ArgCount is how many arguments a script has to write (for the
    Object* + vars signature the object counts as the first one), -1 accepts any amount. */
@@ -63,6 +78,7 @@ typedef struct ObjectCore_CscriptEntry {
 
 MT2D_VAR *ObjectCore_FindGlobalVar(const char *Name);
 Object *ObjectCore_FindGlobalObject(const char *Name);
+Sprite *ObjectCore_FindGlobalSprite(const char *Path);
 bool ObjectCore_FindGlobalCScript(const char *Name, ObjectCore_CscriptEntry *Out);
 void ObjectCore_SetLastError(const char *What, const char *Name);
 void ObjectCore_ClearLastError(void);
