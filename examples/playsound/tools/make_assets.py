@@ -9,6 +9,7 @@
 import math
 import os
 import random
+import shutil
 import struct
 import subprocess
 import tempfile
@@ -16,6 +17,8 @@ import wave
 
 RATE = 22050
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
+# MS-DOS cannot play .ogg: the engine plays d/<name cut to 8 characters>.wav (jump.ogg -> d/jump.wav)
+DOS_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "d")
 
 
 def square(phase):
@@ -56,6 +59,8 @@ def save(name, samples):
         w.setsampwidth(2)
         w.setframerate(RATE)
         w.writeframes(b"".join(struct.pack("<h", int(max(-1.0, min(1.0, s)) * 32000)) for s in samples))
+    os.makedirs(DOS_OUT, exist_ok=True)
+    shutil.copyfile(wav_path, os.path.join(DOS_OUT, os.path.splitext(name)[0][:8] + ".wav"))
     if ext == ".ogg":
         subprocess.check_call(["ffmpeg", "-y", "-loglevel", "error", "-i", wav_path, "-c:a", "libvorbis", "-q:a", "3", path])
         os.remove(wav_path)
