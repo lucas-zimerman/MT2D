@@ -14,7 +14,7 @@
 
    The game and the scripts talk through globals (ObjectCore_AddGlobalVar / AddGlobalObject):
    Speed (the scripts set it, the scenery scrolls with it), Dodge, Alert, Lane and TruckY.
-   The images are made by tools/make_assets.py (cyan = transparent), the music by tools/make_music.py, the sound effects by tools/make_sfx.py.
+   The images are made by tools/make_assets.py (cyan = transparent), the music by tools/make_music.py (SDL, .ogg) and tools/make_imf.py (MS-DOS, d/desert.imf, OPL2), the sound effects by tools/make_sfx.py.
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
     MT2D_Init();
-    MT2D_Audio_Init(); /* does nothing without SDL2_mixer, the music is started by title.txt, sound effects by the other scripts */
+    MT2D_Audio_Init(); /* does nothing without SDL2_mixer or an OPL2 chip (MS-DOS), the music is started by title.txt, sound effects by the other scripts */
 
     sky = load_layer("sky.png");
     mesas = load_layer("mesas.png");

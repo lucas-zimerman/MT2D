@@ -7,7 +7,7 @@ object title
     states
     {
     Drop:
-        PlayMusic("desert.ogg")   // streamed and looped by the engine (needs SDL2_mixer, silent without it)
+        PlayMusic("desert.ogg")   // looped by the engine: SDL2_mixer plays assets/desert.ogg, MS-DOS plays d/desert.imf (OPL2), silent without either
         Pos_Y -= 24
         Acel_Y = 3
         while (Pos_Y < 10)

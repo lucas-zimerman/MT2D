@@ -46,6 +46,13 @@ jobs:
             -c MT2D/ObjectCore/ObjectLoader.c -o build/djgpp/ObjectLoader.o
           i586-pc-msdosdjgpp-gcc -std=gnu99 -Wall -Wextra -Werror -I. \
             -c MT2D/ObjectCore/ObjectGlobals.c -o build/djgpp/ObjectGlobals.o
+      - name: Compile music (IMF decoder and OPL2 backend)
+        run: |
+          export PATH="$HOME/djgpp/bin:$PATH"
+          mkdir -p build/djgpp
+          for f in MT2D/Audio/MT2D_Music.c MT2D/_MSDOS/M2Opl.c MT2D/_MSDOS/M2Music.c; do
+            i586-pc-msdosdjgpp-gcc -std=gnu99 -Wall -Wextra -Werror -I. -c "$f" -o "build/djgpp/$(basename "$f").o"
+          done
       - name: Compile VGA render (experimental, warnings allowed)
         run: |
           export PATH="$HOME/djgpp/bin:$PATH"

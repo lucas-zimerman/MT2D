@@ -159,6 +159,10 @@ function(mt2d_engine_target target backend)
             _MSDOS/M2Init.c
             _MSDOS/M2SysCal.c
             _MSDOS/IO/M2Keybd.c
+            # IMF music on the OPL2 chip (MT2D_Play_Music), see _MSDOS/M2Music.h
+            Audio/MT2D_Music.c
+            _MSDOS/M2Opl.c
+            _MSDOS/M2Music.c
         )
         if(MT2D_DOS_VGA)
             list(APPEND sources Joystick/MT2D_Joystick.c _MSDOS/IO/MT2D_Dos_Joystick.c)
@@ -244,7 +248,7 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [DOS_VGA] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [DOS_VGA] [DOS_MUSIC] [ASSETS file ...] [DOS_NAME short])
 #
 #   * the executable goes to <example folder>/bin
 #   * SDL examples also get the SDL font/icon in bin, ASSETS (paths relative to the example
@@ -252,9 +256,11 @@ endfunction()
 #   * DOS_NAME is the executable name used with DJGPP (8.3 file names)
 #   * SDL examples are skipped (with a message) when building with DJGPP, unless they also pass DOS_VGA
 #     and the build uses -DMT2D_DOS_VGA=ON (the VGA renderer then draws their images, see tools/png2dos.py)
+#   * DOS_MUSIC: an SDL example that only needs audio files also builds with DJGPP (terminal backend): the engine plays
+#     the IMF songs of its "d" folder on the OPL2 chip, in place of the .ogg files (ode.ogg -> d/ode.imf)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL;DOS_VGA" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
+    cmake_parse_arguments(EX "SDL;DOS_VGA;DOS_MUSIC" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
 
     if(EX_SDL AND MT2D_DOS)
         if(MT2D_DOS_VGA AND EX_DOS_VGA)
@@ -262,6 +268,10 @@ function(mt2d_add_example name)
             # the converted images of the "d" folder (see tools/png2dos.py).
             set(EX_SDL FALSE)
             set(EX_DOS_IMAGES TRUE)
+        elseif(EX_DOS_MUSIC)
+            set(EX_SDL FALSE)
+            set(EX_DOS_IMAGES TRUE) # copies the "d" folder (the IMF songs), the assets are the .ogg files
+            set(EX_DOS_AUDIO TRUE)
         else()
             message(STATUS "MT2D example '${name}' needs SDL and is skipped for DJGPP")
             return()
@@ -303,7 +313,7 @@ function(mt2d_add_example name)
         set_target_properties(${name} PROPERTIES OUTPUT_NAME "${EX_DOS_NAME}")
     endif()
 
-    if(EX_SDL AND MT2D_HAS_MIXER)
+    if((EX_SDL AND MT2D_HAS_MIXER) OR EX_DOS_AUDIO)
         target_compile_definitions(${name} PRIVATE MT2D_EXAMPLE_AUDIO_FILES=1)
     endif()
 

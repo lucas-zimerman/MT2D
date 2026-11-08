@@ -3,6 +3,7 @@
 */
 
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/_MSDOS/Render/DtxtRend.h> /* gives the functions C linkage, as the callers expect */
 
 #if defined(__MSDOS__)
 #ifdef __DJGPP__ // DJGPP uses another method for writing data on screen

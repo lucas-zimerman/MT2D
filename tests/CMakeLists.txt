@@ -29,6 +29,7 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/MT2D.c
     ${ENGINE}/MT2D_Layout.c
     ${ENGINE}/Audio/MT2D_Audio_core.c
+    ${ENGINE}/Audio/MT2D_Music.c
     ${ENGINE}/Container/aes.c
     ${ENGINE}/Container/MT2D_Container.c
     ${ENGINE}/ObjectCore/Cscript.cpp
@@ -56,7 +57,7 @@ target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermis
 
 # The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
 option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
-set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader objectglobals)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader objectglobals music)
 if(MT2D_CSCRIPT_PARSER)
     target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
     target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)
