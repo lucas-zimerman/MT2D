@@ -32,9 +32,15 @@ else()
     set(MT2D_DOS FALSE)
 endif()
 
+# Experimental VGA mode (mode 13h) for MS-DOS, see MT2D_Terminal_Define.h (MSDOS_USE_GRAPHICS).
+option(MT2D_DOS_VGA "Build the MS-DOS VGA renderer instead of the text mode one (DJGPP only)" OFF)
+if(MT2D_DOS AND MT2D_DOS_VGA)
+    add_definitions(-DMSDOS_USE_GRAPHICS)
+endif()
+
 # The object text compiler (ObjectCore/Parser) is optional: games can ship compiled
 # objects (.mto, made by the cscriptc tool) and only need the small ObjectLoader. Off by default on DOS.
-if(MT2D_DOS)
+if(MT2D_DOS AND NOT MT2D_DOS_VGA)
     option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" OFF)
 else()
     option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
@@ -152,9 +158,20 @@ function(mt2d_engine_target target backend)
             _MSDOS/M2Cursor.c
             _MSDOS/M2Init.c
             _MSDOS/M2SysCal.c
-            _MSDOS/Render/M2Render.c
             _MSDOS/IO/M2Keybd.c
         )
+        if(MT2D_DOS_VGA)
+            list(APPEND sources Joystick/MT2D_Joystick.c _MSDOS/IO/MT2D_Dos_Joystick.c)
+            # VGA mode 13h (320x200, 256 colors): text drawn with a bitmap font, BMP sprites on top
+            list(APPEND sources
+                _MSDOS/Render/DtxtRend.cpp
+                _MSDOS/Render/dVgaRen.cpp
+                _MSDOS/Render/MT2D_VGA_Init.cpp
+                _MSDOS/Files/bmp.cpp
+            )
+        else()
+            list(APPEND sources _MSDOS/Render/M2Render.c)
+        endif()
     elseif(WIN32)
         list(APPEND sources
             _WINDOWS/MT2D_Win_Cursor.c
@@ -227,22 +244,31 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [DOS_VGA] [ASSETS file ...] [DOS_NAME short])
 #
 #   * the executable goes to <example folder>/bin
 #   * SDL examples also get the SDL font/icon in bin, ASSETS (paths relative to the example
 #     folder) are copied to bin too
 #   * DOS_NAME is the executable name used with DJGPP (8.3 file names)
-#   * SDL examples are skipped (with a message) when building with DJGPP
+#   * SDL examples are skipped (with a message) when building with DJGPP, unless they also pass DOS_VGA
+#     and the build uses -DMT2D_DOS_VGA=ON (the VGA renderer then draws their images, see tools/png2dos.py)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
+    cmake_parse_arguments(EX "SDL;DOS_VGA" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
 
-    if(EX_SDL)
-        if(MT2D_DOS)
+    if(EX_SDL AND MT2D_DOS)
+        if(MT2D_DOS_VGA AND EX_DOS_VGA)
+            # The VGA renderer draws the image sprites too: build it with the terminal backend and
+            # the converted images of the "d" folder (see tools/png2dos.py).
+            set(EX_SDL FALSE)
+            set(EX_DOS_IMAGES TRUE)
+        else()
             message(STATUS "MT2D example '${name}' needs SDL and is skipped for DJGPP")
             return()
         endif()
+    endif()
+
+    if(EX_SDL)
         mt2d_find_sdl()
         set(lib mt2d_sdl)
         if(NOT TARGET mt2d_sdl)
@@ -293,8 +319,15 @@ function(mt2d_add_example name)
         list(APPEND files "${MT2D_EXAMPLES_DIR}/assets/msdos_fnt.png" "${MT2D_EXAMPLES_DIR}/assets/msdos.ico")
     endif()
     foreach(a ${EX_ASSETS})
+        if(EX_DOS_IMAGES AND NOT a MATCHES "\\.txt$")
+            continue() # MS-DOS: only the scripts, the images come from the "d" folder
+        endif()
         list(APPEND files "${CMAKE_CURRENT_SOURCE_DIR}/${a}")
     endforeach()
+    if(EX_DOS_IMAGES AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/d")
+        add_custom_command(TARGET ${name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/d" "${bin_dir}/d")
+    endif()
     foreach(f ${files})
         add_custom_command(TARGET ${name} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different "${f}" "${bin_dir}/")

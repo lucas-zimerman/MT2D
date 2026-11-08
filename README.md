@@ -6,7 +6,7 @@ With MT2D you'll be provided with alot of build in functions to make your life e
 As an aditional bonus MT2D also has a core for making games and complex menus systems, this includes the support of playing wave sounds and rendering sprites (for now limited on platforms where SDL can run)
 
 The Working operational systems are:
--MS-DOS (image sprites and non PC spekaer sound files doesn't work)
+-MS-DOS (text mode works; image sprites need the experimental VGA mode, see examples/README.md; sound files other than the PC speaker don't work)
 -Windows (PC speaker sounds weird in 7 or higher, for rendering sprites that arent ASCII you'll need SDL)
 -Linux (better used with SDL, the support for native terminal is kinda limited and its not working at the moment)
 -MacOS (never tested but it should be at the same situation as Linux)

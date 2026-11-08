@@ -1,5 +1,5 @@
 #if defined(__MSDOS__)
-#include "../../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/MT2D_CDecl.h> /* bool */
 #include <conio.h>
 

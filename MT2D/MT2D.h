@@ -103,7 +103,9 @@ MT2D_C_END
 #elif defined(_WIN32)
         #include "_WINDOWS/MT2D_Win_Init.h"
         #define MT2D_Init MT2D_Win_Init
-
+#elif defined(MSDOS_USE_GRAPHICS) 
+	#include <MT2D/_MSDOS/Render/MT2D_VGA_Init.h>
+	#define MT2D_Init MT2D_Dos_VGA_Init 
 #elif defined(__MSDOS__) || defined(__DOS__)
         #include <MT2D/_MSDOS/MT2D_Dos_Init.h>
         #define MT2D_Init MT2D_Dos_Init
