@@ -23,6 +23,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <MT2D/ObjectCore/Sprites.h>
+#ifdef __DJGPP__
+#include <pc.h> /* outportb */
+#else
+#include <conio.h>
+#define outportb outp
+#endif
 #include <MT2D/_MSDOS/Render/DosImg.h>
 #include <MT2D/_MSDOS/Render/font.h>
 #include <stdio.h>
@@ -61,6 +67,16 @@ void MT2D_Dos_Render_Sprites();
 extern unsigned char VGA_ASCII_COLORS[2]; /*store the index of the colors to be used by a char*/
 
 int frame =0;
+
+void MT2D_Dos_Set_Palette(const unsigned char *bgra, int count){
+	int i;
+	outportb(0x3C8, 0);/*first DAC index to write, it auto increments*/
+	for(i = 0; i < count; i++){
+		outportb(0x3C9, bgra[i*4 + 2] >> 2);/*R, the DAC only has 6 bits*/
+		outportb(0x3C9, bgra[i*4 + 1] >> 2);/*G*/
+		outportb(0x3C9, bgra[i*4 + 0] >> 2);/*B*/
+	}
+}
 
 void Dos_Clear_ImgBuffer(){
 	if (VGASpritesCnt > 0) {

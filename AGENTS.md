@@ -9,6 +9,7 @@
   (`#ifdef __cplusplus`), use `struct`/`typedef` the C way, no overloads, no default arguments,
   no `std::`, no exceptions, no `bool` without `<stdbool.h>`-style fallback, no `#pragma region`
   (DJGPP builds with `-Werror=unknown-pragmas`).
+* `MT2D/_MSDOS/` (the VGA renderer and BMP loader) is allowed to stay DJGPP style C++ for now, the "C++ files" CI check skips that folder.
 * Existing C++ engine files stay as they are. Only touch them to make their headers usable from C.
 * Keep the DJGPP/Watcom limits in mind: 8.3 file names for DOS-visible files, no heap-heavy code.
 

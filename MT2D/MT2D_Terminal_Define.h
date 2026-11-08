@@ -30,11 +30,12 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 
 /*Only enable MSDOS_USE_GRAPHICS only if you really need to render graphic sprites*/
 /*By default MSDOS target doesn't need any define to be enabled*/
-#if defined(__MSDOS__) || defined(__DOS__)
-#define MSDOS_USE_GRAPHICS /** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this*/
-#endif
+/*Opt-in: pass -DMSDOS_USE_GRAPHICS (or uncomment the line below) when building for MS-DOS.*/
+//#define MSDOS_USE_GRAPHICS /** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this*/
 //#define MSDOS_USE_DOUBLE_BUFFER /** Only enable this if MSDOS_USE_GRAPHICS is enabled, this avoid flickering on screen at the cost of 64KB of ram*/
+#if defined(MSDOS_USE_GRAPHICS)
 #define MSDOS_USE_SPRITE_TILE_RENDER /** Uses a special method of rendering sprites on screeen, works for normal and double buffer mode**/
+#endif
 
 
 //#define SDL_USE_AUDIO

@@ -141,9 +141,35 @@ static Sprite *Create_Image_Sprite(SDL_Surface *Img, int ScaleX, int ScaleY) {
 #elif defined(MSDOS_USE_GRAPHICS)
 static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY);
 /* VGA: loads an 8 bit BMP into a pixel buffer */
+
+/*
+        The images of the examples are PNGs, MS-DOS can't read them: "name.png" is loaded from the
+        converted 8 bit BMP "d/<name cut to 8 chars>.bmp" (see examples/tools/png2dos.py).
+        Names that already end with ".bmp" are used as they are.
+*/
+static const char *Dos_Image_Path(const char *file, char *out, size_t outSize) {
+        const char *base = file, *p, *dot;
+        size_t n, i;
+        for (p = file; *p; p++) {
+                if (*p == '/' || *p == '\\') base = p + 1;
+        }
+        dot = strrchr(base, '.');
+        if (!dot || strcmp(dot, ".png") != 0 || outSize < 16) return file;
+        n = (size_t)(dot - base);
+        if (n > 8) n = 8;
+        strcpy(out, "d/");
+        for (i = 0; i < n; i++) {
+                char c = base[i];
+                out[2 + i] = (c >= 'A' && c <= 'Z') ? (char)(c - 'A' + 'a') : c;
+        }
+        strcpy(out + 2 + n, ".bmp");
+        return out;
+}
+
 static Sprite *Load_Dos_Image_Sprite(char *file, int ScaleX, int ScaleY) {
         Sprite *S;
-        FILE *fl = fopen(file, "rb");
+        char path[32];
+        FILE *fl = fopen(Dos_Image_Path(file, path, sizeof(path)), "rb");
         if (!fl) return 0;
         S = (Sprite*)malloc(sizeof(Sprite));
         if (!S) {

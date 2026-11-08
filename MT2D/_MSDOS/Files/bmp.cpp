@@ -31,6 +31,8 @@
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/_MSDOS/Render/DosImg.h>
 #include <MT2D/_MSDOS/Files/bmp.h>
+#include <MT2D/_MSDOS/Render/dVgaRen.h>
+#include <string.h>
 
 typedef unsigned char  byte;
 typedef unsigned short word;
@@ -65,47 +67,43 @@ void fskip(FILE *fp, int num_bytes)
  *    Loads a bitmap file into memory.                                    *
  **************************************************************************/
 
+static unsigned long Le32(const unsigned char *b) {
+  return (unsigned long)b[0] | ((unsigned long)b[1] << 8) | ((unsigned long)b[2] << 16) | ((unsigned long)b[3] << 24);
+}
+static unsigned int Le16(const unsigned char *b) {
+  return (unsigned int)b[0] | ((unsigned int)b[1] << 8);
+}
+
+/* Loads an uncompressed 8 bit BMP: the pixels become Image->Pixels (top row first),
+   the palette is sent to the VGA DAC (index 0 is the transparent color of the sprites). */
 int MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
 {
-  word num_colors;
+  unsigned char head[54];
+  unsigned char pal[1024];
+  unsigned long Offset, DibSize;
+  long Width, Height;
+  unsigned int Colors;
   unsigned char *data;
-  long Offset = 0;
-  unsigned short Width = 0, Height = 0;
-  unsigned char Padding;
-  unsigned int FlippedIndex;
-  int i, j;
+  unsigned long Padding;
+  unsigned long FlippedIndex;
+  long i;
 
-  /* check to see if it is a valid bitmap file */
-  if (fgetc(file)!='B' || fgetc(file)!='M')  /* ID 16 bits */
-  {
-    return 0;
-  }
+  if (fread(head, 1, sizeof(head), file) != sizeof(head)) return 0;
+  if (head[0] != 'B' || head[1] != 'M') return 0;
+  Offset = Le32(head + 10);
+  DibSize = Le32(head + 14);
+  Width = (long)Le32(head + 18);
+  Height = (long)Le32(head + 22);
+  if (DibSize < 40 || Le16(head + 28) != 8 || Le32(head + 30) != 0) return 0; /* 8 bpp, BI_RGB only */
+  if (Width <= 0 || Width > 32767 || Height <= 0 || Height > 32767) return 0;
+  Colors = (unsigned int)Le32(head + 46);
+  if (Colors == 0 || Colors > 256) Colors = 256;
 
-  /* read in the width and height of the image, and the
-     number of colors used; ignore the rest */
-  fskip(file,8);/*Skip 8 bytes from the header*/
-  fread(&Offset, sizeof(long), 1, file);
-
-  fskip(file,4);/*Skip 4 bytes*/
-  fread(&Width, sizeof(unsigned short), 1, file);/*Width of the bitmap in pixels*/
-  fskip(file,2);                                 /*jump 2 bytes from the rest of the bitmap size*/
-  fread(&Height,sizeof(unsigned short), 1, file);/*Height of the bitmap in pixels*/
-  fskip(file,22);
-  /*
-    2  2 bytes from the rest of the Y size
-    4  2 bytes from  the number of color planes
-    8  4 bytes from BI_RGB
-    12 4 bytes from The size of the raw bitmap data
-    16 4 bytes from the print resolution of the image in horizontal
-    20 4 bytes from the print resolution of the image in vertical
-    22 2 bytes from the number of colors in the palette (2 bytes left)
-  */
-  fread(&num_colors,sizeof(unsigned short), 1, file);
-  fskip(file,6);
-  if (Width == 0 || Height == 0) return 0;
-
-  /* assume we are working with an 8-bit file */
-  if (num_colors==0) num_colors=256;
+  /* the palette is stored as B,G,R,0 right after the headers */
+  fseek(file, 14L + (long)DibSize, SEEK_SET);
+  memset(pal, 0, sizeof(pal));
+  if (fread(pal, 4, Colors, file) != Colors) return 0;
+  MT2D_Dos_Set_Palette(pal, (int)Colors);
 
   S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
   if (!S->Image) return 0;
@@ -115,23 +113,24 @@ int MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
     S->Image = 0;
     return 0;
   }
-  S->SizeX = Width;
-  S->SizeY = Height;
+  S->SizeX = (int)Width;
+  S->SizeY = (int)Height;
   S->type = 1;
   data = S->Image->Pixels;
-  /* Ignore the palette information for now. */
 
-  /* jump to where the image is*/
-  Padding = (unsigned char)((4 - (Width%4)) % 4);
-  FlippedIndex = (unsigned int)Height*Width - Width;
-  fseek(file,Offset,SEEK_SET);
-  /* read the bitmap (BMP rows are stored bottom up) */
-  for(i=0;i<Height;i++){
-    for(j=0;j<Width;j++){
-      fread(&data[FlippedIndex + j],sizeof(unsigned char),1,file);
+  /* rows are stored bottom up and padded to 4 bytes */
+  Padding = (4UL - ((unsigned long)Width % 4UL)) % 4UL;
+  FlippedIndex = (unsigned long)(Height - 1) * (unsigned long)Width;
+  fseek(file, (long)Offset, SEEK_SET);
+  for (i = 0; i < Height; i++) {
+    if (fread(&data[FlippedIndex], 1, (size_t)Width, file) != (size_t)Width) {
+      free(S->Image->Pixels);
+      free(S->Image);
+      S->Image = 0;
+      return 0;
     }
-    FlippedIndex -= Width;
-    fskip(file,Padding);
+    FlippedIndex -= (unsigned long)Width;
+    fskip(file, (int)Padding);
   }
   return 1;
 }

@@ -30,6 +30,10 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- MS-DOS: experimental VGA mode (`MSDOS_USE_GRAPHICS`, mode 13h 320x200 with 256 colors) that draws the text screen with a bitmap font and image sprites from 8 bit BMP files (palette index 0 is transparent). It works with DJGPP (near pointer video memory) and is turned on in the examples with `-DMT2D_DOS_VGA=ON`.
+- MS-DOS: `Load_Sprite_Image("x.png")` loads `d/x.bmp` (8.3 name), and `examples/tools/png2dos.py` converts the example images. `graphics`, `cscript`, `sprites` and `desert` can be built for DJGPP in this mode.
+- The CI compiles the VGA files with DJGPP, and the ANSI C check allows C++ under `MT2D/_MSDOS/` for now.
+
 - New `desert` example: a scripted demoscene (monster truck, sand worm, radar and particles are object scripts) showing globals, `CreateObject`, `GotoStateIfHitObject`, `random()` and `PlayMusic`/`PlaySound` (original chase theme and sound effects). ([#27](https://github.com/lucas-zimerman/MT2D/pull/27))
 - New Cscript functions: `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}`, `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`) and the relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`). ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Object scripts: describe an object (vars, states, sprites, behaviour) in a text file, compile it with `cscriptc` and load it with `ObjectCore_Load("movingdot.mto")`, see [Object-Scripts.md](https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/Object-Scripts.md) ([#3](https://github.com/lucas-zimerman/MT2D/issues/3)) ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))

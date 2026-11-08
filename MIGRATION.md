@@ -76,6 +76,21 @@ MT2D_SDL_Texture *rt = sprite->Image->RotatedTexture;
 
 `Text` and `Image` share the same memory, only access `Image` when `sprite->type == 1` (and `Text` when it is 0). On platforms without image support, `Load_Sprite_Image*` still returns the `<!>` placeholder ASCII sprite.
 
+### Image sprites (MS-DOS VGA)
+
+The experimental VGA mode (`MSDOS_USE_GRAPHICS`) stores the pixels of an image sprite in `MT2D_Internal_Image`
+(`MT2D/_MSDOS/Render/DosImg.h`), as 8 bit palette indexes, top row first, `SizeX * SizeY` bytes:
+
+```c
+// before (VGA branch)
+unsigned char *pixels = sprite->Data[0];   int w = sprite->size.X;
+
+// after (include <MT2D/_MSDOS/Render/DosImg.h>)
+unsigned char *pixels = sprite->Image->Pixels;   int w = sprite->SizeX;
+```
+
+Index 0 is transparent. `Load_Sprite_Image("x.png", ...)` loads `d/x.bmp` on MS-DOS, see `examples/README.md`.
+
 ### Copying a Sprite struct
 
 Copying a `Sprite` by value (as the SDL render buffer does) copies the `Text`/`Image` pointer, not the data. Don't `Sprite_Delete` both copies.
@@ -146,6 +161,8 @@ Cscript_New(Cscript_CreateObject, model, a, b)   // object variant: the first ex
 ## Build changes
 
 - `#pragma region` / `#pragma endregion` were removed from `MT2D_Terminal_Define.h`, DJGPP's GCC does not know them and `-Werror` made them fail the build. Prefer plain comments in headers that DOS builds include (`STDFunctions.h` still has them).
+
+- MS-DOS: `Render/MT2D_Dos_Render.{h,cpp}` was renamed to `Render/DtxtRend.{h,cpp}`, because the VGA renderer (`dVgaRen`, `MT2D_VGA_Init`) lives next to it. `MSDOS_USE_GRAPHICS` (VGA mode) is off by default, define it (or build the examples with `-DMT2D_DOS_VGA=ON`) to use it. With DJGPP the video memory is reached through the near pointer (`__djgpp_nearptr_enable`).
 
 ## New headers
 
