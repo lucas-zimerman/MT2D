@@ -33,6 +33,11 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- MS-DOS: music with DJGPP, IMF songs (type 0 and 1) played on the OPL2 chip (Adlib / Sound Blaster). `MT2D_Play_Music("x.ogg")` loops `d/x.imf` (8.3 name, like the images), `MT2D_PlayMusicFromMemory` plays a song from memory, and `MT2D_Audio_Init()` returns 1 when an OPL chip is found. A timer interrupt plays the song and keeps the DOS clock at its normal speed. Sound effects (`MT2D_Play_Audio`) are still ignored on MS-DOS. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
+- `MT2D/Audio/MT2D_Music.{h,c}`: portable IMF decoder in C. Songs that fit the buffer (32 KB, `MT2D_DOS_MUSIC_BUF`) are loaded whole, bigger ones are streamed from the disk or from a container through a ring buffer (`MT2D_Music_Update`, called by `MT2D_System_Delay` on MS-DOS). Songs are not decrypted. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
+- `MT2D_Container_Read(id, pos, dst, n)` reads a piece of a container file without loading it all (no decryption). ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
+- The CI compiles the music files with DJGPP, and `test_music` covers the decoder. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
+
 - MS-DOS: experimental VGA mode (`MSDOS_USE_GRAPHICS`, mode 13h 320x200 with 256 colors) that draws the text screen with a bitmap font and image sprites from 8 bit BMP files (palette index 0 is transparent). It works with DJGPP (near pointer video memory) and is turned on in the examples with `-DMT2D_DOS_VGA=ON`. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
 - MS-DOS: `Load_Sprite_Image("x.png")` loads `d/x.bmp` (8.3 name), and `examples/tools/png2dos.py` converts the example images. `graphics`, `cscript`, `sprites` and `desert` can be built for DJGPP in this mode. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
 - The CI compiles the VGA files with DJGPP, and the ANSI C check allows C++ under `MT2D/_MSDOS/` for now. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
@@ -68,6 +73,8 @@ ObjectPosX(Object) = 12;
 - Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 
 ### Fixes
+
+- MS-DOS VGA mode: `MT2D_Dos_Draw_Window`, `MT2D_Dos_Clear_Main_Window` and the sprite/palette functions had C++ linkage (their `.cpp` files did not include their `extern "C"` headers), so VGA programs did not link. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
 
 - `Cscript_Empty` now initialises `_void`. ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
