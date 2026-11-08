@@ -17,6 +17,8 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `cscript` | SDL | Scripts (Cscript) attached to object states |
 | `sprites` | SDL | Animated PNG sprites (walk cycle, spinning coins, ghosts) with `Object`, `ObjectState` and `ObjectScene` |
 | `desert` | SDL, MS-DOS (VGA) | Object scripts (`ObjectCore_LoadScript`, globals, `CreateObject`, `GotoStateIfHitObject`, `random()`): a monster truck drifts away from a leaping sand worm over parallax scenery, with a looping soundtrack and sound effects played by the scripts (`PlayMusic`, `PlaySound`, need SDL2_mixer; MS-DOS only plays the soundtrack, as IMF music on the OPL2 chip) |
+| `web-tui` | SDL, Emscripten only | Text mode game for the browser with PC speaker effects (`MT2D_System_Beep`): a frame callback instead of a `for (;;)` loop, `EM_ASM` (localStorage, page title), html page with touch buttons. See [`web-tui/README.md`](web-tui/README.md) |
+| `web-gui` | SDL + SDL2_mixer, Emscripten only | Image (PNG) game for the browser with sound effects and a looping song: sprites, smooth movement with the joystick API, `MT2D_Play_Audio` / `MT2D_Play_Music`. See [`web-gui/README.md`](web-gui/README.md) |
 
 The terminal examples use the engine's native text backend, the SDL ones open a window that emulates the
 text screen and can also draw images (see `MT2D/MT2D_Terminal_Define.h`). SDL examples are only built for DJGPP when the experimental VGA mode is on (see [MS-DOS](#ms-dos-djgpp)), and the music of `playmusic` and `desert` plays as IMF on the OPL2 chip (`playsound` plays its effects through the Sound Blaster).
@@ -69,6 +71,17 @@ cmake --build build\examples --config Release
 ```
 
 SDL2.dll must be next to the executable (vcpkg copies it for you).
+
+### Web (Emscripten)
+
+`web-tui` and `web-gui` run in the browser, the other examples are skipped there (and these two are skipped
+everywhere else). Install the Emscripten SDK and build them with `emcmake`, see [`web-tui/README.md`](web-tui/README.md).
+
+```bash
+emcmake cmake -S examples/web-gui -B examples/web-gui/build
+cmake --build examples/web-gui/build
+python3 -m http.server 8000 --directory examples/web-gui/bin
+```
 
 ### MS-DOS (DJGPP)
 
