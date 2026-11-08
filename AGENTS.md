@@ -18,11 +18,17 @@
 Every pull request is referenced as `([#id](prurl))`, for example
 `([#26](https://github.com/lucas-zimerman/MT2D/pull/26))`, wherever a PR is mentioned.
 
+### Changelog (only when asked to open a PR)
+
+Only touch or check `CHANGELOG.md` when the user asks you to open a pull request. For any other
+task, do not edit it and do not verify its format.
+
+When opening a PR, update `CHANGELOG.md` following [`CONTRIBUTING.md`](CONTRIBUTING.md).
 **Each item of `CHANGELOG.md` must end with that reference** to the PR that made the change (an
 issue can be linked before it, e.g. `([#3](.../issues/3))`). Open the PR first, then add its number
 to the entries.
 
 ## Other rules
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md): update `CHANGELOG.md`, keep include letter case, run the
+See [`CONTRIBUTING.md`](CONTRIBUTING.md): keep include letter case, run the
 tests (`cmake -S tests -B build/tests && cmake --build build/tests && ctest --test-dir build/tests`).
