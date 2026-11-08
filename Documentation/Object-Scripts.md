@@ -255,6 +255,22 @@ ObjectCore_AddGlobalCScriptObjVars("Spawn", Spawn, 3);    // void f(Object *call
 * `ObjectCore_RemoveGlobalVar`, `...RemoveGlobalObject` and `...RemoveGlobalCScript` always work.
   Removing something that a loaded object still uses (or freeing what it points to) is up to you:
   unload or stop those objects first.
+* **Sprites** need no word in the script. Register a sprite under the path a script writes in `Show`
+  and the loader uses it instead of loading the file (any kind: `Show "a.txt"`, `Show image "a.png" 2 2`,
+  `Show container "a.png" 2 2`):
+
+  ```c
+  ObjectCore_AddGlobalSprite("smoke.txt", Load_Sprite("smoke.txt"));   // every Show "smoke.txt" now shares it
+  ...
+  ObjectCore_RemoveGlobalSprite("smoke.txt");   // or ObjectCore_ClearGlobalSprites() on shutdown
+  int n = ObjectCore_CountGlobalSprites();      // how many are registered
+  ```
+
+  The registry holds a reference of its own, so unloading the objects never frees the sprite and
+  you must not call `Sprite_Delete` on it. Removing it is always safe: the sprite is freed when the
+  last state that uses it is gone. A registered image sprite keeps its own scale (the `w h` in the
+  script are ignored). A path is up to 255 characters, and a sprite registered after an object was
+  loaded is not seen by that object.
 * An object keeps the pointer it found when it was loaded. If you create a new `Doggo` later, load
   the objects that refer to it again.
 

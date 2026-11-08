@@ -156,6 +156,8 @@ static void Load_ReleaseUnusedSprites(Sprite **sprites, unsigned count) {
 }
 
 static Sprite *Load_OneSprite(unsigned kind, char *path, int sx, int sy) {
+        Sprite *global = ObjectCore_FindGlobalSprite(path); /* registered by the game, used instead of the file */
+        if (global) return global;
         if (kind == 0) return Load_Sprite(path);
         if (kind == 1) return Load_Sprite_Image(path, sx, sy);
 #if defined(MT2D_USING_CONTAINER)
