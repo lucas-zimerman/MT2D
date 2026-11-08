@@ -32,7 +32,7 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 /*By default MSDOS target doesn't need any define to be enabled*/
 /*Opt-in: pass -DMSDOS_USE_GRAPHICS (or uncomment the line below) when building for MS-DOS.*/
 //#define MSDOS_USE_GRAPHICS /** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this*/
-/*MSDOS_USE_DOUBLE_BUFFER is not needed anymore: the VGA renderer builds each 4x8 tile in a small buffer and writes it once, without flicker and without the 64KB buffer.*/
+/*MSDOS_USE_DOUBLE_BUFFER no longer works (defining it does nothing, remove it, see MIGRATION.md): the VGA renderer builds each 4x8 tile in a small buffer and writes it once, without flicker and without the 64KB buffer.*/
 /*Optional: -DMSDOS_VGA_WAIT_RETRACE waits the vertical retrace before drawing a frame.*/
 
 

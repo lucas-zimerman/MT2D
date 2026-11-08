@@ -11,7 +11,7 @@
     is built (glyph + sprites) in a 32 byte local buffer and
     written once to the video memory, as 8 dwords, so there
     is no flicker and no need of a 64KB double buffer (the
-    MSDOS_USE_DOUBLE_BUFFER define is not needed anymore).
+    MSDOS_USE_DOUBLE_BUFFER define no longer works, it does nothing).
 
     Memory: about 18KB of static data plus the sprite list
     and the tile node pool (4 bytes for each tile touched

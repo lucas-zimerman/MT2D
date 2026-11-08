@@ -30,6 +30,7 @@ method2:
 ```c
 ObjectPosX(Object) = 12;
 ```
+- MS-DOS VGA: `MSDOS_USE_DOUBLE_BUFFER` no longer works (it is accepted but ignored): the renderer has no double buffer anymore and writes each changed 4x8 tile once, without flicker. Remove the define from your build flags and expect 64 KB less RAM use. `MSDOS_USE_SPRITE_TILE_RENDER` (the tile renderer is the only one now), `MT2D_Dos_Render_Sprites()`, the `DOUBLE_BUFFER`, `SpriteTiles` and `ChangedMasks` variables and `VGAsprTi.h` were removed; code that included or used them must be updated, see [MIGRATION.md](MIGRATION.md) ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
 
 ### Features
 
@@ -75,7 +76,7 @@ ObjectPosX(Object) = 12;
 - Add MS-DOS tooling notes (`Tools/msdos/readme.txt`) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
 - Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
 - Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
-- MS-DOS VGA: the renderer writes each changed 4x8 tile once to the video memory, so the 64 KB double buffer is not needed anymore (`MSDOS_USE_DOUBLE_BUFFER` is ignored), it makes no `malloc`/`free` per frame and uses about 40 KB less static memory. The spaceship game runs about 1.8x faster in DOSBox. Optional `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace before drawing. ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
+- MS-DOS VGA: the renderer writes each changed 4x8 tile once to the video memory, so the 64 KB double buffer is not needed anymore, it makes no `malloc`/`free` per frame and uses about 40 KB less static memory. The spaceship game runs about 1.8x faster in DOSBox. Optional `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace before drawing. ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
 
 ### Fixes
 

@@ -52,7 +52,7 @@ DJGPP=~/djgpp bench/build_vga.sh .             /tmp/dosrun/NEW.EXE
 bench/run_dosbox.sh /tmp/dosrun
 ```
 
-Pass `-DMSDOS_USE_DOUBLE_BUFFER` to build an old checkout with its double buffer. DOSBox does not charge the slow video
+Pass `-DMSDOS_USE_DOUBLE_BUFFER` to build an old checkout with its double buffer (it does nothing in a checkout with the new renderer). DOSBox does not charge the slow video
 memory bus, so removing writes to the video memory is understated.
 
 ### Spaceship game (`bench/ship`)

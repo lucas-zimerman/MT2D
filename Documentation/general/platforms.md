@@ -26,7 +26,7 @@ Off unless you uncomment them there or pass `-D...` to the compiler.
 | `SDL_stbimage` | `SDL_stbimage` instead of SDL_image (UWP and similar) |
 | `MT2D_SDL_GPU` | SDL_GPU instead of SDL render calls |
 | `MSDOS_USE_GRAPHICS` | MS-DOS VGA mode, see [gui/limitations.md](../gui/limitations.md) |
-| `MSDOS_USE_DOUBLE_BUFFER` | ignored: the VGA renderer writes each changed tile once, no flicker and no 64 KB buffer |
+| `MSDOS_USE_DOUBLE_BUFFER` | **no longer works** (accepted, but does nothing): the VGA renderer writes each changed tile once, no flicker and no 64 KB buffer. Remove it from your build, see [MIGRATION.md](../../MIGRATION.md) |
 | `MSDOS_VGA_WAIT_RETRACE` | only with `MSDOS_USE_GRAPHICS`: wait the vertical retrace before drawing a frame |
 | `MT2D_SCREEN_RESIZE`, `MT2D_SDL_USING_DIRECTX_RENDER`, `DEBUG_OBJECTCORE` | see the comments in the file |
 

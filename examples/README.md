@@ -126,7 +126,7 @@ How images work in this mode:
   color key of the SDL backend) become transparent and the other colors are quantized to one palette per example.
 * The screen is 320x200, the SDL one is 320x240: images placed below y = 200 are not visible.
 * Sprites are drawn over the text screen, in tiles of 4x8 pixels. Only the tiles whose char or sprites changed are
-  written to the video memory, so there is no double buffer. `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace
+  written to the video memory, so there is no double buffer (`MSDOS_USE_DOUBLE_BUFFER` no longer works). `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace
   before drawing a frame.
 
 ## Audio
