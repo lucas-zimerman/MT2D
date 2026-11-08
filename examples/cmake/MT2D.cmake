@@ -13,6 +13,8 @@
 #   * SDL                -> a window that emulates the text screen, also draws images.
 #                           Needs SDL2 + SDL2_image (and optionally SDL2_mixer for audio files).
 #                           Not available with DJGPP.
+#   * WEB                -> Emscripten (build with emcmake, see web/README.md). SDL2 and SDL2_image come from
+#                           the Emscripten ports, the output is an .html page. Only WEB examples are built there.
 #
 # Use -DMT2D_EXAMPLES_AUDIO=OFF to ignore SDL2_mixer even when it is installed.
 
@@ -25,6 +27,12 @@ get_filename_component(MT2D_REPO_DIR "${MT2D_EXAMPLES_DIR}/.." ABSOLUTE)
 set(MT2D_ENGINE_DIR "${MT2D_REPO_DIR}/MT2D")
 
 option(MT2D_EXAMPLES_AUDIO "Use SDL2_mixer (when found) to play audio files" ON)
+
+if(EMSCRIPTEN)
+    set(MT2D_WEB TRUE)
+else()
+    set(MT2D_WEB FALSE)
+endif()
 
 if(DJGPP)
     set(MT2D_DOS TRUE)
@@ -54,6 +62,11 @@ macro(mt2d_find_sdl)
         set(MT2D_SDL_LIBS "")
         set(MT2D_SDL_INCLUDES "")
         set(MT2D_HAS_MIXER FALSE)
+        if(MT2D_WEB)
+            # nothing to find: the Emscripten ports are enabled with compiler flags (see mt2d_engine_target)
+            set(MT2D_SDL_FOUND TRUE)
+            set(MT2D_HAS_MIXER TRUE)
+        else()
         find_package(SDL2 CONFIG QUIET)
         find_package(SDL2_image CONFIG QUIET)
         find_package(SDL2_mixer CONFIG QUIET)
@@ -92,10 +105,11 @@ macro(mt2d_find_sdl)
         if(MT2D_SDL_INCLUDES)
             list(REMOVE_DUPLICATES MT2D_SDL_INCLUDES)
         endif()
+        set(MT2D_SDL_FOUND TRUE)
+        endif()
         if(NOT MT2D_EXAMPLES_AUDIO)
             set(MT2D_HAS_MIXER FALSE)
         endif()
-        set(MT2D_SDL_FOUND TRUE)
     endif()
 endmacro()
 
@@ -152,6 +166,9 @@ function(mt2d_engine_target target backend)
         )
         if(MT2D_HAS_MIXER)
             list(APPEND sources SDL/Audio/MT2D_SDL_Audio.c)
+        endif()
+        if(MT2D_WEB)
+            list(APPEND sources _EMNISCRIPT/IO/MT2D_Emni_Joystick.c)
         endif()
     elseif(MT2D_DOS)
         list(APPEND sources
@@ -224,6 +241,14 @@ function(mt2d_engine_target target backend)
             target_compile_definitions(${target} PUBLIC SDL_USE_AUDIO)
         endif()
         target_link_libraries(${target} PUBLIC ${MT2D_SDL_LIBS})
+        if(MT2D_WEB)
+            set(web_ports -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 "-sSDL2_IMAGE_FORMATS=[\"png\"]")
+            if(MT2D_HAS_MIXER)
+                list(APPEND web_ports -sUSE_SDL_MIXER=2 "-sSDL2_MIXER_FORMATS=[\"ogg\",\"wav\"]")
+            endif()
+            target_compile_options(${target} PUBLIC ${web_ports})
+            target_link_options(${target} PUBLIC ${web_ports})
+        endif()
     elseif(NOT MT2D_DOS AND NOT WIN32)
         # wide character curses (ncursesw) is needed to draw the CP850 characters as Unicode.
         # macOS has no separate ncursesw: its curses already has the wide character functions.
@@ -252,8 +277,13 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [DOS_VGA] [DOS_MUSIC] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...]] [DOS_VGA] [DOS_MUSIC] [ASSETS file ...] [DOS_NAME short])
 #
+#   * WEB: an example made for the browser. It is only built with Emscripten (it uses SDL, plus SHELL, the
+#     page common/web_shell.html) and the other examples are skipped there. The output is <example folder>/bin/index.html
+#     (+ .js, .wasm, .data). The SDL font is preloaded into the virtual file system, PRELOAD adds more files
+#     (images, audio) as "<file on disk>@/<name in the browser>": the engine finds them by that name, like in the bin folder.
+#     SDL2_mixer is linked too (audio: MT2D_Play_Audio / MT2D_Play_Music, and the PC speaker emulation MT2D_System_Beep).
 #   * the executable goes to <example folder>/bin
 #   * SDL examples also get the SDL font/icon in bin, ASSETS (paths relative to the example
 #     folder) are copied to bin too
@@ -265,7 +295,19 @@ endfunction()
 #     .wav sound effects of its "d" folder on the Sound Blaster, in place of the .wav/.ogg files (jump.ogg -> d/jump.wav)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL;DOS_VGA;DOS_MUSIC" "DOS_NAME" "SOURCES;ASSETS" ${ARGN})
+    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC" "DOS_NAME" "SOURCES;ASSETS;PRELOAD" ${ARGN})
+
+    if(EX_WEB AND NOT MT2D_WEB)
+        message(STATUS "MT2D example '${name}' is web only (use emcmake) and is skipped")
+        return()
+    endif()
+    if(MT2D_WEB AND NOT EX_WEB)
+        message(STATUS "MT2D example '${name}' does not run in the browser and is skipped")
+        return()
+    endif()
+    if(EX_WEB)
+        set(EX_SDL TRUE)
+    endif()
 
     if(EX_SDL AND MT2D_DOS)
         if(MT2D_DOS_VGA AND EX_DOS_VGA)
@@ -314,6 +356,19 @@ function(mt2d_add_example name)
         set_target_properties(${name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${cfg} "${bin_dir}")
     endforeach()
 
+    if(EX_WEB)
+        set_target_properties(${name} PROPERTIES OUTPUT_NAME index SUFFIX ".html")
+        set(web_shell "${MT2D_EXAMPLES_DIR}/common/web_shell.html")
+        set_target_properties(${name} PROPERTIES LINK_DEPENDS "${web_shell}")
+        target_link_options(${name} PRIVATE
+            --shell-file "${web_shell}"
+            "SHELL:--preload-file ${MT2D_EXAMPLES_DIR}/assets/msdos_fnt.png@assets/msdos_fnt.png"
+            -sALLOW_MEMORY_GROWTH=1)
+        foreach(p ${EX_PRELOAD})
+            target_link_options(${name} PRIVATE "SHELL:--preload-file ${p}")
+        endforeach()
+    endif()
+
     if(MT2D_DOS AND EX_DOS_NAME)
         set_target_properties(${name} PROPERTIES OUTPUT_NAME "${EX_DOS_NAME}")
     endif()
@@ -329,7 +384,7 @@ function(mt2d_add_example name)
     endif()
 
     set(files "")
-    if(EX_SDL)
+    if(EX_SDL AND NOT EX_WEB)
         # SDL needs the font (and the icon) next to the executable.
         list(APPEND files "${MT2D_EXAMPLES_DIR}/assets/msdos_fnt.png" "${MT2D_EXAMPLES_DIR}/assets/msdos.ico")
     endif()
