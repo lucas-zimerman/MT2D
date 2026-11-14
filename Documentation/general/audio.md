@@ -20,8 +20,12 @@ Header: `MT2D/Audio/MT2D_Audio_core.h`. The names below are macros, the backend 
 
 `MT2D_Play_Music("song.ogg")` loops `d/song.imf` and `MT2D_Play_Audio("coin.ogg")` plays `d/coin.wav`: the
 name is cut to 8 characters, the extension replaced and the `d/` folder added (a name that already ends
-in `.imf` / `.wav` is used as is). Up to 3 effects at once, mixed in software at 22050 Hz 8 bit; songs up to
+in `.imf` / `.wav` is used as is). Up to 3 effects at once, mixed in software at 22050 Hz (the default, see below) 8 bit; songs up to
 32 KB are loaded whole, bigger ones are streamed. Details: [`../examples/README.md`](../../examples/README.md#audio).
+
+The Sound Blaster port, irq, dma and the sample rate can be set from the program with
+`MT2D_Set_Settings_Argv` / `MT2D_DOS_SET_AUDIO`, instead of the `BLASTER` variable and the 22050 Hz default, see
+[settings.md](settings.md#ms-dos-audio-mt2d_dos_set_audio).
 
 ## PC speaker
 

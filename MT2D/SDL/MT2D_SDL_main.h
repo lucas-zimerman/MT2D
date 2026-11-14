@@ -41,8 +41,12 @@ SDL_MT2Dmain.h SDL_MT2Dmain.cpp created by: Lucas Zimerman Fraulob
 	#define _MT2D_SDL_MAIN_H	
     #include <MT2D/SDL/MT2D_SDL_Redefine.h>
 	#include <MT2D/ObjectCore/MT2D_CDecl.h>
+	#include <MT2D/MT2D_Settings.h>
 	MT2D_C_BEGIN
 	void MT2D_SDL_Init(void);
+	MT2D_Result MT2D_SDL_Set_Settings_Argv(int argc, const int *argv);
+	MT2D_Result MT2D_SDL_Set_Settings(MT2D_Setting_Operation operation, int param1, int param2);
+	void MT2D_SDL_Toggle_Fullscreen(void);
 	void MT2D_SDL_Close(void); /* was "close", which clashes with close() of <unistd.h> in C */
 	void free_Texture(void);
 	MT2D_SDL_Texture *MT2D_SDL_Create_Texture(SDL_Surface *Surface);

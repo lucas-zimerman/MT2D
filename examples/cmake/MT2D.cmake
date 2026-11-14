@@ -119,6 +119,7 @@ endmacro()
 set(MT2D_COMMON_SOURCES
     MT2D.c
     MT2D_Layout.c
+    MT2D_Settings.c
     Audio/MT2D_Audio_core.c
     Container/aes.c
     Container/MT2D_Container.c
@@ -277,8 +278,10 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...]] [DOS_VGA] [DOS_MUSIC] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...]] [DOS_VGA] [DOS_MUSIC] [DOS_ONLY [NEEDS_VGA]] [ASSETS file ...] [DOS_NAME short])
 #
+#   * DOS_ONLY: an example for MS-DOS only (examples/dos), skipped with every other target. It uses the terminal
+#     backend and its "d" folder is copied next to the executable. NEEDS_VGA also skips it unless -DMT2D_DOS_VGA=ON.
 #   * WEB: an example made for the browser. It is only built with Emscripten (it uses SDL, plus SHELL, the
 #     page common/web_shell.html) and the other examples are skipped there. The output is <example folder>/bin/index.html
 #     (+ .js, .wasm, .data). The SDL font is preloaded into the virtual file system, PRELOAD adds more files
@@ -295,8 +298,19 @@ endfunction()
 #     .wav sound effects of its "d" folder on the Sound Blaster, in place of the .wav/.ogg files (jump.ogg -> d/jump.wav)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC" "DOS_NAME" "SOURCES;ASSETS;PRELOAD" ${ARGN})
+    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC;DOS_ONLY;NEEDS_VGA" "DOS_NAME" "SOURCES;ASSETS;PRELOAD" ${ARGN})
 
+    if(EX_DOS_ONLY)
+        if(NOT MT2D_DOS)
+            message(STATUS "MT2D example '${name}' is MS-DOS only (DJGPP) and is skipped")
+            return()
+        endif()
+        if(EX_NEEDS_VGA AND NOT MT2D_DOS_VGA)
+            message(STATUS "MT2D example '${name}' needs the VGA mode (-DMT2D_DOS_VGA=ON) and is skipped")
+            return()
+        endif()
+        set(EX_DOS_IMAGES TRUE) # copies its "d" folder (sounds, images) next to the executable
+    endif()
     if(EX_WEB AND NOT MT2D_WEB)
         message(STATUS "MT2D example '${name}' is web only (use emcmake) and is skipped")
         return()

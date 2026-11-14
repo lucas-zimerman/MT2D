@@ -13,9 +13,12 @@ engine.
 #define MT2DWIN_INIT_H
 
 #include "../MT2D_Terminal_Define.h"
+#include <MT2D/MT2D_Settings.h>
 
 MT2D_C_BEGIN
 bool MT2D_Win_Init(void);
+MT2D_Result MT2D_Win_Set_Settings_Argv(int argc, const int *argv);
+MT2D_Result MT2D_Win_Set_Settings(MT2D_Setting_Operation operation, int param1, int param2);
 MT2D_C_END
 
 #ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
