@@ -4,6 +4,8 @@
 
 ### Breaking
 
+- `ObjectCore` is C too: `ObjectCore/*.cpp` became `.c` (same names, update build lists; the empty `ColisionSystem.cpp/.h` were removed) and the portable engine now compiles as ANSI C (C89). C++ keeps `Cscript_New(fn, ...)` and the overloaded `MT2D_Object_Set_Var`; from C use `Cscript_New3V/4V` and `MT2D_Object_Set_Var_Bool/Int/Float/Data`, see [MIGRATION.md](MIGRATION.md) ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
+- `Sprite` no longer uses an anonymous union: `Text` and `Image` are separate pointers (the unused one is `0`), 4 bytes bigger on 32 bit targets ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - The engine is now written in C: every `.cpp` of `MT2D/` outside `ObjectCore/` became a `.c` file (same names, so build lists must be updated), and the headers have C linkage (`extern "C"`), so C++ projects keep working. `ObjectCore` is still C++ for now, see [MIGRATION.md](MIGRATION.md) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
 - `close()` in `SDL/MT2D_SDL_main` was renamed `MT2D_SDL_Close()` (it clashed with `close()` from `<unistd.h>` in C) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
 - The Windows UWP accelerometer code (C++/CX) moved from `_WINDOWS/IO/MT2D_Win_Joystick` to `_WINDOWS/IO/MT2D_Win_Uwp.cpp`, the only engine file outside `ObjectCore` that stays C++; UWP projects must add it to the build ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
@@ -85,6 +87,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
 - Emscripten: `MT2D_System_Beep` no longer waits for the tone to end (it froze the page), the beeps are queued. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
 - Emscripten: arrow keys stayed pressed forever with the joystick code (key releases were never applied), and `Mapped_Button` was not initialised. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
