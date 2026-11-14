@@ -113,6 +113,7 @@ ObjectPosX(Object) = 12;
 - Fix CP850 support in the Linux/macOS terminal (curses) backend: the screen buffers are now converted to Unicode when drawn (accents, box drawing, blocks and DOS symbols were blank or approximated) and typed characters are converted back to CP850. Needs `ncursesw` and a UTF-8 locale ([#21](https://github.com/lucas-zimerman/MT2D/pull/21))
 - Remove `#pragma region`/`endregion` from `MT2D_Terminal_Define.h`, which DJGPP's GCC rejects with `-Werror` ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 - MS-DOS VGA: sprites that were not aligned to the 4x8 tile grid missed their last row/column of tiles, and the tile change detection (a 16 bit hash with a `>5` typo) could skip a redraw, leaving ghost pixels ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
+- Fix the ANSI C CI check: the errors now name the offending file in the job log, not only in the annotation ([#39](https://github.com/lucas-zimerman/MT2D/pull/39))
 
 ## 2.0.1 - 2019-03-24
 
