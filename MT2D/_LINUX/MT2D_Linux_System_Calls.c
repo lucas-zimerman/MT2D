@@ -1,5 +1,5 @@
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 500 /* usleep, useconds_t when compiled with a strict -std= */
+#define _XOPEN_SOURCE 600 /* usleep, useconds_t and snprintf when compiled with a strict -std= (500 hides snprintf on macOS) */
 #endif
 /* the "linux" macro (also used for macOS) is defined by this header, include it before the #if below */
 #include "../MT2D_Terminal_Define.h"
