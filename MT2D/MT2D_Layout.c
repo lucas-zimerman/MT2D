@@ -21,7 +21,7 @@ void MT2D_Create_Window_Layout(int pos_x, int pos_y, int tam_x, int tam_y, bool 
 	}
 	post_x = pos_x;
 	post_y = pos_y + 1;
-	while (post_y <tam_y + pos_y && post_y<MAX_VER) {//Ok
+	while (post_y <tam_y + pos_y && post_y<MAX_VER) { /* Ok */
 		if (window == DISPLAY_WINDOW1) {
 			WINDOW1[post_y][post_x] = 186;
 			WINDOW1[post_y][post_x + tam_x] = 186;
@@ -62,7 +62,7 @@ void MT2D_Create_Window_Layout(int pos_x, int pos_y, int tam_x, int tam_y, bool 
 	}
 	post_x = pos_x + 1;
 	post_y = pos_y + 1;
-	while (post_y<pos_y + tam_y && post_y <= MAX_VER) {//Transfere window1 para window2
+	while (post_y<pos_y + tam_y && post_y <= MAX_VER) { /* Transfere window1 para window2 */
 		while (post_x<pos_x + tam_x && post_x<MAX_HOR) {
 			if (window == DISPLAY_WINDOW2)WINDOW2[post_y][post_x] = background;
 			else WINDOW1[post_y][post_x] = background;

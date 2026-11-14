@@ -25,7 +25,7 @@ typedef struct{
         int Right_Y_axis;
         bool Right_Modified;
         bool Button_Pressed[4];
-        int Mapped_Button[4];// return as a normal keyboard button
+        int Mapped_Button[4]; /* return as a normal keyboard button */
         bool Touched;
         int DeadZoneAxis;
 #ifdef SDL_USE
@@ -60,6 +60,8 @@ typedef struct{
 #define MT2D_Joystick_Close MT2D_Ems_Joystick_Close
 #define MT2D_Joystick_Update MT2D_Ems_Joystick_Update
 
+#elif defined(__linux__) || defined(__APPLE__)
+/* terminal builds: no joystick backend, only the portable MT2D_Joystick_* functions below */
 #else
 #error "No code was done for this platform"
 #endif

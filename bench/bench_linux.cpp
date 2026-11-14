@@ -15,7 +15,6 @@
 #else
 #define VI(v) ((v)->Data.i)
 #endif
-bool Object_Hit_Object(Object*, Object*);
 
 /* --- allocation accounting (link with --wrap) --- */
 static size_t g_calls = 0;

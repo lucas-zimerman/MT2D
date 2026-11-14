@@ -9,16 +9,15 @@
 MT2D_C_BEGIN
 
 struct Sprite{
-        union {
-                MT2D_Text_Image *Text;       //type 0: ASCII image, compact slices, same on every platform
-                MT2D_Internal_Image *Image;  //type 1: platform specific image (SDL only for now)
-        };//which member is valid is defined by "type", keep them in sync
-        int SizeX;//The size of the sprite
-        int SizeY;//The size of the sprite
-        int ScaleX;//the scale of the image applied to a 320x240 screen
-        int ScaleY;//the scale of the image applied to a 320x240 screen
+        MT2D_Text_Image *Text; /* type 0: ASCII image, compact slices, same on every platform (0 for other types) */
+        MT2D_Internal_Image *Image; /* type 1: platform specific image (SDL, VGA), 0 for other types */
+        /* which member is valid is defined by "type", the other one is kept 0 (C89 has no anonymous unions) */
+        int SizeX; /* The size of the sprite */
+        int SizeY; /* The size of the sprite */
+        int ScaleX; /* the scale of the image applied to a 320x240 screen */
+        int ScaleY; /* the scale of the image applied to a 320x240 screen */
         char type;/* ASCII image = 0, Image = 1*/
-        unsigned int refCount;//used for memory management
+        unsigned int refCount; /* used for memory management */
 };
 
 /**

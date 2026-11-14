@@ -8,5 +8,5 @@ This file will read a string and will return the pointer of it
 
 
 MT2D_C_BEGIN
-char *MT2D_InputBox_Password(char *mensage);//A generic box that read the user string and send for you...
+char *MT2D_InputBox_Password(char *mensage); /* A generic box that read the user string and send for you... */
 MT2D_C_END

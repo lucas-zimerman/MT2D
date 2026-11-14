@@ -1,13 +1,9 @@
-#if defined(__DOS__) || defined(__MSDOS__)
 #include <stdlib.h>
-#else
-#include <cstdlib>
-#endif
 #include <stdarg.h>
 #include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Object.h>
 
-Cscript *Cscript_Empty()
+Cscript *Cscript_Empty(void)
 {
         Cscript *F = (Cscript*)malloc(sizeof(Cscript));
         F->_void = 0;
@@ -49,41 +45,47 @@ Cscript *Cscript_New4(Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Functio
 
 
 
-Cscript *Cscript_NewV(void(*Function)(), int, ...) {
-        return Cscript_New1(Function);
-}
-
-Cscript *Cscript_NewV(void(*Function)(Object *), int, ...) {
-        return Cscript_New2(Function);
-}
-
+/* Reads count Var pointers from the argument list. */
 static MT2D_VAR **Cscript_ReadVars(int count, va_list vl) {
         MT2D_VAR **Vars = 0;
+        int i;
         if (count > 0) {
                 Vars = (MT2D_VAR**)malloc(count * sizeof(MT2D_VAR*));
-                for (int i = 0; i < count; i++) {
+                for (i = 0; i < count; i++) {
                         Vars[i] = va_arg(vl, MT2D_VAR*);
                 }
         }
         return Vars;
 }
 
-Cscript *Cscript_NewV(void(*Function)(Object *, MT2D_VAR **), int count, ...) {
-        va_list vl;
-        va_start(vl, count);
+Cscript *Cscript_New3VA(void(*Function)(Object *, MT2D_VAR **), int count, va_list vl) {
         MT2D_VAR **Vars = Cscript_ReadVars(count, vl);
-        va_end(vl);
         return Cscript_New3(Vars, Function);
 }
 
 /* the first extra argument is the model Object*, the rest are the Vars */
-Cscript *Cscript_NewV(void(*Function)(Object *, Object *, MT2D_VAR **), int count, ...) {
-        va_list vl;
-        va_start(vl, count);
+Cscript *Cscript_New4VA(void(*Function)(Object *, Object *, MT2D_VAR **), int count, va_list vl) {
         Object *Model = count > 0 ? va_arg(vl, Object*) : 0;
         MT2D_VAR **Vars = Cscript_ReadVars(count > 0 ? count - 1 : 0, vl);
-        va_end(vl);
         return Cscript_New4(Model, Vars, Function);
+}
+
+Cscript *Cscript_New3V(void(*Function)(Object *, MT2D_VAR **), int count, ...) {
+        Cscript *F;
+        va_list vl;
+        va_start(vl, count);
+        F = Cscript_New3VA(Function, count, vl);
+        va_end(vl);
+        return F;
+}
+
+Cscript *Cscript_New4V(void(*Function)(Object *, Object *, MT2D_VAR **), int count, ...) {
+        Cscript *F;
+        va_list vl;
+        va_start(vl, count);
+        F = Cscript_New4VA(Function, count, vl);
+        va_end(vl);
+        return F;
 }
 
 void Cscript_Execute(Object *Caller, Cscript *Function) {
@@ -106,13 +108,13 @@ void Cscript_Execute(Object *Caller, Cscript *Function) {
 void Cscript_RemoveFromMemory(Cscript *Me) {
         if (Me) {
                 if (Me->Packed) {
-                        free(Me); // one block, nothing else to release
+                        free(Me); /* one block, nothing else to release */
                         return;
                 }
                 if (Me->TempObj) {
-                        free(Me->TempObj); // we only store a pointer and not the actuall object so we just remover the byte that points for that object.
+                        free(Me->TempObj); /* we only store a pointer and not the actuall object so we just remover the byte that points for that object. */
                 }
-                if (Me->TempVars) { //again, we only remove the array of pointers and not the actual vars
+                if (Me->TempVars) { /* again, we only remove the array of pointers and not the actual vars */
                         free(Me->TempVars);
                 }
                 free(Me);

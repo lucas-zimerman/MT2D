@@ -16,14 +16,14 @@ typedef enum MT2D_VAR_TYPE
 typedef enum MT2D_VAR_ERROR
 {
          Var_No_Error,
-         Var_Wrong_Type, //set int into char var
+         Var_Wrong_Type, /* set int into char var */
          Var_Divide_By_Zero,
          Var_Not_Found,
-         Var_Type_Not_Supported, // check MT2D_VAR_TYPE for supported types.
+         Var_Type_Not_Supported, /* check MT2D_VAR_TYPE for supported types. */
          Var_Null_Data,
          Var_Null_Name,
          Var_Out_Of_Memory_To_Create_New_Var,
-         Var_Name_Too_Long // names are limited to MT2D_VAR_NAME_MAX - 1 chars, use a VAR_STRING value for long text
+         Var_Name_Too_Long /* names are limited to MT2D_VAR_NAME_MAX - 1 chars, use a VAR_STRING value for long text */
 } MT2D_VAR_ERROR;
 
 extern MT2D_VAR_ERROR MT2D_Var_Last_Error;
@@ -57,24 +57,20 @@ typedef struct {
 } MT2D_VAR;
 
 
-#ifdef __cplusplus
-}
-/* C++ only: overloaded, use MT2D_VAR_Init_* / MT2D_Object_VAR_SetVar from C */
-void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data);
-void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data);
-void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data);
+/* Typed setters, the var must have the same type. Bool is stored as an int var. */
+void MT2D_Object_Set_Var_Bool(MT2D_VAR *Var, bool Data);
+void MT2D_Object_Set_Var_Int(MT2D_VAR *Var, int Data);
+void MT2D_Object_Set_Var_Float(MT2D_VAR *Var, float Data);
 /* Copies *Data (int/char/float) into the var, stores the pointer itself for VAR_POINTER
    or copies the text for VAR_STRING (Data is a const char*). Type must match the var. */
-void MT2D_Object_Set_Var(MT2D_VAR *Var, void *Data, MT2D_VAR_TYPE Type);
-extern "C" {
-#endif
+void MT2D_Object_Set_Var_Data(MT2D_VAR *Var, void *Data, MT2D_VAR_TYPE Type);
 
 /* Pointer to the value: &Var->Data for int/char/float, the stored pointer for VAR_POINTER/VAR_STRING. */
 void *MT2D_Object_Get_Var_Data(MT2D_VAR *Var);
 
 MT2D_VAR *MT2D_Object_Get_Var_Pointer(MT2D_VAR *ArrayVARS, char *Name);
 
-MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error();
+MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error(void);
 
 MT2D_VAR * MT2D_Object_Create_Var(const char * Name, MT2D_VAR_TYPE Type, void * InitialData);
 MT2D_VAR *MT2D_Object_Create_Var_Int(const char *Name, int InitialData);
@@ -89,7 +85,7 @@ void MT2D_Object_Set_Var_String(MT2D_VAR *Var, const char *Text);
 const char *MT2D_Object_Get_Var_String(MT2D_VAR *Var);
 
 /* Resource name/path of a var: the text of a VAR_STRING var, otherwise its Name. */
-static inline const char *MT2D_Object_VAR_GetPath(MT2D_VAR *Var) {
+MT2D_INLINE const char *MT2D_Object_VAR_GetPath(MT2D_VAR *Var) {
         return Var->Type == VAR_STRING ? (const char*)Var->Data.p : Var->Name;
 }
 
@@ -104,7 +100,7 @@ void MT2D_Object_VAR_SetVar(MT2D_VAR *Var, MT2D_VAR *New);
 MT2D_VAR *MT2D_VAR_CLONE(MT2D_VAR *VAR);
 
 /* Hot path helpers, kept inline: no call overhead on slow CPUs. */
-static inline int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
+MT2D_INLINE int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
         if (Var->Type == VAR_INT) return Var->Data.i; /* the common case first */
         switch (Var->Type) {
         case VAR_INT:   return Var->Data.i;
@@ -116,7 +112,7 @@ static inline int MT2D_Object_VAR_GetInt(MT2D_VAR *Var) {
         }
 }
 
-static inline bool MT2D_Object_VAR_GetBool(MT2D_VAR *Var) {
+MT2D_INLINE bool MT2D_Object_VAR_GetBool(MT2D_VAR *Var) {
         switch (Var->Type) {
         case VAR_INT:   return Var->Data.i > 0;
         case VAR_CHAR:  return Var->Data.c > 0;
@@ -142,4 +138,12 @@ void MT2D_VAR_ReleaseData(MT2D_VAR *var);
 /* Releases a var made by the Create_Var functions. constName is ignored, kept for source compatibility. */
 void MT2D_VAR_Free(MT2D_VAR *var, int constName);
 MT2D_C_END
+
+#ifdef __cplusplus
+/* C++ only: the overloaded name for the setters above (C uses MT2D_Object_Set_Var_Bool/Int/Float/Data) */
+inline void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data) { MT2D_Object_Set_Var_Bool(Var, Data); }
+inline void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data) { MT2D_Object_Set_Var_Int(Var, Data); }
+inline void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data) { MT2D_Object_Set_Var_Float(Var, Data); }
+inline void MT2D_Object_Set_Var(MT2D_VAR *Var, void *Data, MT2D_VAR_TYPE Type) { MT2D_Object_Set_Var_Data(Var, Data, Type); }
+#endif
 #endif

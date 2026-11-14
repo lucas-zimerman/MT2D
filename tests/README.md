@@ -13,13 +13,13 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 
 | Test file | Engine code covered |
 | --- | --- |
-| `test_vars.cpp` | `ObjectCore/Vars.cpp` |
-| `test_state.cpp` | `ObjectCore/State.cpp` |
-| `test_spriteblock.cpp` | `ObjectCore/SpriteBlock.cpp` |
-| `test_sprites.cpp` | `ObjectCore/Sprites.cpp` |
-| `test_cscript.cpp` | `ObjectCore/Cscript.cpp` |
-| `test_object.cpp` | `ObjectCore/Object.cpp` (objects and scenes) |
-| `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.cpp` (built in Cscript functions, audio calls are no-ops) |
+| `test_vars.cpp` | `ObjectCore/Vars.c` |
+| `test_state.cpp` | `ObjectCore/State.c` |
+| `test_spriteblock.cpp` | `ObjectCore/SpriteBlock.c` |
+| `test_sprites.cpp` | `ObjectCore/Sprites.c` |
+| `test_cscript.cpp` | `ObjectCore/Cscript.c` |
+| `test_object.cpp` | `ObjectCore/Object.c` (objects and scenes) |
+| `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.c` (built in Cscript functions, audio calls are no-ops) |
 | `test_objectloader.cpp` | `ObjectCore/ObjectLoader.c` (compiled `.mto` files, truncated/invalid input) |
 | `test_objectglobals.cpp` | `ObjectCore/ObjectGlobals.c` (registry of global vars, objects and functions) |
 | `test_cscriptcompiler.cpp` | `ObjectCore/Parser/CscriptCompiler.c` (only with `-DMT2D_CSCRIPT_PARSER=ON`, the default) |
@@ -35,7 +35,7 @@ Code that needs a terminal, a window, a joystick or an OS API cannot run in a
 headless test: `SDL/`, `_WINDOWS/`, `_LINUX/`, `_MSDOS/`, `_ANDROID/`,
 `_EMNISCRIPT/`, `Audio` playback, `Cursor`, `Joystick`, `InputBox`,
 `MessageBox`, `Tools/UserInterface/MT2D_Menu.c` and
-`ObjectCore/STDContainer.cpp` (needs SDL audio). That includes the settings of each backend
+`ObjectCore/STDContainer.c` (needs SDL audio). That includes the settings of each backend
 (`MT2D_SDL_Set_Settings`, `MT2D_Dos_Sound_Configure`, the VGA palette): their parameter checks are not tested.
 
 ## How it builds

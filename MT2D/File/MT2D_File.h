@@ -83,52 +83,53 @@
 #define MT2D_FILE_TELL MT2D_SDL_FILE_TELL
 
 #else
-//other platforms are gonna use the FILE struct when they can
+/* other platforms are gonna use the FILE struct when they can */
 #include <stdio.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 #define MT2D_FILE FILE
 
-static inline MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
+MT2D_INLINE MT2D_FILE *MT2D_FILE_OPEN(const char *fileName, const char *mode) {
         return fopen(fileName, mode);
 }
 
-static inline MT2D_FILE *MT2D_FILE_OPEN_TEMP(void) {
+MT2D_INLINE MT2D_FILE *MT2D_FILE_OPEN_TEMP(void) {
         return tmpfile();
 }
 
-static inline int MT2D_FILE_CLOSE(MT2D_FILE *file) {
+MT2D_INLINE int MT2D_FILE_CLOSE(MT2D_FILE *file) {
         return fclose(file);
 }
 
 
-static inline int MT2D_FILE_SEEK(MT2D_FILE *file, long offset, int whence) {
+MT2D_INLINE int MT2D_FILE_SEEK(MT2D_FILE *file, long offset, int whence) {
         return fseek(file, offset, whence);
 }
 
-static inline size_t MT2D_FILE_READ(MT2D_FILE *file, void *inBufferPtr, size_t size, size_t maxNum) {
+MT2D_INLINE size_t MT2D_FILE_READ(MT2D_FILE *file, void *inBufferPtr, size_t size, size_t maxNum) {
         return fread(inBufferPtr, size, maxNum, file);
 }
 
-static inline unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
+MT2D_INLINE unsigned char MT2D_FILE_READ_BYTE(MT2D_FILE *file) {
         return fgetc(file);
 }
 
-static inline size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
+MT2D_INLINE size_t MT2D_FILE_WRITE(MT2D_FILE * file, void *outBufferPtr, size_t size, size_t count) {
         return fwrite(outBufferPtr, size, count, file);
 }
 
-static inline int MT2D_FILE_EOF(MT2D_FILE *file) {
+MT2D_INLINE int MT2D_FILE_EOF(MT2D_FILE *file) {
         return feof(file);
 }
 
-static inline long int MT2D_FILE_TELL(MT2D_FILE *file) {
+MT2D_INLINE long int MT2D_FILE_TELL(MT2D_FILE *file) {
         return ftell(file);
 }
 
-static inline int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
+MT2D_INLINE int MT2D_FILE_WRITE_BYTE(MT2D_FILE * file, unsigned char data) {
         return fputc(data, file);
 }
 
-static inline int MT2D_FILE_DELETE(char *name){
+MT2D_INLINE int MT2D_FILE_DELETE(char *name){
         return remove(name);
 }
 #endif

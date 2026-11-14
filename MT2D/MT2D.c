@@ -1,6 +1,6 @@
-// MT2D Created By Lucas Zimerman Fraulob
-// This is the core of MT2D engine, with only this .cpp you can do everything
-// This file is related to almost all MT2D video interface, like draw, clear and update.
+/* MT2D Created By Lucas Zimerman Fraulob */
+/* This is the core of MT2D engine, with only this .cpp you can do everything */
+/* This file is related to almost all MT2D video interface, like draw, clear and update. */
 
 #include <stdio.h>
 
@@ -71,7 +71,7 @@ void insert_string_on_display(char *x, int pos_ver, int pos_hor, bool which){
 
 
 void insert_number_on_display(int number, int pos_y,int pos_x, bool display){
-        // Based on a generic itoa code without the null termination
+/* Based on a generic itoa code without the null termination */
         int base=10;
         unsigned char *str=0;
         unsigned char buffer=0;
@@ -91,15 +91,15 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display){
         return ;
     }
 
-    // In standard itoa(), negative numbers are handled only with
-    // base 10. Otherwise numbers are considered unsigned.
+/* In standard itoa(), negative numbers are handled only with */
+/* base 10. Otherwise numbers are considered unsigned. */
     if (number < 0 && base == 10)
     {
         isNegative = true;
         number = -number;
     }
 
-    // Process individual digits
+/* Process individual digits */
     while (number != 0)
     {
         int rem = number % base;
@@ -107,11 +107,11 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display){
         number = number/base;
     }
 
-    // If number is negative, append '-'
+/* If number is negative, append '-' */
     if (isNegative)
         str[i++] = '-';
 
-    // Reverse the string
+/* Reverse the string */
         i--;
         while(j<i){
                 buffer=str[j];

@@ -1,8 +1,8 @@
 #ifndef MTTerm_Def_H
 #define MTTerm_Def_H
 
-// The engine uses the (GNU only) `linux` macro for "unix like". Define it ourselves so
-// strict -std=c++XX builds and macOS work too.
+/* The engine uses the (GNU only) `linux` macro for "unix like". Define it ourselves so */
+/* strict -std=c++XX builds and macOS work too. */
 #if (defined(__linux__) || defined(__APPLE__)) && !defined(linux)
 #define linux 1
 #endif
@@ -31,21 +31,21 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 /*Only enable MSDOS_USE_GRAPHICS only if you really need to render graphic sprites*/
 /*By default MSDOS target doesn't need any define to be enabled*/
 /*Opt-in: pass -DMSDOS_USE_GRAPHICS (or uncomment the line below) when building for MS-DOS.*/
-//#define MSDOS_USE_GRAPHICS /** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this*/
+/* #define MSDOS_USE_GRAPHICS / ** Set the render mode in VGA mode, with 256 colors and a resolution of 320x200 ,this has less resolution and is slower than the normal MSDOS mode so if you dont need to use hraphic sprites dont enable this* / */
 /*MSDOS_USE_DOUBLE_BUFFER no longer works (defining it does nothing, remove it, see MIGRATION.md): the VGA renderer builds each 4x8 tile in a small buffer and writes it once, without flicker and without the 64KB buffer.*/
 /*Optional: -DMSDOS_VGA_WAIT_RETRACE waits the vertical retrace before drawing a frame.*/
 
 
-//#define SDL_USE_AUDIO
-//#define DEBUG_OBJECTCORE
+/* #define SDL_USE_AUDIO */
+/* #define DEBUG_OBJECTCORE */
 #define MT2D_USING_CONTAINER
-//#define MT2D_WINDOWED_MODE
-//#define SDL_USE
-//#define MT2D_SCREEN_RESIZE
-//#define MT2D_SDL_GPU
-//#define MT2D_SDL_USING_DIRECTX_RENDER
+/* #define MT2D_WINDOWED_MODE */
+/* #define SDL_USE */
+/* #define MT2D_SCREEN_RESIZE */
+/* #define MT2D_SDL_GPU */
+/* #define MT2D_SDL_USING_DIRECTX_RENDER */
 
-//#define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE
+/* #define SDL_stbimage //Used to replace SDL_IMAGE (only used at Universal Windows Platform apps or others that do not support SDL_IMAGE */
 
 
 
@@ -55,13 +55,13 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 /****************************** The below defines are MT2D settings that you should not touch!!! ****************************************/
 
 
-#if !defined(_WIN32) && !defined(__MSDOS__) && !defined(__DOS__) && !defined(SDL_USE) // If there`s no way of using some form of hardware aceleration for displaying the screen,
-// tell it`s using an ancient way of displaying stuff...
-   #define MT2D_RENDERING_PRINTF //we are forced to use printf :(
+#if !defined(_WIN32) && !defined(__MSDOS__) && !defined(__DOS__) && !defined(SDL_USE) /* If there`s no way of using some form of hardware aceleration for displaying the screen, */
+/* tell it`s using an ancient way of displaying stuff... */
+   #define MT2D_RENDERING_PRINTF /* we are forced to use printf :( */
 #endif
 
 #if defined(_DEBUG) /*|| 1*/ /*uncomment that line too allow a manual debug*/
-//#define MT2D_DEBUG_ENABLED
+/* #define MT2D_DEBUG_ENABLED */
 #endif
 
 

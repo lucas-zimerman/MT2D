@@ -1,4 +1,7 @@
-// the "linux" macro (also used for macOS) is defined by this header, include it before the #if below
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 500 /* usleep, useconds_t when compiled with a strict -std= */
+#endif
+/* the "linux" macro (also used for macOS) is defined by this header, include it before the #if below */
 #include "../MT2D_Terminal_Define.h"
 #if defined(linux) && !defined(__ANDROID__) && !defined(SDL_USE)
 #include "../MT2D_Terminal_Define.h"

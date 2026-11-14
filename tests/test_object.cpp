@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/Object.cpp (Object and ObjectScene)
+// Tests for MT2D/ObjectCore/Object.c (Object and ObjectScene)
 #include <mt2d_test.h>
 #include <MT2D/MT2D.h>
 #include <MT2D/ObjectCore/Object.h>

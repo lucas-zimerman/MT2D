@@ -37,7 +37,7 @@ void MT2D_MessageBox(char *mensage){
 		i=4;
 		MT2D_Create_Window_Layout(win_hor,win_ver,73,4,true,false,false,' ',DISPLAY_WINDOW2);
 		j=0;
-		while(j<mensage_size){//Put the mensage on the window
+		while(j<mensage_size){ /* Put the mensage on the window */
 			if(pos_hor==win_hor+70){pos_hor=win_hor+1;pos_ver++;}
 			if(pos_ver==win_ver+4 )break;
 			WINDOW2[pos_ver][pos_hor]=mensage[j];
@@ -46,7 +46,7 @@ void MT2D_MessageBox(char *mensage){
 		}
 		MT2D_Draw_Window(DISPLAY_WINDOW2);
 		i=MT2D_Keyboard_keytouched();
-		if(i==arrow_key_pressed){//MOVE THE WINDOW POSITION
+		if(i==arrow_key_pressed){ /* MOVE THE WINDOW POSITION */
 			i=MT2D_Keyboard_keytouched();
 			switch(i){
 			case arrow_up_pressed:

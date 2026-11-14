@@ -129,17 +129,17 @@ set(MT2D_COMMON_SOURCES
     InputBox/MT2D_InputBox_String.c
     MessageBox/MT2D_MessageBox.c
     MessageBox/MT2D_MessageBox_With_Result.c
-    ObjectCore/Cscript.cpp
-    ObjectCore/MT2D_Text_Image.cpp
-    ObjectCore/Object.cpp
+    ObjectCore/Cscript.c
+    ObjectCore/MT2D_Text_Image.c
+    ObjectCore/Object.c
     ObjectCore/ObjectGlobals.c
     ObjectCore/ObjectLoader.c
-    ObjectCore/SpriteBlock.cpp
-    ObjectCore/Sprites.cpp
-    ObjectCore/State.cpp
-    ObjectCore/STDContainer.cpp
-    ObjectCore/STDFunctions.cpp
-    ObjectCore/Vars.cpp
+    ObjectCore/SpriteBlock.c
+    ObjectCore/Sprites.c
+    ObjectCore/State.c
+    ObjectCore/STDContainer.c
+    ObjectCore/STDFunctions.c
+    ObjectCore/Vars.c
     Tools/UserInterface/MT2D_Menu.c
     Tools/Video/MT2D_Generic_Line.c
 )
@@ -271,7 +271,7 @@ function(mt2d_engine_target target backend)
         check_cxx_compiler_flag(-fpermissive MT2D_HAS_FPERMISSIVE)
         target_compile_options(${target} PRIVATE -w)
         if(MT2D_HAS_FPERMISSIVE)
-            # only the C++ sources left (ObjectCore) need it, gcc warns about it for C
+            # only the C++ sources left (_MSDOS, Windows) need it, gcc warns about it for C
             target_compile_options(${target} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
         endif()
     endif()

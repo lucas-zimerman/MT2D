@@ -33,7 +33,7 @@ void MT2D_Dos_Joystick_Close(void) {
 void MT2D_Dos_Joystick_Update(void) {
 	int Key = 0;
 	int hardcoredebug = 0;
-	//clear the joystick buffer.
+/* clear the joystick buffer. */
 	GlobalJoystickHandler->Button_Pressed[0] = false;
 	GlobalJoystickHandler->Button_Pressed[1] = false;
 	GlobalJoystickHandler->Button_Pressed[2] = false;

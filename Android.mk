@@ -21,7 +21,6 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/MT2D/InputBox/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Joystick/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/MessageBox/*.c) \
-	$(wildcard $(LOCAL_PATH)/MT2D/ObjectCore/*.cpp) \
 	$(wildcard $(LOCAL_PATH)/MT2D/ObjectCore/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/Audio/*.c) \

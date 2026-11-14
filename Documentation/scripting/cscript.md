@@ -29,6 +29,7 @@ void f(Object *self, Object *other, MT2D_VAR **args); /* Cscript_New4 (other = a
 | `Cscript_New2(fn)` | `void f(Object*)` |
 | `Cscript_New3(MT2D_VAR **args, fn)` | args is a `malloc`ed array of `MT2D_VAR*` (see `MT2D_VAR_Create_Matrix1..4/N` in [vars.md](vars.md)) |
 | `Cscript_New4(Object *other, MT2D_VAR **args, fn)` | |
+| `Cscript_New3V(fn, count, a, b, ...)`, `Cscript_New4V(fn, count, model, a, ...)` | variadic versions of `Cscript_New3` / `Cscript_New4` (the vars are copied into the array for you), usable from C |
 | `Cscript_New(fn, a, b, ...)` | **C++ only** (variadic macro + overloads). Chooses the shape from the type of `fn`; up to 16 args. For the `Object*, Object*, MT2D_VAR**` shape the first extra argument is the `Object*` |
 | `Cscript_Empty()`, `Cscript_New1(fn)` | an empty/`void` one; not useful |
 

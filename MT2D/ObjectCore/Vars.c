@@ -1,26 +1,27 @@
-// Vars.cpp, created by: Lucas Zimerman Fraulob
-// This file contains the basic functions to interact with a Var struct.
-//
-// How to set data into the var?
-// A:
-// int X = 5;
-// -MT2D_Object_Set_Var(Var, X);
-// -MT2D_Object_Set_Var(Var, 5);
-// -MT2D_Object_Set_Var(Var, 1.01);
-// -MT2D_Object_Set_Var(Var, (void*)&X, VAR_INT);   (the value is copied)
-//
-// How to get data from a var?
-//
-// The value is stored inline in the var (union Data), pick the member by Type:
-// int X = var->Data.i;   // VAR_INT      (Data.c for VAR_CHAR, Data.f for VAR_FLOAT)
-// void *P = var->Data.p; // VAR_POINTER  (not owned by the var)
-//
-// Check the supported var types under the MT2D_VAR_TYPE enum
-//
-// to know if there were some kind of error while interacting with the var functions
-// check the return from the function MT2D_Object_Get_Last_Var_Error, if null, there were no errors
-// else, check the MT2D_VAR_ERROR enum for more information.
-//
+/* Vars.c, created by: Lucas Zimerman Fraulob */
+/* This file contains the basic functions to interact with a Var struct. */
+/*  */
+/* How to set data into the var? */
+/* A: */
+/* int X = 5; */
+/* -MT2D_Object_Set_Var_Int(Var, X); */
+/* -MT2D_Object_Set_Var_Float(Var, 1.01f); */
+/* -MT2D_Object_Set_Var_Bool(Var, 1); */
+/* -MT2D_Object_Set_Var_Data(Var, (void*)&X, VAR_INT);   (the value is copied) */
+/* (C++ code can keep calling the overloaded MT2D_Object_Set_Var, see Vars.h) */
+/*  */
+/* How to get data from a var? */
+/*  */
+/* The value is stored inline in the var (union Data), pick the member by Type: */
+/* int X = var->Data.i;   -- VAR_INT      (Data.c for VAR_CHAR, Data.f for VAR_FLOAT) */
+/* void *P = var->Data.p; -- VAR_POINTER  (not owned by the var) */
+/*  */
+/* Check the supported var types under the MT2D_VAR_TYPE enum */
+/*  */
+/* to know if there were some kind of error while interacting with the var functions */
+/* check the return from the function MT2D_Object_Get_Last_Var_Error, if null, there were no errors */
+/* else, check the MT2D_VAR_ERROR enum for more information. */
+/*  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,7 +43,7 @@ static void Private_Set_Error(MT2D_VAR_ERROR e, const char *msg)
 }
 
 /* Numeric view of any numeric var. */
-static inline float Private_To_Float(const MT2D_VAR *v)
+static float Private_To_Float(const MT2D_VAR *v)
 {
         return v->Type == VAR_FLOAT ? v->Data.f : (v->Type == VAR_CHAR ? (float)v->Data.c : (float)v->Data.i);
 }
@@ -117,26 +118,26 @@ bool MT2D_VAR_Init_Pointer(MT2D_VAR *Var, const char *Name)
         return Private_Init(Var, Name, VAR_POINTER);
 }
 
-void MT2D_Object_Set_Var(MT2D_VAR *Var, bool Data)
+void MT2D_Object_Set_Var_Bool(MT2D_VAR *Var, bool Data)
 {
         int v = Data ? 1 : 0;
-        MT2D_Object_Set_Var(Var, (void*)&v, VAR_INT);
+        MT2D_Object_Set_Var_Data(Var, (void*)&v, VAR_INT);
 }
 
-void MT2D_Object_Set_Var(MT2D_VAR *Var, int Data)
+void MT2D_Object_Set_Var_Int(MT2D_VAR *Var, int Data)
 {
-        MT2D_Object_Set_Var(Var, (void*)&Data, VAR_INT);
+        MT2D_Object_Set_Var_Data(Var, (void*)&Data, VAR_INT);
 }
 
-void MT2D_Object_Set_Var(MT2D_VAR *Var, float Data)
+void MT2D_Object_Set_Var_Float(MT2D_VAR *Var, float Data)
 {
-        MT2D_Object_Set_Var(Var, (void*)&Data, VAR_FLOAT);
+        MT2D_Object_Set_Var_Data(Var, (void*)&Data, VAR_FLOAT);
 }
 
 /*
         Generic function used by the others
 */
-void MT2D_Object_Set_Var(MT2D_VAR *Var, void * Data, MT2D_VAR_TYPE Type)
+void MT2D_Object_Set_Var_Data(MT2D_VAR *Var, void * Data, MT2D_VAR_TYPE Type)
 {
         MT2D_Var_Last_Error = Var_No_Error;
         if (Var == NULL) {
@@ -192,8 +193,8 @@ MT2D_VAR * MT2D_Object_Get_Var_Pointer(MT2D_VAR * ArrayVARS, char * Name)
                         {
                                 ptr = &ArrayVARS[i];
                         }
-                        ///yeah, there will be an error here  if the var name isnt on the list.
-                        //and it's case sensitive, so "aaa" != "AAA"
+                        /* yeah, there will be an error here  if the var name isnt on the list. */
+                        /* and it's case sensitive, so "aaa" != "AAA" */
                         i++;
                 }
         }
@@ -205,7 +206,7 @@ MT2D_VAR * MT2D_Object_Get_Var_Pointer(MT2D_VAR * ArrayVARS, char * Name)
         return ptr;
 }
 
-MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error()
+MT2D_VAR_ERROR MT2D_Object_Get_Last_Var_Error(void)
 {
         return MT2D_Var_Last_Error;
 }
@@ -233,8 +234,8 @@ MT2D_VAR * MT2D_Object_Create_Var_Float(const char * Name, float InitialData)
 
 MT2D_VAR * MT2D_Object_Create_Var_Pointer(const char * Name)
 {
-        //the only important data is the Name
-        //Check ObjectCore_Get_Object_Internal_Data for looking to what Names are allowed to use.
+        /* the only important data is the Name */
+        /* Check ObjectCore_Get_Object_Internal_Data for looking to what Names are allowed to use. */
         return Private_Alloc(Name, VAR_POINTER);
 }
 

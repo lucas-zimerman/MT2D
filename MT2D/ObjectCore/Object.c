@@ -1,4 +1,4 @@
-/* Object.cpp created by Lucas Zimerman Fraulob
+/* Object.c created by Lucas Zimerman Fraulob
 
 */
 #ifndef _MT_OBJ_C_
@@ -14,16 +14,16 @@
 
 
 void Object_Render(Object *obj) {
-        if (obj->Enabled) {//RENDER ONLY IF THE OBJECT IS ENABLED
+        if (obj->Enabled) { /* RENDER ONLY IF THE OBJECT IS ENABLED */
 #ifdef DEBUG_OBJECTCORE
                 char buff[300];
                 sprintf(buff, "Rendering object %p, coord X %d Y %d State %d Frame %d has sprite? %d", obj, obj->SpacePosition.X, obj->SpacePosition.Y, obj->ActualState, obj->ActualFrame, obj->State[obj->ActualState]->Sprites[obj->ActualFrame] == NULL ? 0 : 1);
                 MT2D_Ide_Printf(buff);
 #endif
 
-                //Decrement the frame counter
-                //Check if the frame tic has expired, if yes select the next frame
-                //Render the frame
+                /* Decrement the frame counter */
+                /* Check if the frame tic has expired, if yes select the next frame */
+                /* Render the frame */
                 Sprite_Render_on_Window(
                         obj->State[obj->ActualState]->Sprites[obj->ActualFrame],
                         DISPLAY_WINDOW1,
@@ -42,10 +42,10 @@ void Object_Add_Variable(Object* object, MT2D_VAR* variable)
 
 void Object_Add_Variables(Object* object, MT2D_VAR* variables, int total)
 {
+        int i;
         int newSize = object->User_Vars_Count + total;
-        object->User_Vars_Count;
         object->User_Vars = (MT2D_VAR*)realloc(object->User_Vars, (newSize + 1) * sizeof(MT2D_VAR));
-        for (int i = 0; object->User_Vars_Count < newSize; i++, object->User_Vars_Count++)
+        for (i = 0; object->User_Vars_Count < newSize; i++, object->User_Vars_Count++)
         {
                 object->User_Vars[object->User_Vars_Count] = variables[i];
         }
@@ -82,31 +82,23 @@ Object *Object_Create(bool Solid, bool RenderOnly, int sizeX, int sizeY, int Pos
 }
 
 void Object_Private_Run_Function(Object *O) {
-        if (O->State[O->ActualState]->Functions == 0) {
-
+        Cscript **Functions = O->State[O->ActualState]->Functions;
+        Cscript *F;
+        if (Functions == 0) {
+                return;
         }
-        else if (O->State[O->ActualState]->Functions[O->ActualFrame] == NULL);
-        else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj) {
-                O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj(O);
+        F = Functions[O->ActualFrame];
+        if (F == NULL) {
+                return;
         }
-        else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars) {
-                O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars(
-                        O,
-                        O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
-                );
-        } 
-        else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars) {
-                O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Vars(
-                        O,
-                        O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
-                );
+        if (F->_Obj) {
+                F->_Obj(O);
         }
-        else if (O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Obj_Vars) {
-                O->State[O->ActualState]->Functions[O->ActualFrame]->_Obj_Obj_Vars(
-                        O,
-                        O->State[O->ActualState]->Functions[O->ActualFrame]->TempObj,
-                        O->State[O->ActualState]->Functions[O->ActualFrame]->TempVars
-                );
+        else if (F->_Obj_Vars) {
+                F->_Obj_Vars(O, F->TempVars);
+        }
+        else if (F->_Obj_Obj_Vars) {
+                F->_Obj_Obj_Vars(O, F->TempObj, F->TempVars);
         }
 }
 
@@ -147,7 +139,7 @@ void Object_Goto_NextStep(Object *O) {
                                 O->ActualFrameWait = O->State[O->ActualState]->WaitSprites[O->ActualFrame];
                         }
                         else {
-                                //no more frames in the parsed state, so we restart it
+                                /* no more frames in the parsed state, so we restart it */
                                 O->ActualFrame = 0;
                                 O->ActualFrameWait = O->State[O->ActualState]->WaitSprites[0];
                         }
@@ -156,7 +148,7 @@ void Object_Goto_NextStep(Object *O) {
 }
 
 
-ObjectScene *ObjectScene_CreateEmpty() {
+ObjectScene *ObjectScene_CreateEmpty(void) {
         ObjectScene *Scene = (ObjectScene*)malloc(sizeof(ObjectScene));
         Scene->Count = 0;
         Scene->ObjectGroup = 0;
@@ -174,7 +166,8 @@ void ObjectScene_Add(ObjectScene *Scene, Object *New) {
         New->MyScene = Scene;
 }
 void ObjectScene_Render(ObjectScene *Scene) {
-        for (int i = 0; i < Scene->Count; i++) {
+        int i;
+        for (i = 0; i < Scene->Count; i++) {
                 Object_Render(Scene->ObjectGroup[i]);
         }
 }
@@ -183,7 +176,7 @@ void ObjectScene_Goto_NextSteps(ObjectScene *Scene) {
         int j = 0;
         for (; i < Scene->Count; i++) {
                 Object_Goto_NextStep(Scene->ObjectGroup[i]);
-//              printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete);
+/*              printf("DEBUG: object %d state %d frame %d candelete %d\n",i, Scene->ObjectGroup[i]->ActualState, Scene->ObjectGroup[i]->ActualFrame, Scene->ObjectGroup[i]->CanDelete); */
                 if (Scene->ObjectGroup[i]->CanDelete == true) {
                         Object_Delete(Scene->ObjectGroup[i], false);
                         for (j = i; j < Scene->Count -1; j++) {
@@ -215,8 +208,8 @@ void Object_Delete(Object *Me, bool deleteStates) {
                 }
                 free(Me);
         }
-        //We do not delete the State because it's a shared memory data that's shared by all the objects.
-        //you must manually delete the State that's shared by all those objects.
+        /* We do not delete the State because it's a shared memory data that's shared by all the objects. */
+        /* you must manually delete the State that's shared by all those objects. */
 }
 
 #endif 

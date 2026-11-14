@@ -39,7 +39,7 @@ Off unless you uncomment them there or pass `-D...` to the compiler.
 
 ## Building
 
-There is no single build system: compile all `MT2D/**/*.c` plus the `ObjectCore/*.cpp` files with your
+There is no single build system: compile all `MT2D/**/*.c` with your
 project. Per target details are in [`../CONTRIBUTING.md`](../../CONTRIBUTING.md) and
 [`../examples/README.md`](../../examples/README.md) (CMake files for every example, DJGPP toolchain file in
 `examples/cmake/djgpp.cmake`). SDL links: `-lSDL2 -lSDL2_image` (+ `-lSDL2_mixer` for audio).

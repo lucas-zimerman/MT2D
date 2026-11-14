@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/Cscript.cpp
+// Tests for MT2D/ObjectCore/Cscript.c
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Object.h>

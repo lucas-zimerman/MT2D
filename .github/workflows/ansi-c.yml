@@ -16,8 +16,11 @@ jobs:
 
       - name: Reject C++ source files
         run: |
-          # MT2D/_MSDOS is temporarily allowed to keep DJGPP-style C++ (VGA render, BMP loader).
-          found=$(git ls-files 'MT2D/*' | grep -iE '\.(cpp|cc|cxx|c\+\+|hpp|hh|hxx|ipp|tpp)$' | grep -v '^MT2D/_MSDOS/' || true)
+          # Allow list (regex on the path): C++ that is allowed to stay.
+          #  - MT2D/_MSDOS: temporarily keeps DJGPP-style C++ (VGA render, BMP loader).
+          #  - MT2D/_WINDOWS/IO/MT2D_Win_Uwp.cpp: UWP (WinRT) code, it needs C++/CX or C++/WinRT.
+          allow='^(MT2D/_MSDOS/|MT2D/_WINDOWS/IO/MT2D_Win_Uwp\.cpp$)'
+          found=$(git ls-files 'MT2D/*' | grep -iE '\.(cpp|cc|cxx|c\+\+|hpp|hh|hxx|ipp|tpp)$' | grep -vE "$allow" || true)
           if [ -n "$found" ]; then
             echo "::error::C++ files found in MT2D/ (ANSI C only):"
             echo "$found" | while read -r f; do echo "::error file=$f::C++ file not allowed"; done
@@ -27,6 +30,7 @@ jobs:
       - name: Compile as ANSI C (C89)
         run: |
           status=0
+          # -include stddef.h: header-only / platform-gated files are empty on their own, which ISO C forbids
           # Platform specific backends need their own SDKs; check the portable code.
           files=$(git ls-files 'MT2D/*.c' 'MT2D/*.h' \
             | grep -vE '^MT2D/(_WINDOWS|_MSDOS|_ANDROID|_EMNISCRIPT|SDL)/' || true)
@@ -35,7 +39,7 @@ jobs:
               *.h) lang="-x c" ;;
               *)   lang="" ;;
             esac
-            if ! gcc $lang -std=c89 -pedantic-errors -Wall -Wextra -fsyntax-only -I MT2D "$f"; then
+            if ! gcc $lang -std=c89 -pedantic-errors -Wall -Wextra -fsyntax-only -include stddef.h -I . "$f"; then
               echo "::error file=$f::Not valid ANSI C"
               status=1
             fi

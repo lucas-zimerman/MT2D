@@ -6,7 +6,7 @@ How to update code written for older MT2D versions.
 
 Everything under `MT2D/` except `ObjectCore/` is C now.
 
-- **Build files**: replace the `.cpp` names with `.c` (`MT2D.c`, `Container/MT2D_Container.c`, `SDL/MT2D_SDL_main.c`, ...). `ObjectCore/*.cpp` stays as it is. Add a C compiler to the project (CMake: `enable_language(C)`), and do not pass `-fpermissive` to the C sources.
+- **Build files**: replace the `.cpp` names with `.c` (`MT2D.c`, `Container/MT2D_Container.c`, `SDL/MT2D_SDL_main.c`, ...). `ObjectCore/*.cpp` became `ObjectCore/*.c` too (`Cscript.c`, `Object.c`, `Vars.c`, ...), and `ColisionSystem.cpp` (empty) was removed. Add a C compiler to the project (CMake: `enable_language(C)`), and do not pass `-fpermissive` to the C sources.
 - **C++ code** that includes the MT2D headers needs no change, the headers wrap their declarations with `MT2D_C_BEGIN` / `MT2D_C_END` (`extern "C"` in C++). `bool` comes from `<stdbool.h>` in C, the headers include it for you.
 - `close()` (SDL) is now `MT2D_SDL_Close()`:
 

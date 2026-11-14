@@ -20,14 +20,14 @@ extern unsigned char WINDOW1[MAX_VER+1][MAX_HOR];
 extern unsigned char WINDOW2[MAX_VER+1][MAX_HOR];
 
 int MT2D_InputBox_Integer(char *mensage){
-//ESC return a null value, delete erase the last char, key left key right move the cursor.
-//Enter finish the string
+/* ESC return a null value, delete erase the last char, key left key right move the cursor. */
+/* Enter finish the string */
 	int output_integer=0;
 	char *string=0;
 	int string_size=0;
-	char buff;//Buffer to get char
-	int pos_hor=4,pos_ver=10;//
-	int win_hor=3,win_ver=9;// Position where the window will start to be
+	char buff; /* Buffer to get char */
+	int pos_hor=4,pos_ver=10; /*  */
+	int win_hor=3,win_ver=9; /* Position where the window will start to be */
 	int mensage_size=strlen(mensage);
 	int j=0,i=0,k=0;
 	bool out_loop=false;
@@ -47,7 +47,7 @@ int MT2D_InputBox_Integer(char *mensage){
 			j=0;
 		}
 		MT2D_Create_Window_Layout(win_hor,win_ver,73,6,true,false,false,' ',DISPLAY_WINDOW2);
-		while(j<mensage_size){//Put the mensage on the window
+		while(j<mensage_size){ /* Put the mensage on the window */
 				if(pos_hor==win_hor+70){pos_hor=win_hor+1;pos_ver++;}
 				if(pos_ver==win_ver+4 )break;
 				WINDOW2[pos_ver][pos_hor]=mensage[j];
@@ -66,7 +66,7 @@ int MT2D_InputBox_Integer(char *mensage){
 		}
 		MT2D_Draw_Window(DISPLAY_WINDOW2);
 		while (!MT2D_Keyboard_touched()) {
-			MT2D_System_Delay(1);// this avoids a heavy use of processor
+			MT2D_System_Delay(1); /* this avoids a heavy use of processor */
 		}
 		buff = MT2D_Keyboard_keytouched();
 		if(buff==arrow_key_pressed){
@@ -97,7 +97,7 @@ int MT2D_InputBox_Integer(char *mensage){
 			string=(char*)realloc(string,(string_size+1)*sizeof(char));
 			string[string_size]='\0';
 			string[string_size-1]=buff;
-		}else if(buff=='-'){//only accept the minus signal only if there's no number typed
+		}else if(buff=='-'){ /* only accept the minus signal only if there's no number typed */
 			if(string_size==0){
 				string_size++;
 				string=(char*)realloc(string,(string_size+1)*sizeof(char));

@@ -1,4 +1,4 @@
-/*Sprites.cpp , created by Lucas Zimerman Fraulob
+/*Sprites.c , created by Lucas Zimerman Fraulob
  this file contains the basic functions related to sprites, it just loads and
  renders it.
 
@@ -9,15 +9,15 @@
 #ifndef __ANDROID__
 #include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/Sprites.h>
-#include <MT2D/MT2D_Keyboard.h> // only used for taking the definition of the key enter
-#include <MT2D/MT2D.h> // for geting the display definition
+#include <MT2D/MT2D_Keyboard.h> /* only used for taking the definition of the key enter */
+#include <MT2D/MT2D.h> /* for geting the display definition */
 #include <MT2D/File/MT2D_File.h>
 #include <MT2D/ObjectCore/MT2D_Text_Image.h>
 #else
 #include "../MT2D_Terminal_Define.h"
 #include "../ObjectCore/Sprites.h"
-#include "../MT2D_Keyboard.h" // only used for taking the definition of the key enter
-#include "../MT2D.h" // for geting the display definition
+#include "../MT2D_Keyboard.h" /* only used for taking the definition of the key enter */
+#include "../MT2D.h" /* for geting the display definition */
 #include "../File/MT2D_File.h"
 
 #endif
@@ -49,6 +49,7 @@
 Sprite *Sprite_Create_Ascii_From_Cells(int SizeX, int SizeY, const char *cells) {
         Sprite *S = (Sprite*)malloc(sizeof(Sprite));
         if (!S) return 0;
+        S->Image = 0;
         S->Text = MT2D_Text_Image_Create(SizeX, SizeY, cells);
         if (!S->Text) {
                 free(S);
@@ -73,40 +74,40 @@ Sprite *Load_Sprite(char *file) {
         char BUFF;
         char *cells;
         int Xi=0, Yi=0, X=0, Y=0;
-        MT2D_FILE *fl = MT2D_FILE_OPEN(file, "rb");//read only
+        MT2D_FILE *fl = MT2D_FILE_OPEN(file, "rb"); /* read only */
         if (fl) {
-                //STEP 1: count the size of the line and column
+                /* STEP 1: count the size of the line and column */
                 while (!MT2D_FILE_EOF(fl)) {
                         BUFF = MT2D_FILE_READ_BYTE(fl);
                         if (BUFF == enter_pressed) {
-                                MT2D_FILE_READ_BYTE(fl);// why there's always a '\r' after the \n ?
+                                MT2D_FILE_READ_BYTE(fl); /* why there's always a '\r' after the \n ? */
                                 if (Xi == 0) {
                                         Xi = X;
                                 }
                                 else if (Xi < X) {
-                                        Xi = X; //no more fixed horizontal size
+                                        Xi = X; /* no more fixed horizontal size */
                                 }
-                                X = 0;//only zeroed to avoid overflow...
+                                X = 0; /* only zeroed to avoid overflow... */
                                 Y++;
                         }
                         X++;
                 }
                 Yi = Y+1 ;
                 Xi = Xi +1;
-                //STEP 2: alloc and erase a temporary cell buffer
+                /* STEP 2: alloc and erase a temporary cell buffer */
                 cells = (char*)malloc((size_t)Xi * Yi);
                 if (cells) {
                         memset(cells, 0, (size_t)Xi * Yi);
-                        //STEP 3: load the file data over the cells
-                        MT2D_FILE_SEEK(fl,0L,SEEK_SET);//move the pointer into the top of the file
+                        /* STEP 3: load the file data over the cells */
+                        MT2D_FILE_SEEK(fl,0L,SEEK_SET); /* move the pointer into the top of the file */
                         X = 0;
                         Y = 0;
                         while (!MT2D_FILE_EOF(fl)) {
                                 BUFF = MT2D_FILE_READ_BYTE(fl);
                                 if (BUFF == enter_pressed)
                                 {
-                                        MT2D_FILE_READ_BYTE(fl);// why there's always a '\r' after the \n ?
-                                        X = -1;//only zeroed to avoid overflow...
+                                        MT2D_FILE_READ_BYTE(fl); /* why there's always a '\r' after the \n ? */
+                                        X = -1; /* only zeroed to avoid overflow... */
                                         Y++;
                                 }
                                 else if (X >= 0 && X < Xi && Y < Yi) {
@@ -114,18 +115,19 @@ Sprite *Load_Sprite(char *file) {
                                 }
                                 X++;
                         }
-                        //STEP 4: compress it
+                        /* STEP 4: compress it */
                         S = Sprite_Create_Ascii_From_Cells(Xi, Yi, cells);
                         free(cells);
                 }
                 MT2D_FILE_CLOSE(fl);
-        }//else return a null sprite
+        } /* else return a null sprite */
         return S;
 }
 
 #ifdef SDL_USE
 static Sprite *Create_Image_Sprite(SDL_Surface *Img, int ScaleX, int ScaleY) {
         Sprite *S = (Sprite*)malloc(sizeof(Sprite));
+        S->Text = 0;
         S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
         S->Image->Texture = MT2D_SDL_Create_Texture(Img);
         S->Image->RotatedTexture = MT2D_SDL_Create_Rotated_Texture(Img, S->Image->Texture);
@@ -176,6 +178,7 @@ static Sprite *Load_Dos_Image_Sprite(char *file, int ScaleX, int ScaleY) {
                 fclose(fl);
                 return 0;
         }
+        S->Text = 0;
         S->Image = 0;
         if (!MT2D_Dos_Load_BMP(fl, S)) {
                 fclose(fl);
@@ -203,18 +206,21 @@ static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY) {
 
 Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 {
+#ifdef SDL_USE
+        Sprite *S = 0;
+        MT2D_FILE *fl;
+#endif
 #ifdef DEBUG_OBJECTCORE
         char buff[200];
         sprintf(buff, "Loading Sprite %s", file);
         MT2D_Ide_Printf(buff);
 #endif
 #ifdef SDL_USE
-        Sprite *S = 0;
-        MT2D_FILE *fl = MT2D_FILE_OPEN(file, "rb");//read only
+        fl = MT2D_FILE_OPEN(file, "rb"); /* read only */
         if (fl) {
                 MT2D_FILE_CLOSE(fl);
                 S = Create_Image_Sprite(MT2D_SDL_Load_Image(file), ScaleX, ScaleY);
-        }//else return a null sprite
+        } /* else return a null sprite */
         return S;
 #elif defined(MSDOS_USE_GRAPHICS)
         return Load_Dos_Image_Sprite(file, ScaleX, ScaleY);
@@ -228,10 +234,10 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
 #ifdef SDL_USE
                 Sprite *S = 0;
                 int Id = MT2D_Container_Get_FileId(file);
-                //!!! Always open non encrypted image
+                /* !!! Always open non encrypted image */
                 if(Id >= 0){
                         S = Create_Image_Sprite(MT2D_SDL_Load_Image_From_Container(Id), ScaleX, ScaleY);
-                }//else return a null sprite
+                } /* else return a null sprite */
                 return S;
 #else
                 return Create_Placeholder_Sprite(ScaleX, ScaleY);
@@ -245,17 +251,17 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                 That could be caused if you tried to malloc an array of sprites smaller than the number of sprites loaded
         - Actual Frame is outside of the sprite range loaded
 */
- bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) {//output: out = false : invalid sprite | out = true : valid sprite
-        //to be implemented: Sprites Scale
+ bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) { /* output: out = false : invalid sprite | out = true : valid sprite */
+        /* to be implemented: Sprites Scale */
          bool out = false;
          if (img) {
-                 if (img->type == 0) {//render as a sprite
+                 if (img->type == 0) { /* render as a sprite */
                          out = true;
                          MT2D_Text_Image_Blit(img->Text, (unsigned char*)(witch_window == DISPLAY_WINDOW1 ? WINDOW1 : WINDOW2), MAX_HOR, MAX_VER, pos_x, pos_y);
                  }
                  else {
 #ifdef SDL_USE
-                         //lets optimize a bit...
+                         /* lets optimize a bit... */
                          if (pos_x <= 320 && pos_x + img->ScaleX >= 0) {
                                  SDL_Add_ImagetoBuffer(img, pos_x, pos_y);
                          }

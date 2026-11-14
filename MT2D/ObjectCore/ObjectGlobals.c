@@ -24,7 +24,18 @@ static char Global_LastError[96] = "";
 void ObjectCore_ClearLastError(void) { Global_LastError[0] = 0; }
 
 void ObjectCore_SetLastError(const char *What, const char *Name) {
-        snprintf(Global_LastError, sizeof(Global_LastError), "%s '%s'", What, Name ? Name : "");
+        /* no snprintf in C89: copy by hand, truncating to the buffer */
+        size_t used = 0;
+        const char *parts[5];
+        int i;
+        parts[0] = What ? What : ""; parts[1] = " '"; parts[2] = Name ? Name : ""; parts[3] = "'"; parts[4] = 0;
+        for (i = 0; parts[i]; i++) {
+                size_t n = strlen(parts[i]);
+                if (n > sizeof(Global_LastError) - 1 - used) n = sizeof(Global_LastError) - 1 - used;
+                memcpy(Global_LastError + used, parts[i], n);
+                used += n;
+        }
+        Global_LastError[used] = 0;
 }
 
 const char *ObjectCore_GetLastError(void) { return Global_LastError; }
@@ -41,15 +52,17 @@ static void Global_CopyName(char *dst, const char *src) {
 
 /* ---- vars ---------------------------------------------------------------- */
 MT2D_VAR *ObjectCore_FindGlobalVar(const char *Name) {
-        for (int i = 0; i < Global_VarCount; i++) {
+        int i;
+        for (i = 0; i < Global_VarCount; i++) {
                 if (strcmp(Global_Vars[i]->Name, Name) == 0) return Global_Vars[i];
         }
         return 0;
 }
 
 bool ObjectCore_AddGlobalVar(MT2D_VAR *Var) {
+        MT2D_VAR **grown;
         if (!Var || !Global_NameOk(Var->Name) || ObjectCore_FindGlobalVar(Var->Name)) return false;
-        MT2D_VAR **grown = (MT2D_VAR**)realloc(Global_Vars, (Global_VarCount + 1) * sizeof(MT2D_VAR*));
+        grown = (MT2D_VAR**)realloc(Global_Vars, (Global_VarCount + 1) * sizeof(MT2D_VAR*));
         if (!grown) return false;
         Global_Vars = grown;
         Global_Vars[Global_VarCount++] = Var;
@@ -57,10 +70,11 @@ bool ObjectCore_AddGlobalVar(MT2D_VAR *Var) {
 }
 
 bool ObjectCore_RemoveGlobalVar(const char *Name) {
+        int i, j;
         if (!Name) return false;
-        for (int i = 0; i < Global_VarCount; i++) {
+        for (i = 0; i < Global_VarCount; i++) {
                 if (strcmp(Global_Vars[i]->Name, Name) == 0) {
-                        for (int j = i; j < Global_VarCount - 1; j++) Global_Vars[j] = Global_Vars[j + 1];
+                        for (j = i; j < Global_VarCount - 1; j++) Global_Vars[j] = Global_Vars[j + 1];
                         Global_VarCount--;
                         if (Global_VarCount == 0) { free(Global_Vars); Global_Vars = 0; }
                         return true;
@@ -71,15 +85,17 @@ bool ObjectCore_RemoveGlobalVar(const char *Name) {
 
 /* ---- objects ------------------------------------------------------------- */
 Object *ObjectCore_FindGlobalObject(const char *Name) {
-        for (int i = 0; i < Global_ObjectCount; i++) {
+        int i;
+        for (i = 0; i < Global_ObjectCount; i++) {
                 if (strcmp(Global_Objects[i].Name, Name) == 0) return Global_Objects[i].Obj;
         }
         return 0;
 }
 
 bool ObjectCore_AddGlobalObject(const char *Name, Object *Obj) {
+        ObjSlot *grown;
         if (!Obj || !Global_NameOk(Name) || ObjectCore_FindGlobalObject(Name)) return false;
-        ObjSlot *grown = (ObjSlot*)realloc(Global_Objects, (Global_ObjectCount + 1) * sizeof(ObjSlot));
+        grown = (ObjSlot*)realloc(Global_Objects, (Global_ObjectCount + 1) * sizeof(ObjSlot));
         if (!grown) return false;
         Global_Objects = grown;
         Global_CopyName(Global_Objects[Global_ObjectCount].Name, Name);
@@ -89,10 +105,11 @@ bool ObjectCore_AddGlobalObject(const char *Name, Object *Obj) {
 }
 
 bool ObjectCore_RemoveGlobalObject(const char *Name) {
+        int i, j;
         if (!Name) return false;
-        for (int i = 0; i < Global_ObjectCount; i++) {
+        for (i = 0; i < Global_ObjectCount; i++) {
                 if (strcmp(Global_Objects[i].Name, Name) == 0) {
-                        for (int j = i; j < Global_ObjectCount - 1; j++) Global_Objects[j] = Global_Objects[j + 1];
+                        for (j = i; j < Global_ObjectCount - 1; j++) Global_Objects[j] = Global_Objects[j + 1];
                         Global_ObjectCount--;
                         if (Global_ObjectCount == 0) { free(Global_Objects); Global_Objects = 0; }
                         return true;
@@ -103,8 +120,9 @@ bool ObjectCore_RemoveGlobalObject(const char *Name) {
 
 /* ---- sprites ------------------------------------------------------------- */
 Sprite *ObjectCore_FindGlobalSprite(const char *Path) {
+        int i;
         if (!Path) return 0;
-        for (int i = 0; i < Global_SpriteCount; i++) {
+        for (i = 0; i < Global_SpriteCount; i++) {
                 if (strcmp(Global_Sprites[i].Path, Path) == 0) return Global_Sprites[i].Spr;
         }
         return 0;
@@ -129,12 +147,13 @@ bool ObjectCore_AddGlobalSprite(const char *Path, Sprite *Spr) {
 }
 
 bool ObjectCore_RemoveGlobalSprite(const char *Path) {
+        int i, j;
         if (!Path) return false;
-        for (int i = 0; i < Global_SpriteCount; i++) {
+        for (i = 0; i < Global_SpriteCount; i++) {
                 if (strcmp(Global_Sprites[i].Path, Path) == 0) {
                         Sprite *spr = Global_Sprites[i].Spr;
                         free(Global_Sprites[i].Path);
-                        for (int j = i; j < Global_SpriteCount - 1; j++) Global_Sprites[j] = Global_Sprites[j + 1];
+                        for (j = i; j < Global_SpriteCount - 1; j++) Global_Sprites[j] = Global_Sprites[j + 1];
                         Global_SpriteCount--;
                         if (Global_SpriteCount == 0) { free(Global_Sprites); Global_Sprites = 0; }
                         Sprite_Delete(spr); /* frees it when no state uses it */
@@ -152,7 +171,8 @@ void ObjectCore_ClearGlobalSprites(void) {
 
 /* ---- functions ----------------------------------------------------------- */
 bool ObjectCore_FindGlobalCScript(const char *Name, ObjectCore_CscriptEntry *Out) {
-        for (int i = 0; i < Global_FunctionCount; i++) {
+        int i;
+        for (i = 0; i < Global_FunctionCount; i++) {
                 if (strcmp(Global_Functions[i].Name, Name) == 0) {
                         if (Out) *Out = Global_Functions[i].Entry;
                         return true;
@@ -162,8 +182,9 @@ bool ObjectCore_FindGlobalCScript(const char *Name, ObjectCore_CscriptEntry *Out
 }
 
 static bool Global_AddFunction(const char *Name, const ObjectCore_CscriptEntry *Entry) {
+        FnSlot *grown;
         if (!Global_NameOk(Name) || ObjectCore_FindGlobalCScript(Name, 0)) return false;
-        FnSlot *grown = (FnSlot*)realloc(Global_Functions, (Global_FunctionCount + 1) * sizeof(FnSlot));
+        grown = (FnSlot*)realloc(Global_Functions, (Global_FunctionCount + 1) * sizeof(FnSlot));
         if (!grown) return false;
         Global_Functions = grown;
         Global_CopyName(Global_Functions[Global_FunctionCount].Name, Name);
@@ -173,25 +194,29 @@ static bool Global_AddFunction(const char *Name, const ObjectCore_CscriptEntry *
 }
 
 bool ObjectCore_AddGlobalCScript(const char *Name, void (*Fn)(Object *)) {
-        ObjectCore_CscriptEntry e = { CSCRIPT_KIND_OBJ, 0, Fn, 0, 0 };
+        ObjectCore_CscriptEntry e;
+        e.Kind = CSCRIPT_KIND_OBJ; e.ArgCount = 0; e.Obj = Fn; e.Vars = 0; e.ObjObj = 0;
         return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
 bool ObjectCore_AddGlobalCScriptVars(const char *Name, void (*Fn)(Object *, MT2D_VAR **), int ArgCount) {
-        ObjectCore_CscriptEntry e = { CSCRIPT_KIND_VARS, ArgCount, 0, Fn, 0 };
+        ObjectCore_CscriptEntry e;
+        e.Kind = CSCRIPT_KIND_VARS; e.ArgCount = ArgCount; e.Obj = 0; e.Vars = Fn; e.ObjObj = 0;
         return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
 bool ObjectCore_AddGlobalCScriptObjVars(const char *Name, void (*Fn)(Object *, Object *, MT2D_VAR **), int ArgCount) {
-        ObjectCore_CscriptEntry e = { CSCRIPT_KIND_OBJ_OBJ_VARS, ArgCount, 0, 0, Fn };
+        ObjectCore_CscriptEntry e;
+        e.Kind = CSCRIPT_KIND_OBJ_OBJ_VARS; e.ArgCount = ArgCount; e.Obj = 0; e.Vars = 0; e.ObjObj = Fn;
         return Fn != 0 && Global_AddFunction(Name, &e);
 }
 
 bool ObjectCore_RemoveGlobalCScript(const char *Name) {
+        int i, j;
         if (!Name) return false;
-        for (int i = 0; i < Global_FunctionCount; i++) {
+        for (i = 0; i < Global_FunctionCount; i++) {
                 if (strcmp(Global_Functions[i].Name, Name) == 0) {
-                        for (int j = i; j < Global_FunctionCount - 1; j++) Global_Functions[j] = Global_Functions[j + 1];
+                        for (j = i; j < Global_FunctionCount - 1; j++) Global_Functions[j] = Global_Functions[j + 1];
                         Global_FunctionCount--;
                         if (Global_FunctionCount == 0) { free(Global_Functions); Global_Functions = 0; }
                         return true;

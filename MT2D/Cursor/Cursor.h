@@ -1,6 +1,6 @@
-// Cursor.h created by: Lucas Zimerman Fraulob
-// This file includes the basic controls to interact with the cursor (normally used by other MT2D functions)
-//
+/* Cursor.h created by: Lucas Zimerman Fraulob */
+/* This file includes the basic controls to interact with the cursor (normally used by other MT2D functions) */
+/*  */
 
 #ifndef MT2D_CURSOR_H
 #define MT2D_CURSOR_H

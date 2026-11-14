@@ -35,6 +35,7 @@ MT2D_C_BEGIN
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y);
 void Cscript_Move(Object *object);
 void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars);
+bool Object_Hit_Object(Object* Caller, Object* Target);
 void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars);
 void Object_GotoState_IfHitObject(Object* Caller, Object* Target, MT2D_VAR** Vars);
 
