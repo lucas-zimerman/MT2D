@@ -7,6 +7,8 @@ void Dos_Add_ImagetoBuffer(Sprite *IMG,int X, int Y);
 void Dos_Clear_ImgBuffer(void);
 /*Programs the VGA colors. bgra: count entries of 4 bytes (B,G,R,unused) with 8 bit values.*/
 void MT2D_Dos_Set_Palette(const unsigned char *bgra, int count);
+/*Same with 0xRRGGBB colors (rgb: count values), starting at the DAC index first.*/
+void MT2D_Dos_Set_Palette_RGB(int first, const int *rgb, int count);
 void MT2D_Dos_Render_VGA_ASCII(unsigned char BUFFER[][80]);
 /*Makes the next render draw the whole screen (e.g. after the video mode was set again).*/
 void MT2D_Dos_Render_Invalidate(void);

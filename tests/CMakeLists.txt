@@ -28,6 +28,7 @@ file(WRITE "${SHADOW}/MT2D\\MT2D_Debug.h" "#include <MT2D/MT2D_Debug.h>\n")
 add_library(mt2d_engine STATIC
     ${ENGINE}/MT2D.c
     ${ENGINE}/MT2D_Layout.c
+    ${ENGINE}/MT2D_Settings.c
     ${ENGINE}/Audio/MT2D_Audio_core.c
     ${ENGINE}/Audio/MT2D_Mixer.c
     ${ENGINE}/Audio/MT2D_Music.c
@@ -57,9 +58,13 @@ target_include_directories(mt2d_engine PUBLIC
 # The engine is old code, keep the build output readable.
 target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
 
+# The settings are forwarded to the backend of the platform (SDL, DOS, ...), which the tests do not build.
+# MT2D_SETTINGS_NO_PLATFORM makes MT2D_Settings.c and the test use the shared fallbacks.
+set_source_files_properties(${ENGINE}/MT2D_Settings.c PROPERTIES COMPILE_DEFINITIONS MT2D_SETTINGS_NO_PLATFORM)
+
 # The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
 option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
-set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout cp850 objectloader objectglobals music mixer wav)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout settings cp850 objectloader objectglobals music mixer wav)
 if(MT2D_CSCRIPT_PARSER)
     target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
     target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)
@@ -74,6 +79,9 @@ foreach(name ${TEST_NAMES})
     add_executable(test_${name} test_${name}.cpp)
     target_link_libraries(test_${name} mt2d_engine)
     target_compile_options(test_${name} PRIVATE -w -fpermissive)
+    if(name STREQUAL "settings")
+        target_compile_definitions(test_${name} PRIVATE MT2D_SETTINGS_NO_PLATFORM)
+    endif()
     # Tests create temporary files, run each one in its own scratch directory.
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/run_${name}")
     add_test(NAME ${name} COMMAND test_${name} WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/run_${name}")

@@ -17,6 +17,7 @@
 #define M2SOUND_H
 
 #include <MT2D/ObjectCore/MT2D_CDecl.h>
+#include <MT2D/MT2D_Settings.h>
 
 #ifndef MT2D_DOS_SOUND_RATE
 #define MT2D_DOS_SOUND_RATE 22050
@@ -35,6 +36,14 @@ MT2D_C_BEGIN
 
 /* Finds and starts the card. Returns 1 if there is sound support, 0 otherwise (everything else becomes a no-op). */
 int MT2D_Dos_Sound_Init(void);
+/*
+ * Sets the card: port (0x210-0x280), irq (3-15), dma (0, 1 or 3) and rate (4000-44100 Hz). A value that is
+ * negative (port, irq and rate also 0) is not overridden: the BLASTER variable and MT2D_DOS_SOUND_RATE are used.
+ * Returns MT2D_OK, MT2D_BAD_PARAMETER (nothing changed) or MT2D_INVALID if the running card could not be restarted.
+ * If the card is running it is restarted (playing sounds are cut, the cache is dropped), otherwise the next
+ * MT2D_Dos_Sound_Init() uses the setup.
+ */
+MT2D_Result MT2D_Dos_Sound_Configure(int port, int irq, int dma, int rate);
 /* Stops the card and gives the IRQ back. Also done by atexit. */
 void MT2D_Dos_Sound_Close(void);
 /*

@@ -22,6 +22,18 @@ bool MT2D_Win_Init(void) {// Return: true - it started without any kind of probl
 	return output;
 }
 
+/* No setting is supported on this backend yet. */
+MT2D_Result MT2D_Win_Set_Settings(MT2D_Setting_Operation operation, int param1, int param2) {
+	(void)operation; (void)param1; (void)param2;
+	return MT2D_UNSUPPORTED;
+}
+
+MT2D_Result MT2D_Win_Set_Settings_Argv(int argc, const int *argv) {
+	if (argc < 1 || argv == NULL)
+		return MT2D_INVALID;
+	return MT2D_UNSUPPORTED;
+}
+
 bool MT2D_Win_Init2(void) {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started
 	bool output = true;
 	#ifdef SDL_USE

@@ -89,6 +89,16 @@ void MT2D_Dos_Set_Palette(const unsigned char *bgra, int count){
 	}
 }
 
+void MT2D_Dos_Set_Palette_RGB(int first, const int *rgb, int count){
+	int i;
+	outportb(0x3C8, (unsigned char)first);/*first DAC index to write, it auto increments*/
+	for(i = 0; i < count; i++){
+		outportb(0x3C9, (rgb[i] >> 18) & 0x3F);/*R, 8 bit color to the 6 bits of the DAC*/
+		outportb(0x3C9, (rgb[i] >> 10) & 0x3F);/*G*/
+		outportb(0x3C9, (rgb[i] >> 2) & 0x3F);/*B*/
+	}
+}
+
 void MT2D_Dos_Render_Invalidate(void){
 	ForceRedraw = 1;
 }

@@ -4,8 +4,10 @@
 #include "MT2D_SDL_Event_Handler.h"
 #include "../Joystick/MT2D_Joystick.h"
 #include "../MT2D_Debug.h"
+#include "MT2D_SDL_main.h"
 
 extern MT2D_Joystick *GlobalJoystickHandler;
+extern int MT2D_SDL_Alt_Enter_Fullscreen;
 
 
 
@@ -86,7 +88,13 @@ void MT2D_SDL_ADD_Key_Buffer(int32_t Key) {
 
 void MT2D_SDL_Event_Handler(void) {
 	while(SDL_PollEvent(&Events) != 0) {//As this function implicitly calls SDL_PumpEvents(), you can only call this function in the thread that set the video mode. 
-		if (Events.type == SDL_KEYDOWN) {
+		if (Events.type == SDL_KEYDOWN && MT2D_SDL_Alt_Enter_Fullscreen &&
+			(Events.key.keysym.sym == SDLK_RETURN || Events.key.keysym.sym == SDLK_KP_ENTER) && (Events.key.keysym.mod & KMOD_ALT)) {
+			/* MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN: handled here, the game does not see this Enter */
+			if (!Events.key.repeat)
+				MT2D_SDL_Toggle_Fullscreen();
+		}
+		else if (Events.type == SDL_KEYDOWN) {
 			//clone the event data
 			MT2D_SDL_ADD_Key_Buffer(Events.key.keysym.sym);
 			MainEvents.Keyboard_Pressed = true;

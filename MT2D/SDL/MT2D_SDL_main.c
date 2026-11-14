@@ -10,6 +10,7 @@
 #include <MT2D/SDL/MT2D_SDL_Redefine.h>
 #include <MT2D/SDL/MT2D_SDL_Event_Handler.h>
 #include <MT2D/MT2D_Debug.h>
+#include <MT2D/MT2D_Settings.h>
 
 /*GLOBAL VARS*/
 int FRAMEBUFFER[MAX_VER][MAX_HOR]; //used to store what was draw under the screen, (it should avoid overdrawn)
@@ -27,6 +28,7 @@ MT2D_SDL_Rect ScreenBuffer_Size;
 MT2D_SDL_Texture *OffscrBuff[2];
 MT2D_SDL_Texture *ScreenBuffer;
 bool fullscreen = false;
+int MT2D_SDL_Alt_Enter_Fullscreen = 0; /* MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN, read by the event handler */
 SDL_Surface *surface;
 extern MT2D_SDL_Events MainEvents;
 
@@ -367,6 +369,83 @@ bool loadMedia(void)
 	return success;
 }
 
+/* Display mode asked by MT2D_SDL_SET_WINDOWED / MT2D_SDL_SET_FULLSCREEN before the window exists. */
+#define MT2D_SDL_MODE_DEFAULT    0
+#define MT2D_SDL_MODE_WINDOWED   1
+#define MT2D_SDL_MODE_FULLSCREEN 2
+static int MT2D_SDL_Pending_Mode = MT2D_SDL_MODE_DEFAULT;
+
+/* applies the pending display mode to the window, which must exist */
+static void MT2D_SDL_Apply_Pending_Mode(void)
+{
+	if (MT2D_SDL_Pending_Mode == MT2D_SDL_MODE_WINDOWED) {
+		MT2D_SDL_SetWindowFullscreen(gWindow, 0);
+		MT2D_SDL_SetWindowSize(gWindow, SCREEN_WIDTH, SCREEN_HEIGHT);
+	}
+	else if (MT2D_SDL_Pending_Mode == MT2D_SDL_MODE_FULLSCREEN) {
+		MT2D_SDL_SetWindowFullscreen(gWindow, SDL_WINDOW_FULLSCREEN_DESKTOP); /* always the monitor resolution, no video mode change */
+	}
+	MT2D_SDL_Pending_Mode = MT2D_SDL_MODE_DEFAULT;
+}
+
+/* Alt+Enter: leaves fullscreen, or enters it (at the monitor resolution) if the window is not fullscreen. */
+void MT2D_SDL_Toggle_Fullscreen(void)
+{
+	bool is_fullscreen;
+	if (gWindow == NULL)
+		return;
+#ifdef MT2D_SDL_GPU
+	is_fullscreen = fullscreen; /* there is no SDL window to ask */
+#else
+	is_fullscreen = (SDL_GetWindowFlags(gWindow) & SDL_WINDOW_FULLSCREEN) != 0; /* also set by SDL_WINDOW_FULLSCREEN_DESKTOP */
+#endif
+	MT2D_SDL_SetWindowFullscreen(gWindow, is_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+	fullscreen = !is_fullscreen;
+}
+
+MT2D_Result MT2D_SDL_Set_Settings(MT2D_Setting_Operation operation, int param1, int param2)
+{
+	switch (operation) {
+	case MT2D_SDL_SET_WINDOW_SIZE:
+		if (gWindow != NULL)
+			return MT2D_BEFORE_INIT_ONLY; /* the window is created by MT2D_SDL_Init */
+		if (param1 <= 0 || param2 <= 0)
+			return MT2D_BAD_PARAMETER;
+		SCREEN_WIDTH = param1;
+		SCREEN_HEIGHT = param2;
+		return MT2D_OK;
+	case MT2D_SDL_SET_WINDOWED:
+		if (param1 < 0 || param2 < 0 || (param1 == 0) != (param2 == 0))
+			return MT2D_BAD_PARAMETER;
+		if (param1 > 0) {
+			SCREEN_WIDTH = param1;
+			SCREEN_HEIGHT = param2;
+		}
+		MT2D_SDL_Pending_Mode = MT2D_SDL_MODE_WINDOWED;
+		break;
+	case MT2D_SDL_SET_FULLSCREEN:
+		MT2D_SDL_Pending_Mode = MT2D_SDL_MODE_FULLSCREEN;
+		break;
+	case MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN:
+		if (param1 != 0 && param1 != 1)
+			return MT2D_BAD_PARAMETER;
+		MT2D_SDL_Alt_Enter_Fullscreen = param1;
+		return MT2D_OK; /* nothing to apply to the window */
+	default:
+		return MT2D_UNSUPPORTED;
+	}
+	if (gWindow != NULL)
+		MT2D_SDL_Apply_Pending_Mode(); /* already running: change it now, MT2D_SDL_Init applies it otherwise */
+	return MT2D_OK;
+}
+
+MT2D_Result MT2D_SDL_Set_Settings_Argv(int argc, const int *argv)
+{
+	if (argc < 1 || argv == NULL)
+		return MT2D_INVALID;
+	return MT2D_UNSUPPORTED; /* no SDL setting takes a list yet, the SDL ones go through MT2D_SDL_Set_Settings */
+}
+
 void MT2D_SDL_Init(void)
 {
 	//Initialization flag
@@ -459,6 +538,7 @@ void MT2D_SDL_Init(void)
 	}
 
 	if(success){
+		MT2D_SDL_Apply_Pending_Mode();
 		success=loadMedia();
 		SDL_GetWindowSize(gWindow, &mode.w, &mode.h);//get the window size
 		for (i = 0; i < MAX_HOR; i++) {

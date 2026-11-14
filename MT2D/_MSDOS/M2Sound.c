@@ -26,6 +26,11 @@ typedef struct SoundState {
 
 static SoundState g_snd;
 static int g_dma = 0;
+static int g_rate = MT2D_DOS_SOUND_RATE;  /* sample rate of the card and of the cached sounds */
+/* MT2D_Dos_Sound_Configure overrides, negative = use the BLASTER variable */
+static int g_cfg_port = -1;
+static int g_cfg_irq = -1;
+static int g_cfg_dma = -1;
 static int g_dos_sel = 0;
 static int g_ready = 0;
 static int g_atexit = 0;
@@ -124,8 +129,7 @@ static int blaster_parse(void) {
 	const char *e = getenv("BLASTER");
 	unsigned long base = 0;
 	int irq = -1, dma = -1;
-	if (!e) return 0;
-	while (*e) {
+	while (e && *e) {
 		char t;
 		long v = 0;
 		int hex, d;
@@ -142,6 +146,9 @@ static int blaster_parse(void) {
 		else if (t == 'I') irq = (int)v;
 		else if (t == 'D') dma = (int)v;
 	}
+	if (g_cfg_port >= 0) base = (unsigned long)g_cfg_port; /* MT2D_Dos_Sound_Configure wins over BLASTER */
+	if (g_cfg_irq >= 0) irq = g_cfg_irq;
+	if (g_cfg_dma >= 0) dma = g_cfg_dma;
 	if (irq == 2) irq = 9; /* IRQ 2 is the cascade, the card really uses 9 */
 	if (base < 0x210 || base > 0x280 || irq < 3 || irq > 15 || (dma != 0 && dma != 1 && dma != 3)) {
 		return 0;
@@ -244,7 +251,7 @@ int MT2D_Dos_Sound_Init(void) {
 	enable();
 
 	dma_program();
-	lo = (unsigned char)(256 - 1000000L / MT2D_DOS_SOUND_RATE);
+	lo = (unsigned char)(256 - 1000000L / g_rate);
 	hi = (unsigned char)((MT2D_DOS_SOUND_HALF - 1) >> 8);
 	dsp_write(0xD1); /* speaker on */
 	dsp_write(0x40); /* time constant */
@@ -283,6 +290,27 @@ void MT2D_Dos_Sound_Close(void) {
 	}
 }
 
+MT2D_Result MT2D_Dos_Sound_Configure(int port, int irq, int dma, int rate) {
+	int was_running = g_ready;
+	if (port <= 0) port = -1; /* not overridden */
+	if (irq <= 0) irq = -1;
+	if (rate <= 0) rate = -1;
+	if (dma < 0) dma = -1;
+	if ((port >= 0 && (port < 0x210 || port > 0x280)) ||
+	    (irq >= 0 && irq != 2 && (irq < 3 || irq > 15)) ||
+	    (dma >= 0 && dma != 0 && dma != 1 && dma != 3) ||
+	    (rate >= 0 && (rate < 4000 || rate > 44100))) {
+		return MT2D_BAD_PARAMETER;
+	}
+	MT2D_Dos_Sound_Close(); /* does nothing if it is not running; also drops the cache, sounds are converted to the old rate */
+	g_cfg_port = port;
+	g_cfg_irq = irq;
+	g_cfg_dma = dma;
+	g_rate = rate >= 0 ? rate : MT2D_DOS_SOUND_RATE;
+	if (was_running && !MT2D_Dos_Sound_Init()) return MT2D_INVALID;
+	return MT2D_OK;
+}
+
 /* ---- sounds ---- */
 
 static int in_use(const SoundEntry *e) {
@@ -319,15 +347,15 @@ static int entry_load(SoundEntry *e, unsigned char *file, unsigned long size, vo
 	MT2D_Wav w;
 	unsigned long bytes;
 	if (MT2D_Wav_Parse(file, size, &w) != MT2D_WAV_OK) return 0;
-	if (w.rate == MT2D_DOS_SOUND_RATE && (w.format == MT2D_MIXER_U8 || (((unsigned long)w.data & 1) == 0))) {
+	if (w.rate == (unsigned long)g_rate && (w.format == MT2D_MIXER_U8 || (((unsigned long)w.data & 1) == 0))) {
 		e->block = owner;
 		e->samples = w.data;
 		e->count = w.samples;
 	} else {
-		unsigned long n = MT2D_Wav_ResampledLength(w.samples, w.rate, MT2D_DOS_SOUND_RATE);
+		unsigned long n = MT2D_Wav_ResampledLength(w.samples, w.rate, g_rate);
 		void *buf = malloc(n * (w.format == MT2D_MIXER_S16 ? 2 : 1));
 		if (!buf) return 0;
-		MT2D_Wav_Resample(w.data, w.samples, w.format, w.rate, MT2D_DOS_SOUND_RATE, buf);
+		MT2D_Wav_Resample(w.data, w.samples, w.format, w.rate, g_rate, buf);
 		if (owner) free(owner);
 		e->block = buf;
 		e->samples = buf;

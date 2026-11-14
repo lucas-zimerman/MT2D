@@ -26,6 +26,7 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 | `test_container.cpp` | `Container/MT2D_Container.c` |
 | `test_aes.cpp` | `Container/aes.c` (NIST known answers) |
 | `test_display.cpp` | display buffers in `MT2D.c` |
+| `test_settings.cpp` | `MT2D_Settings.c` (result codes, operation ranges, the `MT2D_UNSUPPORTED` / `MT2D_INVALID` fallbacks used when a platform has no backend; built with `MT2D_SETTINGS_NO_PLATFORM`) |
 | `test_layout.cpp` | `MT2D_Layout.c`, `Tools/Video/MT2D_Generic_Line.c` |
 
 ## Not covered
@@ -34,7 +35,8 @@ Code that needs a terminal, a window, a joystick or an OS API cannot run in a
 headless test: `SDL/`, `_WINDOWS/`, `_LINUX/`, `_MSDOS/`, `_ANDROID/`,
 `_EMNISCRIPT/`, `Audio` playback, `Cursor`, `Joystick`, `InputBox`,
 `MessageBox`, `Tools/UserInterface/MT2D_Menu.c` and
-`ObjectCore/STDContainer.cpp` (needs SDL audio).
+`ObjectCore/STDContainer.cpp` (needs SDL audio). That includes the settings of each backend
+(`MT2D_SDL_Set_Settings`, `MT2D_Dos_Sound_Configure`, the VGA palette): their parameter checks are not tested.
 
 ## How it builds
 
