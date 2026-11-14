@@ -14,6 +14,7 @@ Read [limitations.md](limitations.md) before promising a feature on a platform.
 3. Put the font `assets/msdos_fnt.png` (from `examples/assets`) in the working directory of the program
    (the examples copy it to `<example>/bin`) and run the program from there. So do your image files.
 4. Call `MT2D_Init()` once (it is `MT2D_SDL_Init`). Free with `MT2D_SDL_Close()` when you finish.
+   Window size, windowed / fullscreen and the Alt+Enter shortcut are set with `MT2D_Set_Settings`, see [../general/settings.md](../general/settings.md).
 5. Draw with the normal text API ([../tui/display.md](../tui/display.md)) and add images:
 
 ```c

@@ -15,6 +15,9 @@ match wins, so `SDL_USE` overrides the native backend of the OS:
 
 Other OS: `#error "MT2D doesn't have code to support this operational system"`.
 
+`MT2D_Set_Settings` and `MT2D_Set_Settings_Argv` ([settings.md](settings.md)) use the same order: each is a macro for the backend
+of the first matching row (`MT2D_SDL_Set_Settings`, `MT2D_Win_Set_Settings`, ...).
+
 ## Defines (`MT2D/MT2D_Terminal_Define.h`)
 
 Off unless you uncomment them there or pass `-D...` to the compiler.

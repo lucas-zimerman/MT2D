@@ -42,6 +42,7 @@ More: [`examples/`](../examples/README.md) (one small program per feature, copy 
 | scripts that run on frames (Cscript), built in functions | [scripting/cscript.md](scripting/cscript.md) |
 | `MT2D_VAR` vars, globals | [scripting/vars.md](scripting/vars.md) |
 | the text script language, `cscriptc`, `.mto` files | [Object-Scripts.md](Object-Scripts.md) (overview in [scripting/README.md](scripting/README.md)) |
+| set the window size / fullscreen, the sound card, the VGA palette | [general/settings.md](general/settings.md) |
 | play sound or music | [general/audio.md](general/audio.md) |
 | open/read files (`MT2D_FILE`) | [general/files.md](general/files.md) |
 | pack or load named assets, encrypted data (container) | [general/container.md](general/container.md) |
@@ -55,6 +56,7 @@ screen and the widgets drawn on it, `gui/` = what only SDL / DOS VGA add (images
 | Folder / file | What |
 | --- | --- |
 | `MT2D.h/.c` | `WINDOW1/2`, `MT2D_Init`, `insert_string_on_display`, buffer copies |
+| `MT2D_Settings.h/.c` | `MT2D_Set_Settings`, `MT2D_Set_Settings_Argv`: forwarded to the backend of the platform, see [general/settings.md](general/settings.md) |
 | `MT2D_Display.h`, `MT2D_Keyboard.h`, `MT2D_System_Calls.h`, `Cursor/`, `Joystick/` | one portable header each, it maps the `MT2D_*` names to the backend of the OS |
 | `MT2D_Layout.*`, `MessageBox/`, `InputBox/`, `Tools/UserInterface/`, `Tools/Video/` | text UI built on the buffers |
 | `ObjectCore/` | sprites, objects, states, scenes, Cscript, vars (still C++ except the loader and globals), see [scripting/](scripting/README.md) |
