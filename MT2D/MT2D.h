@@ -57,7 +57,7 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/MT2D_CDecl.h> /* C linkage macros and "bool" */
 
-#ifdef SDL_USE //SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib
+#ifdef SDL_USE /* SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib */
         #ifdef WINDOWS_TARGET
         #include <SDL.h>
         #elif defined(linux) || defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
@@ -71,7 +71,7 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 #define DISPLAY_WINDOW2 0
 #define MAX_HOR 80
 #define MAX_VER 25
-#define MT2D_WINDOWED_MODE // Can be disabled : set the initial window size, if not defines it starts in fullscreen mode
+#define MT2D_WINDOWED_MODE /* Can be disabled : set the initial window size, if not defines it starts in fullscreen mode */
 
 MT2D_C_BEGIN
 extern unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
@@ -89,7 +89,7 @@ MT2D_C_END
         #pragma comment(lib, "SDL2.lib")
         #pragma comment(lib, "SDL2main.lib")
         #pragma comment(lib, "SDL2_image.lib")
-        //#pragma comment(lib, "SDL2_ttf.lib")
+/* #pragma comment(lib, "SDL2_ttf.lib") */
         #pragma comment(lib, "SDL2_mixer.lib")
         #endif
 #endif
@@ -97,7 +97,7 @@ MT2D_C_END
 /*OS SPECIFIC CODE*/
 #if defined(SDL_USE)
 
-        //#undef main
+/* #undef main */
         #include <MT2D/SDL/MT2D_SDL_main.h>
         #define MT2D_Init MT2D_SDL_Init
 #elif defined(_WIN32)

@@ -49,8 +49,8 @@ typedef struct MT2D_ContainerFilePath MT2D_ContainerFilePath;
 typedef struct MT2D_ContainerFile MT2D_ContainerFile;
 
 struct MT2D_ContainerFilePath{
-	char* file;//if refCount is -1 it points to a memory address
-	int refCount;// if -1 it represents a memory data and not a container
+	char* file; /* if refCount is -1 it points to a memory address */
+	int refCount; /* if -1 it represents a memory data and not a container */
 	void* firstData;
 	MT2D_ContainerFilePath* prev;
 	MT2D_ContainerFilePath* next;
@@ -59,9 +59,9 @@ struct MT2D_ContainerFilePath{
 struct MT2D_ContainerFile{
 	/*minimal struct which represents the a reference from the file to be stored*/
 	char* name;
-	unsigned int length; //in bytes
-	unsigned char xpadding;//the number of bytes that were added to make this file to be multiple of X
-	long fileDataOffset;//coordinate where the data is located in the file, not counting where the name of the file is located at
+	unsigned int length; /* in bytes */
+	unsigned char xpadding; /* the number of bytes that were added to make this file to be multiple of X */
+	long fileDataOffset; /* coordinate where the data is located in the file, not counting where the name of the file is located at */
 	MT2D_ContainerFilePath* DataFileId;
 	MT2D_ContainerFile* next;
 };

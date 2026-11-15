@@ -1,6 +1,7 @@
 #ifndef MT2D_TEXT_IMAGE_H
 #define MT2D_TEXT_IMAGE_H
 #include <MT2D/MT2D_Types.h>
+#include <MT2D/ObjectCore/MT2D_CDecl.h>
 
 /*
         Compact, read-only ASCII image used by every platform (MS-DOS included).
@@ -28,6 +29,8 @@ struct MT2D_Text_Image {
 };
 typedef struct MT2D_Text_Image MT2D_Text_Image;
 
+MT2D_C_BEGIN
+
 /** Builds an image from width*height cells (row major, 0 = transparent). Returns NULL if too big or out of memory. **/
 MT2D_Text_Image *MT2D_Text_Image_Create(int width, int height, const char *cells);
 void MT2D_Text_Image_Free(MT2D_Text_Image *img);
@@ -37,5 +40,7 @@ char MT2D_Text_Image_Get(const MT2D_Text_Image *img, int x, int y);
 void MT2D_Text_Image_Blit(const MT2D_Text_Image *img, unsigned char *dst, int dstWidth, int dstHeight, int pos_x, int pos_y);
 /** Bytes used by the image (all the structures + data). **/
 unsigned long MT2D_Text_Image_Memory_Size(const MT2D_Text_Image *img);
+
+MT2D_C_END
 
 #endif

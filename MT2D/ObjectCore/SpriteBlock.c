@@ -1,4 +1,4 @@
-//#include "Sprites.h"
+/* #include "Sprites.h" */
 #ifndef __ANDROID__
 #include <MT2D/ObjectCore/SpriteBlock.h>
 #else
@@ -6,7 +6,7 @@
 #endif
 #include <stdlib.h>
 
-SpriteBlock *SpriteBlock_Create() {//creates an empty sprite block
+SpriteBlock *SpriteBlock_Create(void) { /* creates an empty sprite block */
 	SpriteBlock *SB = 0;
 	SB = (SpriteBlock*)malloc(sizeof(SpriteBlock));
 	SB->sprites = 0;
@@ -14,7 +14,7 @@ SpriteBlock *SpriteBlock_Create() {//creates an empty sprite block
 	return SB;
 }
 
-bool SpriteBlock_Add_Sprite(SpriteBlock *Block, Sprite *Ref) {// Output = false if Sprite is invalid or true if valid
+bool SpriteBlock_Add_Sprite(SpriteBlock *Block, Sprite *Ref) { /* Output = false if Sprite is invalid or true if valid */
 	bool out = false;
 	if (Ref) {
 		out = true;

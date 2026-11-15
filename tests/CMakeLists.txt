@@ -35,16 +35,16 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/Audio/MT2D_Wav.c
     ${ENGINE}/Container/aes.c
     ${ENGINE}/Container/MT2D_Container.c
-    ${ENGINE}/ObjectCore/Cscript.cpp
-    ${ENGINE}/ObjectCore/MT2D_Text_Image.cpp
+    ${ENGINE}/ObjectCore/Cscript.c
+    ${ENGINE}/ObjectCore/MT2D_Text_Image.c
     ${ENGINE}/ObjectCore/ObjectGlobals.c
     ${ENGINE}/ObjectCore/ObjectLoader.c
-    ${ENGINE}/ObjectCore/Object.cpp
-    ${ENGINE}/ObjectCore/SpriteBlock.cpp
-    ${ENGINE}/ObjectCore/Sprites.cpp
-    ${ENGINE}/ObjectCore/State.cpp
-    ${ENGINE}/ObjectCore/STDFunctions.cpp
-    ${ENGINE}/ObjectCore/Vars.cpp
+    ${ENGINE}/ObjectCore/Object.c
+    ${ENGINE}/ObjectCore/SpriteBlock.c
+    ${ENGINE}/ObjectCore/Sprites.c
+    ${ENGINE}/ObjectCore/State.c
+    ${ENGINE}/ObjectCore/STDFunctions.c
+    ${ENGINE}/ObjectCore/Vars.c
     ${ENGINE}/Tools/Video/MT2D_Generic_Line.c
     ${ENGINE}/_LINUX/MT2D_Linux_CP850.c
 )

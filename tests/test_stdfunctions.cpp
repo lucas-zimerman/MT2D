@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/STDFunctions.cpp (the built in Cscript functions)
+// Tests for MT2D/ObjectCore/STDFunctions.c (the built in Cscript functions)
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/STDFunctions.h>
 #include <MT2D/ObjectCore/Object.h>

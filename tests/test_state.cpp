@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/State.cpp
+// Tests for MT2D/ObjectCore/State.c
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/Object.h> // must come before State.h (circular includes)
 #include <MT2D/ObjectCore/State.h>

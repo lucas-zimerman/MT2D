@@ -1,15 +1,11 @@
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/ObjectCore/Cscript.h>
-#if defined(__DOS__) || defined(__MSDOS__)
 #include <stdlib.h>
-#else
-#include <cstdlib>
-#endif
 
 /**
         Create an empty state
 **/
-struct ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName)
+ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName)
 {
         ObjectState * State = (ObjectState*)malloc(sizeof(ObjectState));
         State->Sprites = 0;
@@ -76,9 +72,10 @@ void MT2D_ObjectState_ADD(ObjectState *State, Sprite *sprite, int Wait, Cscript 
 }
 
 void MT2D_ObjectState_Delete(ObjectState *Me) {
+        int i;
         if (Me) {
                 free(Me->WaitSprites);
-                for (int i = 0; i < Me->Count; i++) {
+                for (i = 0; i < Me->Count; i++) {
                         Cscript_RemoveFromMemory(Me->Functions[i]);
                         Sprite_Delete(Me->Sprites[i]);
                 }

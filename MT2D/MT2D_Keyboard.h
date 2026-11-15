@@ -30,13 +30,13 @@
 
 #define enter_pressed 13
 #define tab_pressed 9
-//#if defined(__MSDOS__) || defined(__DOS__)
+/* #if defined(__MSDOS__) || defined(__DOS__) */
 #define escape_pressed 27
-//#else
-//#define esc 1
-//#endif
+/* #else */
+/* #define esc 1 */
+/* #endif */
 
-//#define � 135
+/* #define � 135 */
 
 #include <MT2D/MT2D_Terminal_Define.h>
 

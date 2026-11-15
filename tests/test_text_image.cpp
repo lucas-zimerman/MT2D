@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/MT2D_Text_Image.cpp (slice based ASCII image)
+// Tests for MT2D/ObjectCore/MT2D_Text_Image.c (slice based ASCII image)
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/MT2D_Text_Image.h>
 #include <string.h>

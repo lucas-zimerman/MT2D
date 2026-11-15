@@ -44,7 +44,7 @@ ObjectScene_Goto_NextSteps(scene);    /* advance every object one tick, delete t
 MT2D_System_Delay(30);
 ```
 
-`Object_Goto_NextStep(o)` (from `Object.cpp`):
+`Object_Goto_NextStep(o)` (from `Object.c`):
 
 1. If `ActualFrameWait > 0`: decrement it and stop.
 2. Otherwise loop while `ActualFrameWait == 0`:
@@ -103,7 +103,7 @@ ObjectAcelX(o) = 1;
 ```
 
 Each tick: `ObjectScene_Render` draws `<A>` at (Pos_X, Pos_Y); `ObjectScene_Goto_NextSteps` runs `Move` after the 1 tick wait.
-In C replace `Cscript_New(fn)` by `Cscript_New2(fn)` and `Cscript_New(fn, a, b)` by `Cscript_New3(MT2D_VAR_Create_Matrix2(a, b), fn)`
+In C replace `Cscript_New(fn)` by `Cscript_New2(fn)` and `Cscript_New(fn, a, b)` by `Cscript_New3(MT2D_VAR_Create_Matrix2(a, b), fn)` (or `Cscript_New3V(fn, 2, a, b)`)
 ([cscript.md](cscript.md)).
 
 ## Loading from a file
@@ -115,5 +115,5 @@ ObjectCore_Unload(model);                              /* last, when no clone is
 ```
 
 Text scripts (`ObjectCore_LoadScript`), the globals registry and the binary format are in
-[../Object-Scripts.md](../Object-Scripts.md) and `ObjectLoader.h`. `ColisionSystem.*` is an empty placeholder (0 bytes in the
-`.cpp`): collision is `Object_Hit_Object` and the two `...IfHit...` functions.
+[../Object-Scripts.md](../Object-Scripts.md) and `ObjectLoader.h`.  The old empty `ColisionSystem.*` placeholder was removed (there was no
+`.c` for it): collision is `Object_Hit_Object` and the two `...IfHit...` functions.

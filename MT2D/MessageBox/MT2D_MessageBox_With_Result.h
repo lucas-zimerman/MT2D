@@ -8,7 +8,7 @@ two options and will return a value (1 or 2)
 #ifndef MT2D_MSGB_HEADER2
 #define MT2D_MSGB_HEADER2
 MT2D_C_BEGIN
-int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, char *option_1, char *option_2);//Print a generic error box with two options to be selected
+int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, char *option_1, char *option_2); /* Print a generic error box with two options to be selected */
 MT2D_C_END
 
 #endif 

@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/SpriteBlock.cpp
+// Tests for MT2D/ObjectCore/SpriteBlock.c
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/SpriteBlock.h>
 #include <stdlib.h>

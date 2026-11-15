@@ -72,13 +72,20 @@ int MT2D_Wav_Parse(const unsigned char *file, unsigned long size, MT2D_Wav *out)
 	return MT2D_WAV_ERR_FORMAT;
 }
 
+/* 64 bit intermediate: __extension__ keeps -pedantic C89 quiet on GNU compilers (DJGPP, gcc) */
+#if defined(__GNUC__)
+__extension__ typedef unsigned long long MT2D_Wav_U64;
+#else
+typedef unsigned long MT2D_Wav_U64;
+#endif
+
 unsigned long MT2D_Wav_ResampledLength(unsigned long samples, unsigned long from, unsigned long to)
 {
-	unsigned long long n;
+	MT2D_Wav_U64 n;
 	if (from == 0 || to == 0) {
 		return 0;
 	}
-	n = (unsigned long long)samples * to / from;
+	n = (MT2D_Wav_U64)samples * to / from;
 	return n == 0 ? 1 : (unsigned long)n; /* never turn a sound into nothing */
 }
 
@@ -91,7 +98,7 @@ void MT2D_Wav_Resample(const unsigned char *src, unsigned long samples, int form
 	}
 	n = MT2D_Wav_ResampledLength(samples, from, to);
 	for (i = 0; i < n; i++) {
-		unsigned long at = (unsigned long)((unsigned long long)i * from / to);
+		unsigned long at = (unsigned long)((MT2D_Wav_U64)i * from / to);
 		if (at >= samples) {
 			at = samples - 1;
 		}

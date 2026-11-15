@@ -2,16 +2,8 @@
 #include <MT2D/ObjectCore/Cscript.h>
 #include <MT2D/ObjectCore/Vars.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>
-#if __DOS__
 #include <string.h>
 #include <stdlib.h>
-#else
-#include <string.h>
-#include <stdlib.h>
-#endif
-
-
-#pragma region INTERNAL
 
 int Cscript_VAR_Get_Integer(Object *object, MT2D_VAR *Var);
 
@@ -24,7 +16,7 @@ int Cscript_Get_Object_VarIndex(MT2D_VAR *Var) {
         int out = -1;
         Object *O = (Object*)Var->Data.p;
         int i = 0;
-        for (i < 0; i < O->User_Vars_Count; i++) {
+        for (; i < O->User_Vars_Count; i++) {
                 if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
                         out = i;
                         i = O->User_Vars_Count;
@@ -44,7 +36,7 @@ int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
         int Return = 0;
         if (O) {
                 int i = 0;
-                for (i < 0; i < O->User_Vars_Count; i++) {
+                for (; i < O->User_Vars_Count; i++) {
                         if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
                                 Return = MT2D_Object_VAR_GetInt(&O->User_Vars[i]);
                                 i = O->User_Vars_Count;
@@ -65,9 +57,9 @@ with other types of data other than object struct data.
 void Cscript_Set_Object_Internal_Data(Object *caller, MT2D_VAR *Var, MT2D_VAR *NewVar) {
         Object *O = (Object*)Var->Data.p;
         if (O) {
-                //check vars
+                /* check vars */
                 int i = 0;
-                for (i < 0; i < O->User_Vars_Count; i++) {
+                for (; i < O->User_Vars_Count; i++) {
                         if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
                                 MT2D_Object_VAR_SetVar(&O->User_Vars[i], NewVar);
                                 i = O->User_Vars_Count;
@@ -120,10 +112,6 @@ void Cscript_VAR_Set_Integer(Object *object, MT2D_VAR *Var, MT2D_VAR *NewData) {
         }
 }
 
-#pragma endregion FUNCTIONS
-
-#pragma region LOGIC
-
 /**
 VARS[0] = State Name
 **/
@@ -132,7 +120,7 @@ void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName) {
         while (i < Object->States_Count) {
                 if (strcmp(Object->State[i]->Name, (char*)StateName[0]->Name) == 0) {
                         Object->ActualState = i;
-                        Object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
+                        Object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                         Object->ActualFrameWait = Object->State[i]->WaitSprites[0];
                         i = Object->States_Count;
                 }
@@ -210,7 +198,7 @@ void Cscript_JumpFramesIfRandom(Object* caller, MT2D_VAR** vars) {
         int selectRange = Cscript_VAR_Get_Integer(caller, vars[1]);
         if (rand() % max <= selectRange) {
                 caller->ActualFrame += jump;
-//              caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[caller->ActualFrame -1];
+/*              caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[caller->ActualFrame -1]; */
         }
 }
 
@@ -227,7 +215,7 @@ void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
                         while (i < object->States_Count) {
                         if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
                                 object->ActualState = i;
-                                object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
+                                object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
                                 i = object->States_Count;
                         }
@@ -249,7 +237,7 @@ void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
                 while (i < object->States_Count) {
                         if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
                                 object->ActualState = i;
-                                object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
+                                object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
                                 i = object->States_Count;
                         }
@@ -279,7 +267,7 @@ void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars) {
                 while (i < object->States_Count) {
                         if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
                                 object->ActualState = i;
-                                object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first state.
+                                object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
                                 i = object->States_Count;
                         }
@@ -341,8 +329,8 @@ static bool Cscript_Private_Compare(int Left, unsigned char Operation, int Right
         case '<':  return Left < Right;
         case '=':  return Left == Right;
         case '!':  return Left != Right;
-        case 242:  return Left >= Right; //>=
-        case 243:  return Left <= Right; //<=
+        case 242:  return Left >= Right; /* >= */
+        case 243:  return Left <= Right; /* <= */
         default:   return false;
         }
 }
@@ -377,10 +365,11 @@ void Cscript_JumpFramesIfVar(Object *object, MT2D_VAR **Vars) {
 
 /* Jumps to the state called like Name, does nothing if there is none. */
 static void Cscript_Private_GotoStateByName(Object *object, const char *Name) {
-        for (int i = 0; i < object->States_Count; i++) {
+        int i;
+        for (i = 0; i < object->States_Count; i++) {
                 if (strcmp(object->State[i]->Name, Name) == 0) {
                         object->ActualState = i;
-                        object->ActualFrame = -1;//after this call the function is going to be increased by one so we avoid the code to miss the first frame.
+                        object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first frame. */
                         object->ActualFrameWait = object->State[i]->WaitSprites[0];
                         return;
                 }
@@ -487,15 +476,15 @@ void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
 
 /*TODO void Cscript_RemoveVar_FromObject(OBject *Caller, MT2D_VAR **Var);*/
 
-//Var 0 Start index of while, the value and data type does not matter.
-//Var 1 Left Compare
-//Var 2 Signal (char), should not be pointer
-//Var 3 Right
+/* Var 0 Start index of while, the value and data type does not matter. */
+/* Var 1 Left Compare */
+/* Var 2 Signal (char), should not be pointer */
+/* Var 3 Right */
 void Cscript_While(Object* caller, MT2D_VAR** vars) {
         int skipTo = Cscript_VAR_Get_Integer(caller, vars[0]);
         int Left = Cscript_VAR_Get_Integer(caller, vars[1]);
         int Right = Cscript_VAR_Get_Integer(caller, vars[3]);
-        char operation = Cscript_VAR_Get_Integer(caller, vars[2]);
+        unsigned char operation = (unsigned char)Cscript_VAR_Get_Integer(caller, vars[2]);
         bool skip = false;
         switch (operation) {
         case '>':
@@ -510,10 +499,10 @@ void Cscript_While(Object* caller, MT2D_VAR** vars) {
         case '!':
                 skip = Left != Right;
                 break;
-        case 242://>=
+        case 242: /* >= */
                 skip = Left >= Right;
                 break;
-        case 243://<=
+        case 243: /* <= */
                 skip = Left <= Right;
                 break;
         default:
@@ -539,20 +528,16 @@ void Cscript_While(Object* caller, MT2D_VAR** vars) {
                 }
 
                 caller->ActualFrame = i - 1;
-//              caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i];
+/*              caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i]; */
         }
 }
 
-//VAR 0: Reset state to this place
+/* VAR 0: Reset state to this place */
 void Cscript_While_End(Object* caller, MT2D_VAR** vars) {
         int i = Cscript_VAR_Get_Integer(caller, vars[0]) - 1;
         caller->ActualFrame = i;
-//      caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i];
+/*      caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[i]; */
 }
-
-#pragma endregion FUNCTIONS
-
-#pragma region AI
 
 void Cscript_TeleportToCoord(Object *object, MT2D_VAR **X_Y) {
         int x = Cscript_VAR_Get_Integer(object, X_Y[0]);
@@ -574,8 +559,13 @@ Vars[3] = Acel Y
 **/
 void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
         Object *NewObject;
-        int X[2] = { Cscript_VAR_Get_Integer(Caller,Vars[0]),Cscript_VAR_Get_Integer(Caller,Vars[2]) };
-        int Y[2] = { Cscript_VAR_Get_Integer(Caller,Vars[1]),Cscript_VAR_Get_Integer(Caller,Vars[3]) };
+        int i;
+        int X[2];
+        int Y[2];
+        X[0] = Cscript_VAR_Get_Integer(Caller,Vars[0]);
+        X[1] = Cscript_VAR_Get_Integer(Caller,Vars[2]);
+        Y[0] = Cscript_VAR_Get_Integer(Caller,Vars[1]);
+        Y[1] = Cscript_VAR_Get_Integer(Caller,Vars[3]);
         NewObject = Object_Create(
                 NewModel->Solid, 
                 NewModel->RenderOnly, 
@@ -590,9 +580,9 @@ void Cscript_CreateObject(Object *Caller, Object *NewModel, MT2D_VAR **Vars) {
         NewObject->User_Vars[Object_AcelY_Var_Index].Data.i = Y[1];
         if (NewModel->User_Vars_Count > 0)
         {
- //TODO: OBSOLETE?
- //               MT2D_VAR *NewVars = (MT2D_VAR*)malloc(NewModel->User_Vars_Count * sizeof(MT2D_VAR));
-                for (int i = Object_First_User_Var_Index; i < NewModel->User_Vars_Count; i++)
+ /* TODO: OBSOLETE? */
+ /*               MT2D_VAR *NewVars = (MT2D_VAR*)malloc(NewModel->User_Vars_Count * sizeof(MT2D_VAR)); */
+                for (i = Object_First_User_Var_Index; i < NewModel->User_Vars_Count; i++)
                 {
                         MT2D_VAR* clone = MT2D_VAR_CLONE(&NewModel->User_Vars[i]);
                         Object_Add_Variable(NewObject, clone);
@@ -634,7 +624,7 @@ void Object_GotoState_IfHit(Object *Caller, MT2D_VAR **Vars) {
         {
                 if (Caller->MyScene->ObjectGroup[i]->Solid && Object_Hit_Object(Caller, Caller->MyScene->ObjectGroup[i]))
                 {
-                        // Object collided.
+                        /* Object collided. */
                         Vars[2]->Data.p = Caller->MyScene->ObjectGroup[i];
                         ObjVarInded = Cscript_Get_Object_VarIndex(Vars[2]);
                         Vars[2]->Data.p = 0;
@@ -658,10 +648,6 @@ void Object_GotoState_IfHitObject(Object* Caller, Object* Target, MT2D_VAR** Var
                 Cscript_Object_SetState(Caller, Vars);
         }
 }
-
-#pragma endregion FUNCTIONS
-
-#pragma region MATH
 
 /**
 VARS[0] the number to be increased
@@ -761,10 +747,6 @@ void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
         MT2D_VAR_Free(One,1);
 }
 
-#pragma endregion FUNCTIONS
-
-#pragma region AUDIO
-
 /* The file is the text of a VAR_STRING var, or the Name of any other var. */
 void Cscript_PlaySound(Object *object, MT2D_VAR **SoundName) {
         MT2D_Play_Audio((char*)MT2D_Object_VAR_GetPath(SoundName[0]));
@@ -773,5 +755,3 @@ void Cscript_PlaySound(Object *object, MT2D_VAR **SoundName) {
 void Cscript_PlayMusic(Object *object, MT2D_VAR **MusicName) {
         MT2D_Play_Music((char*)MT2D_Object_VAR_GetPath(MusicName[0]));
 }
-
-#pragma endregion FUNCTIONS

@@ -49,7 +49,7 @@ MT2D_VAR *MT2D_Object_Get_Var_Pointer(MT2D_VAR *array, char *name);  /* find by 
 * Errors: `MT2D_Var_Last_Error` / `MT2D_Object_Get_Last_Var_Error()` hold the last `MT2D_VAR_ERROR`
   (`Var_Wrong_Type`, `Var_Divide_By_Zero`, `Var_Not_Found`, `Var_Type_Not_Supported`, `Var_Null_Data`, `Var_Null_Name`,
   `Var_Out_Of_Memory_To_Create_New_Var`, `Var_Name_Too_Long`). It is a single global, not cleared automatically.
-* C++ only: overloaded `MT2D_Object_Set_Var(var, bool|int|float)` and `(var, void*, type)`. From C use `MT2D_VAR_Init_*` / `MT2D_Object_VAR_SetVar`.
+* Setters: `MT2D_Object_Set_Var_Bool/Int/Float(var, value)` and `MT2D_Object_Set_Var_Data(var, void*, type)`. C++ can also call the overloaded `MT2D_Object_Set_Var(var, bool|int|float)` / `(var, void*, type)` (inline wrappers in `Vars.h`).
 * The built in script functions compare the integer value (`Cscript_VAR_Get_Integer`). `GetBool` is "> 0" while the text language
   documents "true when not 0": do not assume they agree for negative numbers.
 

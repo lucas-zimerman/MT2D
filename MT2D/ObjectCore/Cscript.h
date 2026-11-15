@@ -36,10 +36,11 @@ You can also use the build in functions inside STDFunctions.h
 #if !defined(MT2D_OBJFUN_H)
 #define MT2D_OBJFUN_H
 
+#include <stdarg.h>
 #include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Vars.h>
 #include <MT2D/ObjectCore/Object.h>
-//extern struct Object;// this guy is here because we have a circular include.
+/* extern struct Object;// this guy is here because we have a circular include. */
 
 /**
         This function only store pointers, no malloc involved.
@@ -56,23 +57,40 @@ MT2D_C_BEGIN
 
 struct Cscript
 {
-        void(*_void)(); //a function without args
-        void(*_Obj)(struct Object*);//a function with only a single object as arg, normally the caller object
-        void(*_Obj_Vars)(struct Object*, MT2D_VAR **);//a function with only a single object and one or more Vars as arg, normally the caller as an object
-        void(*_Obj_Obj_Vars)(struct Object*, struct Object*, MT2D_VAR**);//a function with only a single object, one or more objects in the second arg and lastly one or more Vars as arg, normally the caller as the first object
+        void(*_void)(); /* a function without args */
+        void(*_Obj)(struct Object*); /* a function with only a single object as arg, normally the caller object */
+        void(*_Obj_Vars)(struct Object*, MT2D_VAR **); /* a function with only a single object and one or more Vars as arg, normally the caller as an object */
+        void(*_Obj_Obj_Vars)(struct Object*, struct Object*, MT2D_VAR**); /* a function with only a single object, one or more objects in the second arg and lastly one or more Vars as arg, normally the caller as the first object */
         MT2D_VAR **TempVars;
         struct Object *TempObj;
         unsigned char Packed; /* 1 = TempVars and the vars they point to live in the same block as the Cscript (see ObjectLoader), a single free releases everything */
 };
 
-Cscript *Cscript_Empty();
+Cscript *Cscript_Empty(void);
 Cscript *Cscript_New1(void(*Function)());
 Cscript *Cscript_New2(void(*Function)(struct Object *));
 Cscript *Cscript_New3(MT2D_VAR **ObjVarPointer, void(*Function)(struct Object*, MT2D_VAR **));
 Cscript *Cscript_New4(struct Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(struct Object *, struct Object*, MT2D_VAR **));
 
 /**
-        Generic constructor, the same name for every kind of function:
+        Variable argument constructors for C (and C++): "count" is the number of arguments after it.
+                Cscript_New3V(Cscript_VAR_INC, 1, var1)
+                Cscript_New3V(Cscript_JumpToStateIfVarEq, 3, var1, var2, var3)
+                Cscript_New4V(Cscript_CreateObject, 3, model, var1, var2)   (the first extra argument is the model Object*)
+        The *VA versions take a va_list instead.
+**/
+Cscript *Cscript_New3V(void(*Function)(struct Object *, MT2D_VAR **), int count, ...);
+Cscript *Cscript_New4V(void(*Function)(struct Object *, struct Object *, MT2D_VAR **), int count, ...);
+Cscript *Cscript_New3VA(void(*Function)(struct Object *, MT2D_VAR **), int count, va_list vl);
+Cscript *Cscript_New4VA(void(*Function)(struct Object *, struct Object *, MT2D_VAR **), int count, va_list vl);
+
+void Cscript_RemoveFromMemory(Cscript *Me);
+void Cscript_Execute(Object *caller, Cscript *f);
+MT2D_C_END
+
+#ifdef __cplusplus
+/**
+        C++ only generic constructor, the same name for every kind of function:
 
                 Cscript_New(Cscript_Move)                                  -> void f(Object*)
                 Cscript_New(Cscript_VAR_INC, var1)                         -> void f(Object*, MT2D_VAR**)
@@ -80,23 +98,37 @@ Cscript *Cscript_New4(struct Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*
                 Cscript_New(Cscript_CreateObject, model, var1, var2)       -> void f(Object*, Object*, MT2D_VAR**)
 
         The overload is chosen by the type of the function. Up to CSCRIPT_MAX_ARGS arguments after the function.
-        (Variadic macros: GCC/DJGPP extension in C++98.)
+        (Variadic macros: GCC/DJGPP extension in C++98.) C uses Cscript_New1..4 / Cscript_New3V / Cscript_New4V.
 **/
-MT2D_C_END
-#ifdef __cplusplus
 #define CSCRIPT_MAX_ARGS 16
 #define CSCRIPT_NARGS_(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_10,_11,_12,_13,_14,_15,_16,N,...) N
 #define CSCRIPT_NARGS(...) CSCRIPT_NARGS_(0, ##__VA_ARGS__, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define Cscript_New(fn, ...) Cscript_NewV((fn), CSCRIPT_NARGS(__VA_ARGS__), ##__VA_ARGS__)
 
-Cscript *Cscript_NewV(void(*Function)(), int count, ...);
-Cscript *Cscript_NewV(void(*Function)(struct Object *), int count, ...);
-Cscript *Cscript_NewV(void(*Function)(struct Object *, MT2D_VAR **), int count, ...);
-Cscript *Cscript_NewV(void(*Function)(struct Object *, struct Object *, MT2D_VAR **), int count, ...);
-#endif /* __cplusplus: the generic constructor is overloaded, C uses Cscript_New1..4 */
-MT2D_C_BEGIN
+inline Cscript *Cscript_NewV(void(*Function)(), int, ...) {
+        return Cscript_New1(Function);
+}
 
-void Cscript_RemoveFromMemory(Cscript *Me);
-void Cscript_Execute(Object *caller, Cscript *f);
-MT2D_C_END
+inline Cscript *Cscript_NewV(void(*Function)(struct Object *), int, ...) {
+        return Cscript_New2(Function);
+}
+
+inline Cscript *Cscript_NewV(void(*Function)(struct Object *, MT2D_VAR **), int count, ...) {
+        Cscript *F;
+        va_list vl;
+        va_start(vl, count);
+        F = Cscript_New3VA(Function, count, vl);
+        va_end(vl);
+        return F;
+}
+
+inline Cscript *Cscript_NewV(void(*Function)(struct Object *, struct Object *, MT2D_VAR **), int count, ...) {
+        Cscript *F;
+        va_list vl;
+        va_start(vl, count);
+        F = Cscript_New4VA(Function, count, vl);
+        va_end(vl);
+        return F;
+}
+#endif /* __cplusplus */
 #endif

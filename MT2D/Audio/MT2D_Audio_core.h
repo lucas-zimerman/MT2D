@@ -33,7 +33,7 @@
    MT2D_Audio_Init() is not 0 when a Sound Blaster or an OPL chip was found. */
 #include <MT2D/_MSDOS/M2Music.h>
 #include <MT2D/_MSDOS/M2Sound.h>
-static inline int MT2D_Dos_Audio_Init(void) {
+MT2D_INLINE int MT2D_Dos_Audio_Init(void) {
 	int sound = MT2D_Dos_Sound_Init();
 	int music = MT2D_Dos_Music_Init();
 	return sound | music;
@@ -48,7 +48,7 @@ static inline int MT2D_Dos_Audio_Init(void) {
 #else
 #ifndef MT2D_AUIDO_WARN
 #define MT2D_AUIDO_WARN
-//avoid the spam of this message
+/* avoid the spam of this message */
 #pragma message ("Audio code not found, you can compile the project but you'll not hear any wave sound")
 #endif
 #define MT2D_Audio_Init()

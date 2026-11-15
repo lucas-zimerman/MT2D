@@ -61,8 +61,9 @@ static unsigned Rd_U16(Reader *r) {
 
 static int Rd_I32(Reader *r) {
         unsigned char b[4] = { 0, 0, 0, 0 };
+        unsigned long v;
         Rd_Bytes(r, b, 4);
-        unsigned long v = (unsigned long)b[0] | ((unsigned long)b[1] << 8) | ((unsigned long)b[2] << 16) | ((unsigned long)b[3] << 24);
+        v = (unsigned long)b[0] | ((unsigned long)b[1] << 8) | ((unsigned long)b[2] << 16) | ((unsigned long)b[3] << 24);
         return (int)(long)v; /* two's complement, same on every target we build for */
 }
 
@@ -79,20 +80,26 @@ static bool Rd_Name(Reader *r, char *out) {
 static Cscript *Load_Function(Reader *r, const ObjectCore_CscriptEntry *fn, unsigned argc, unsigned stringBytes) {
         bool takesObject = fn->Kind == CSCRIPT_KIND_OBJ_OBJ_VARS;
         unsigned varArgs = takesObject ? argc - 1 : argc;
+        size_t total;
+        Cscript *c;
+        MT2D_VAR **ptrs;
+        MT2D_VAR *vars;
+        char *text;
+        char *textEnd;
+        char name[256];
+        unsigned i, slot = 0;
         if (takesObject && argc < 1) { r->Ok = false; return 0; }
         if (argc == 0 && stringBytes != 0) { r->Ok = false; return 0; }
         if (fn->Kind == CSCRIPT_KIND_VARS && argc == 0) { r->Ok = false; return 0; }
-        size_t total = sizeof(Cscript) + varArgs * sizeof(MT2D_VAR*) + varArgs * sizeof(MT2D_VAR) + stringBytes;
-        Cscript *c = (Cscript*)malloc(total);
+        total = sizeof(Cscript) + varArgs * sizeof(MT2D_VAR*) + varArgs * sizeof(MT2D_VAR) + stringBytes;
+        c = (Cscript*)malloc(total);
         if (!c) { r->Ok = false; return 0; }
         memset(c, 0, total);
         c->Packed = 1;
-        MT2D_VAR **ptrs = (MT2D_VAR**)(c + 1);
-        MT2D_VAR *vars = (MT2D_VAR*)(ptrs + varArgs);
-        char *text = (char*)(vars + varArgs);
-        char *textEnd = text + stringBytes;
-        char name[256];
-        unsigned i, slot = 0;
+        ptrs = (MT2D_VAR**)(c + 1);
+        vars = (MT2D_VAR*)(ptrs + varArgs);
+        text = (char*)(vars + varArgs);
+        textEnd = text + stringBytes;
         for (i = 0; i < argc && r->Ok; i++) {
                 unsigned kind = Rd_U8(r);
                 bool isObject = takesObject && i == 0;
@@ -148,7 +155,8 @@ static Cscript *Load_Function(Reader *r, const ObjectCore_CscriptEntry *fn, unsi
 }
 
 static void Load_ReleaseUnusedSprites(Sprite **sprites, unsigned count) {
-        for (unsigned i = 0; i < count; i++) {
+        unsigned i;
+        for (i = 0; i < count; i++) {
                 if (sprites[i] && sprites[i]->refCount == 0) {
                         Sprite_Delete(sprites[i]); /* refCount 0 frees it */
                 }
@@ -189,9 +197,10 @@ static Object *Load(Reader *r) {
         for (i = 0; i < spriteCount && r->Ok; i++) {
                 unsigned kind = Rd_U8(r);
                 int sx = 1, sy = 1;
+                unsigned len;
                 if (kind > 2) { r->Ok = false; break; }
                 if (kind > 0) { sx = (int)Rd_U16(r); sy = (int)Rd_U16(r); }
-                unsigned len = Rd_U8(r);
+                len = Rd_U8(r);
                 Rd_Bytes(r, path, len);
                 path[len] = 0;
                 if (r->Ok) {
@@ -284,10 +293,11 @@ static Object *Load(Reader *r) {
                         }
                         else if (slot == 0xFF && added < newVars) {
                                 unsigned len = Rd_U8(r);
+                                int value;
                                 if (len < 1 || len > LOADER_NAME_MAX) { r->Ok = false; break; }
                                 Rd_Bytes(r, path, len);
                                 path[len] = 0;
-                                int value = Rd_I32(r);
+                                value = Rd_I32(r);
                                 if (r->Ok && MT2D_VAR_Init_Int(&obj->User_Vars[obj->User_Vars_Count], path, value)) {
                                         obj->User_Vars_Count++;
                                         added++;
@@ -345,8 +355,10 @@ void ObjectCore_Unload(Object *Model) {
 }
 
 Object *ObjectCore_Clone(Object *Model, int x, int y) {
+        Object *o;
+        int extra, i;
         if (!Model) return 0;
-        Object *o = Object_Create(
+        o = Object_Create(
                 Model->Solid, Model->RenderOnly,
                 Model->User_Vars[Object_SizeX_Var_Index].Data.i,
                 Model->User_Vars[Object_SizeY_Var_Index].Data.i,
@@ -354,13 +366,13 @@ Object *ObjectCore_Clone(Object *Model, int x, int y) {
         if (!o) return 0;
         o->User_Vars[Object_AcelX_Var_Index].Data.i = Model->User_Vars[Object_AcelX_Var_Index].Data.i;
         o->User_Vars[Object_AcelY_Var_Index].Data.i = Model->User_Vars[Object_AcelY_Var_Index].Data.i;
-        int extra = Model->User_Vars_Count - Object_First_User_Var_Index;
+        extra = Model->User_Vars_Count - Object_First_User_Var_Index;
         if (extra > 0) {
                 /* one allocation, plus the spare slot Object_Add_Variable keeps */
                 MT2D_VAR *grown = (MT2D_VAR*)realloc(o->User_Vars, (Object_First_User_Var_Index + extra + 1) * sizeof(MT2D_VAR));
                 if (!grown) { Object_Delete(o, false); return 0; }
                 o->User_Vars = grown;
-                for (int i = 0; i < extra; i++) {
+                for (i = 0; i < extra; i++) {
                         MT2D_VAR *copy = MT2D_VAR_CLONE(&Model->User_Vars[Object_First_User_Var_Index + i]);
                         if (!copy) { Object_Delete(o, false); return 0; }
                         o->User_Vars[o->User_Vars_Count++] = *copy;

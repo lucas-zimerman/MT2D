@@ -10,7 +10,6 @@
 #else
 #define VI(v) ((v)->Data.i)
 #endif
-bool Object_Hit_Object(Object*, Object*);
 
 static unsigned long g_calls = 0;
 extern "C" {

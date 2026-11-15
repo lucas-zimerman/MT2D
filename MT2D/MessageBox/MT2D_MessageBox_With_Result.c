@@ -8,10 +8,10 @@
 #include <string.h>
 
 int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, char *option_1, char *option_2){
-    //OUTPUTE int 1, int 2
+/* OUTPUTE int 1, int 2 */
 	int i=0,j=0;
 	int pos_hor=10,pos_ver=7;
-	while(i<MAX_VER){//Transfere window1 para window2
+	while(i<MAX_VER){ /* Transfere window1 para window2 */
 		while(j<MAX_HOR){
 			WINDOW2[i][j]=WINDOW1[i][j];
 			j++;
@@ -21,7 +21,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	}
 	MT2D_Create_Window_Layout(pos_hor-1,pos_ver-1,50,8,true,true,true,' ',DISPLAY_WINDOW2);
 	i=strlen(error_mensage_title);
-	while(j<i){//Escreve titulo do texto em tela
+	while(j<i){ /* Escreve titulo do texto em tela */
 		if(pos_hor>MAX_HOR)break;
 		WINDOW2[pos_ver][pos_hor]=error_mensage_title[j];
 		j++;
@@ -32,7 +32,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	j=0;
 	pos_hor=10;
 	pos_ver=9;
-	while(j<i){//Escreve Texto na tela
+	while(j<i){ /* Escreve Texto na tela */
 		if(pos_hor==59){pos_hor=10;pos_ver++;}
 		if(pos_ver==12)break;
 		WINDOW2[pos_ver][pos_hor]=error_mensage[j];
@@ -43,7 +43,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	j=0;
 	pos_hor=13;
 	pos_ver=13;
-	while(j<i){ //Digita opcao 1 na tela
+	while(j<i){ /* Digita opcao 1 na tela */
 		if(pos_hor==35)break;
 		WINDOW2[pos_ver][pos_hor]=option_1[j];
 		j++;
@@ -53,7 +53,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	j=0;
 	pos_hor=38;
 	pos_ver=13;
-	while(j<i){ //Digita opcao 2 na tela
+	while(j<i){ /* Digita opcao 2 na tela */
 		if(pos_hor==59)break;
 		WINDOW2[pos_ver][pos_hor]=option_2[j];
 		j++;
@@ -69,7 +69,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 		if(i==224)
 			i= MT2D_Keyboard_keytouched();
 		if(i!='1' && i!='2'){
-			//printf("\a");
+/* printf("\a"); */
 		}
 	}
 	return i-48;

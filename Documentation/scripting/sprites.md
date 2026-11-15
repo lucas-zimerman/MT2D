@@ -1,6 +1,6 @@
 # Sprites
 
-Header: `MT2D/ObjectCore/Sprites.h` (implementation `Sprites.cpp`, `MT2D_Text_Image.*`). Works in text mode.
+Header: `MT2D/ObjectCore/Sprites.h` (implementation `Sprites.c`, `MT2D_Text_Image.*`). Works in text mode.
 
 ```c
 struct Sprite {

@@ -2,7 +2,11 @@
 
 ## Language rule
 
-**New code must be written in C (C99 or older, no C++ features), except tests.**
+**New code must be written in ANSI C (C89/C90, no C++ features), except tests.**
+
+* C89 rules: `/* */` comments only (no `//`), declare variables at the top of a block (no `for (int i...)`),
+  no non-constant aggregate initializers, no variadic macros, no VLAs, no `snprintf`/`long long`.
+  The CI "ANSI C" job compiles with `-std=c89 -pedantic-errors`.
 
 * Tests in `tests/` stay C++ (`*.cpp`).
 * New `.c` / `.h` files must compile as C and as C++: wrap declarations in `extern "C"` guards

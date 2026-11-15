@@ -39,7 +39,7 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 		total_option=MT2D_MessageBox_With_Result("DEV MENU ERROR","NO OPTION RECEIVED","EXIT","BREAK FUNCTION");
 		if(total_option==1)exit(-1);
 		else return -1;
-	}//==========================WINDOW STARTUP ==================================================================
+	} /* ==========================WINDOW STARTUP ================================================================== */
 	transfer_window1_to_window2();
 	MT2D_Create_Window_Layout(horizontal_position,vertical_position,size_x,size_y,shadow,true,false,background,DISPLAY_WINDOW2);
 	insert_string_on_display(title_menu,vertical_position+1,horizontal_position+1+title_position,DISPLAY_WINDOW2);
@@ -69,7 +69,7 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 		}
 		j1++;
 		i++;
-//==================================MENU CORE ===========================================
+/* ==================================MENU CORE =========================================== */
 	}while(!selected_option){
 		MT2D_Draw_Window(DISPLAY_WINDOW2);
 		MT2D_Cursor_Set_Position(vertical_position+4+position_select-1,horizontal_position+2);

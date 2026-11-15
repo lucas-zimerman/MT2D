@@ -25,7 +25,7 @@ This file will contain some simple hardware calls
 
 #if defined(SDL_USE)
 #include "SDL/MT2D_SDL_System_Calls.h"
-//#include <MT2D/SDL/MT2D_SDL_main.h>
+/* #include <MT2D/SDL/MT2D_SDL_main.h> */
 #define MT2D_System_Delay MT2D_SDL_System_Delay
 #define MT2D_System_Beep MT2D_SDL_System_Beep
 #elif defined(_WIN32)

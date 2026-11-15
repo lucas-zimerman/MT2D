@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/Vars.cpp
+// Tests for MT2D/ObjectCore/Vars.c
 #include <mt2d_test.h>
 #include <MT2D/ObjectCore/Vars.h>
 #include <stdlib.h>

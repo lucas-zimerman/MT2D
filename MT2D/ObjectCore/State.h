@@ -22,11 +22,11 @@ MT2D_C_BEGIN
 
 struct ObjectState
 {
-        Sprite **Sprites;// a set of sprites
-        int *WaitSprites;// the time that you need to wait for each sprite
+        Sprite **Sprites; /* a set of sprites */
+        int *WaitSprites; /* the time that you need to wait for each sprite */
         int Count;
-        struct Cscript **Functions;//the functions for each sprite
-        char *Name; //name from this state.
+        struct Cscript **Functions; /* the functions for each sprite */
+        char *Name; /* name from this state. */
 };
 
 ObjectState *MT2D_OBJECT_CREATE_STATE(char *StateName);

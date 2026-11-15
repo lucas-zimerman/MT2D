@@ -1,4 +1,4 @@
-// Tests for MT2D/ObjectCore/Sprites.cpp
+// Tests for MT2D/ObjectCore/Sprites.c
 #include <mt2d_test.h>
 #include <MT2D/MT2D.h>
 #include <MT2D/ObjectCore/Sprites.h>

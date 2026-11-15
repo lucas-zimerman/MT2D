@@ -13,6 +13,15 @@
 #define MT2D_C_END
 #endif
 
+/* "static inline" for headers: C89 has no inline keyword, GNU C (DJGPP, gcc) has __inline__ */
+#if defined(__cplusplus) || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
+#define MT2D_INLINE static inline
+#elif defined(__GNUC__)
+#define MT2D_INLINE static __inline__
+#else
+#define MT2D_INLINE static
+#endif
+
 /* forward declared once here so the headers can include each other (C forbids repeated typedefs) */
 struct Sprite;      typedef struct Sprite Sprite;
 struct Cscript;     typedef struct Cscript Cscript;

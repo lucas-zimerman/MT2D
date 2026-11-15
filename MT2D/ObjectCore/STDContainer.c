@@ -12,12 +12,13 @@
 	The var is not used as the cache anymore: its Data is the text of a VAR_STRING.
 */
 struct ContainerCacheNode {
-	ContainerData Data;
-	ContainerCacheNode *Next;
+	struct ContainerData Data;
+	struct ContainerCacheNode *Next;
 };
+typedef struct ContainerCacheNode ContainerCacheNode;
 static ContainerCacheNode *ContainerCache = NULL;
 
-static ContainerData *Cached_Container_Data(const char *path, bool decrypt)
+static struct ContainerData *Cached_Container_Data(const char *path, bool decrypt)
 {
 	int id = MT2D_Container_Get_FileId((char*)path);
 	ContainerCacheNode *node = ContainerCache;
@@ -42,10 +43,11 @@ static ContainerData *Cached_Container_Data(const char *path, bool decrypt)
 */
 void Cscript_PlaySoundFromContainer(Object* object, MT2D_VAR** SoundName) 
 {
+	struct ContainerData *cdata;
 	const char *path = MT2D_Object_VAR_GetPath(SoundName[0]);
 	MT2D_Ide_Printf("Playing container sound");
 	MT2D_Ide_Printf((char*)path);
-	ContainerData *cdata = Cached_Container_Data(path, MT2D_Object_VAR_GetBool(SoundName[1]));
+	cdata = Cached_Container_Data(path, MT2D_Object_VAR_GetBool(SoundName[1]));
 	MT2D_PlayAudioFromMemory(cdata->Data, cdata->Length, true);
 }
 
@@ -54,7 +56,8 @@ void Cscript_PlaySoundFromContainer(Object* object, MT2D_VAR** SoundName)
 	VAR[1] bool decrypt
 */
 void Cscript_PlayMusicFromContainer(Object* object, MT2D_VAR** MusicName) {
-	ContainerData *cdata = Cached_Container_Data(MT2D_Object_VAR_GetPath(MusicName[0]), MT2D_Object_VAR_GetBool(MusicName[1]));
+	struct ContainerData *cdata;
+	cdata = Cached_Container_Data(MT2D_Object_VAR_GetPath(MusicName[0]), MT2D_Object_VAR_GetBool(MusicName[1]));
 	MT2D_PlayMusicFromMemory(cdata->Data, cdata->Length, true);
 }
 
