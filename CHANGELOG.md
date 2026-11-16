@@ -90,7 +90,6 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
-- The home page on GitHub Pages rendered almost empty: the Pages workflow built it with Emscripten 4.0.10, where the engine's SDL font glyphs are missing. It now builds with 7.0.0 (the version the web examples are tested with) ([#46](https://github.com/lucas-zimerman/MT2D/pull/46))
 - The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
 - `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
