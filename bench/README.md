@@ -70,3 +70,30 @@ bench/run_dosbox.sh /tmp/shiprun
 ```
 
 For the old renderer copy `bench/ship` into a `master` worktree and build it there (`-DCMAKE_CXX_FLAGS=-DMSDOS_USE_DOUBLE_BUFFER` for the double buffer variant).
+
+## Frame pacing (MS-DOS, `MT2D/MT2D_Frame.h`)
+
+`bench_frame.c` measures what the DJGPP frame clock is built on, in DOSBox: `uclock()` cost and step, how long `delay(1/5/16)` really
+takes, the cost of the `INT 2Fh/1680h` idle call and of a read of port `0x3DA`, the vertical retrace period (70.085 Hz in text mode
+and in mode 13h), how well a "sleep until 3 ms before, then spin" wait lands on the retrace, and what `uclock()` reports once PIT
+channel 0 is moved to a song rate (it is wrong while music plays). `bench_clock.c` compares the clocks that could replace it: a tick-counting timer ISR at 140 to 2800 Hz (accuracy and CPU cost of the interrupt,
+both measured against the VGA retrace, 70.085 Hz and independent of the PIT) against `uclock()` with the PIT moved (it goes backwards), and it
+probes how long `delay(n)` really takes. DOSBox does not charge the real cost of an interrupt, run it in 86Box (a 486 machine) or on hardware.
+
+`bench_delay.c` measures the distribution of `delay(1/2/5/10)` and replays the frame wait; `bench_fwait.c` runs the real `MT2D_Frame_Wait_Next`
+(build `MT2D/_MSDOS/M2Frame.c` with `-DMT2D_FRAME_FPS=35` and link `M2Music.c`, `M2Opl.c`, `Audio/MT2D_Music.c` and the container sources). Both use
+integer math only, so they run on a 386 without an FPU (build with `-march=i386`).
+
+`bench_fmusic.c` runs the real `MT2D_Frame_Wait_Next` while a looping silent song plays (needs an OPL chip, the DOSBox and 86Box SB16 have one):
+without music, with music, and with the song started, replaced and stopped. The reference is the BIOS tick counter, because `uclock()` cannot time
+a frame while a song plays. Link `M2Music.c` for the real run, or compile it with `-DMT2D_Dos_Music_Clock_Us=x` next to a stub that returns 0 to see the old
+`uclock()` behaviour.
+
+`bench_musicdelay.c` plays a silent looping song and, for 10 seconds of the RTC (hardware, independent of the PIT), spins, calls `delay(30)` or calls `delay(1)`,
+and reports what the song timer counted. On the simulated 486 `delay()` made it lose 23 to 29% of the ticks (the BIOS wait loses timer interrupts), so the song ran slow.
+
+86Box without touching your VM: copy the VM folder, convert its `.vhd` with `qemu-img convert -O raw`, `mcopy` (mtools, partition offset
+`@@8704` for a disk made by 86Box) the `.EXE` files and `CWSDPMI.EXE` into it, add `CD \BENCH`, `CLOCK.EXE > CLOCK.TXT` and `ECHO DONE > DONE.TXT`
+to its `AUTOEXEC.BAT`, point the copy's `hdd_01_fn` at the raw image and start `86Box -P <copy>`. Read `CLOCK.TXT` back with `mtype` once `DONE.TXT` exists.
+
+The pacing math (drift, late frames) is tested on the host in `tests/test_frame.cpp` (MS-DOS) and `tests/test_frame_sdl.cpp` (SDL).

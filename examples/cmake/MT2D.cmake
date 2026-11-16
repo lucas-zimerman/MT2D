@@ -157,6 +157,7 @@ function(mt2d_engine_target target backend)
             SDL/MT2D_SDL_Debug.c
             SDL/MT2D_SDL_Defines.c
             SDL/MT2D_SDL_Event_Handler.c
+            SDL/MT2D_SDL_Frame.c
             SDL/MT2D_SDL_main.c
             SDL/MT2D_SDL_Redefine.c
             SDL/MT2D_SDL_System_Calls.c
@@ -174,6 +175,7 @@ function(mt2d_engine_target target backend)
     elseif(MT2D_DOS)
         list(APPEND sources
             _MSDOS/M2Cursor.c
+            _MSDOS/M2Frame.c
             _MSDOS/M2Init.c
             _MSDOS/M2SysCal.c
             _MSDOS/IO/M2Keybd.c

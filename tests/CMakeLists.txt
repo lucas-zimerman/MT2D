@@ -29,6 +29,8 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/MT2D.c
     ${ENGINE}/MT2D_Layout.c
     ${ENGINE}/MT2D_Settings.c
+    ${ENGINE}/_MSDOS/M2Frame.c
+    ${ENGINE}/SDL/MT2D_SDL_Frame.c
     ${ENGINE}/Audio/MT2D_Audio_core.c
     ${ENGINE}/Audio/MT2D_Mixer.c
     ${ENGINE}/Audio/MT2D_Music.c
@@ -61,10 +63,14 @@ target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermis
 # The settings are forwarded to the backend of the platform (SDL, DOS, ...), which the tests do not build.
 # MT2D_SETTINGS_NO_PLATFORM makes MT2D_Settings.c and the test use the shared fallbacks.
 set_source_files_properties(${ENGINE}/MT2D_Settings.c PROPERTIES COMPILE_DEFINITIONS MT2D_SETTINGS_NO_PLATFORM)
+# _MSDOS/M2Frame.c gets its clock and sleep from the test (the real ones are DJGPP only).
+set_source_files_properties(${ENGINE}/_MSDOS/M2Frame.c PROPERTIES COMPILE_DEFINITIONS MT2D_FRAME_EXTERNAL)
+# SDL/MT2D_SDL_Frame.c the same: the SDL clock and SDL_Delay are replaced by the test.
+set_source_files_properties(${ENGINE}/SDL/MT2D_SDL_Frame.c PROPERTIES COMPILE_DEFINITIONS MT2D_FRAME_SDL_EXTERNAL)
 
 # The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
 option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
-set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout settings cp850 objectloader objectglobals music mixer wav)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout settings frame frame_sdl cp850 objectloader objectglobals music mixer wav)
 if(MT2D_CSCRIPT_PARSER)
     target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
     target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "example.h"
 #include <MT2D/Audio/MT2D_Audio_core.h>
+#include <MT2D/MT2D_Frame.h>
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/ObjectCore/Object.h> /* keep this one before State.h (they include each other) */
 #include <MT2D/ObjectCore/State.h>
@@ -145,6 +146,10 @@ int main(int argc, char **argv)
 
         ObjectScene_Goto_NextSteps(scene); /* runs every script one step */
         scroll += speed->Data.i;
-        MT2D_System_Delay(30);
+#ifdef MT2D_FRAME_HAS_CLOCK
+        MT2D_Frame_Wait_Next(); /* MS-DOS and SDL: sleeps what is left of the frame (MT2D_FRAME_FPS) */
+#else
+        MT2D_System_Delay(30); /* no frame clock on this platform (Emscripten, the terminals): a fixed delay paces it */
+#endif
     }
 }

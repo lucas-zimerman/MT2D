@@ -46,6 +46,13 @@ int MT2D_Dos_Music_IsPlaying(void);
 int MT2D_Dos_Music_IsStreaming(void);
 /* Main loop: refills the stream buffer. */
 void MT2D_Dos_Music_Update(void);
+/*
+ * A clock that keeps running while a song plays (uclock() does not: it reads the timer the song moved, it goes backwards).
+ * Returns 0 if no song timer is installed (use uclock()). Otherwise returns an id that changes every time the timer is
+ * installed again (a new song) and stores the microseconds counted by the timer interrupt in *us (wraps after 71 minutes, only
+ * differences are meaningful, one step is the length of a song tick: 1.4 ms at the default rate).
+ */
+int MT2D_Dos_Music_Clock_Us(unsigned long *us);
 
 MT2D_C_END
 
