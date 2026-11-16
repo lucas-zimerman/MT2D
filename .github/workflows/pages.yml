@@ -26,7 +26,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: 4.0.10
+          # the version the page was tested with: with 4.0.10 the engine's text screen renders almost empty
+          version: 7.0.0
       - name: Build the page
         run: |
           emcmake cmake -S examples/welcome -B build/welcome -DCMAKE_BUILD_TYPE=Release

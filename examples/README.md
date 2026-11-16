@@ -80,6 +80,8 @@ SDL2.dll must be next to the executable (vcpkg copies it for you).
 `web-tui`, `web-gui` and `welcome` run in the browser, the other examples are skipped there (and these two are skipped
 everywhere else). Install the Emscripten SDK and build them with `emcmake`, see [`web-tui/README.md`](web-tui/README.md).
 
+The web examples are tested with Emscripten 7.0.0. With 4.0.10 the build works but the text screen renders almost empty (the glyphs of the SDL font are missing), use a newer SDK.
+
 The browser calls the frame function once per screen refresh (120 or 144 times a second on a fast monitor), `common/web_timing.h` (`web_step_due(60)`) keeps the programs at 60 steps a second.
 
 ```bash
