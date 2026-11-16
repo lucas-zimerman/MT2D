@@ -27,6 +27,8 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 | `test_aes.cpp` | `Container/aes.c` (NIST known answers) |
 | `test_display.cpp` | display buffers in `MT2D.c` |
 | `test_settings.cpp` | `MT2D_Settings.c` (result codes, operation ranges, the `MT2D_UNSUPPORTED` / `MT2D_INVALID` fallbacks used when a platform has no backend; built with `MT2D_SETTINGS_NO_PLATFORM`) |
+| `test_frame.cpp` | `_MSDOS/M2Frame.c` (frame pacing: drift, late frames, work time; the clock and the sleep are simulated with `MT2D_FRAME_EXTERNAL`) |
+| `test_frame_sdl.cpp` | `SDL/MT2D_SDL_Frame.c` (the same pacing for SDL, also across the 32 bit clock wrap; simulated with `MT2D_FRAME_SDL_EXTERNAL`, no SDL needed) |
 | `test_layout.cpp` | `MT2D_Layout.c`, `Tools/Video/MT2D_Generic_Line.c` |
 
 ## Not covered

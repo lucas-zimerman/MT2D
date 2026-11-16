@@ -19,6 +19,13 @@ static MT2D_Music g_music;
 static unsigned char g_buf[MT2D_DOS_MUSIC_BUF];
 static volatile unsigned long g_div = PIT_FULL;
 static volatile unsigned long g_acc = 0;
+/* Microseconds counted by the interrupt (MT2D_Dos_Music_Clock_Us): uclock() reads the PIT this timer moved, so it cannot be used
+   while a song plays. g_step is the length of one interrupt in microseconds as a 16.16 fixed point number (no 64 bit math in the ISR). */
+#define MT2D_US_PER_PIT_Q16 54928UL /* 1000000 / 1193182 * 65536 */
+static volatile unsigned long g_us = 0;
+static volatile unsigned long g_us_frac = 0;
+static volatile unsigned long g_step = 0;
+static int g_installs = 0;
 static struct { unsigned long offset; unsigned short selector; } g_old_far;
 
 static _go32_dpmi_seginfo g_old_isr;
@@ -39,6 +46,9 @@ static void *g_free_mem = NULL;
  */
 static void music_isr(void) {
 	MT2D_Music_Tick(&g_music);
+	g_us_frac += g_step;
+	g_us += g_us_frac >> 16;
+	g_us_frac &= 0xFFFFUL;
 	g_acc += g_div;
 	if (g_acc >= PIT_FULL) {
 		g_acc -= PIT_FULL;
@@ -57,6 +67,9 @@ static void lock_memory(void) {
 	_go32_dpmi_lock_data(g_buf, sizeof(g_buf));
 	_go32_dpmi_lock_data((void *)&g_div, sizeof(g_div));
 	_go32_dpmi_lock_data((void *)&g_acc, sizeof(g_acc));
+	_go32_dpmi_lock_data((void *)&g_us, sizeof(g_us));
+	_go32_dpmi_lock_data((void *)&g_us_frac, sizeof(g_us_frac));
+	_go32_dpmi_lock_data((void *)&g_step, sizeof(g_step));
 	_go32_dpmi_lock_data(&g_old_far, sizeof(g_old_far));
 }
 
@@ -73,6 +86,7 @@ static void isr_install(void) {
 	if (g_isr_on) {
 		disable();
 		g_div = div;
+		g_step = div * MT2D_US_PER_PIT_Q16;
 		pit_set(div);
 		enable();
 		return;
@@ -86,11 +100,13 @@ static void isr_install(void) {
 	_go32_dpmi_allocate_iret_wrapper(&g_new_isr);
 	disable();
 	g_div = div;
+	g_step = div * MT2D_US_PER_PIT_Q16;
 	g_acc = 0;
 	_go32_dpmi_set_protected_mode_interrupt_vector(8, &g_new_isr);
 	pit_set(div);
 	enable();
 	g_isr_on = 1;
+	g_installs++;
 }
 
 static void isr_remove(void) {
@@ -224,6 +240,12 @@ int MT2D_Dos_Music_IsPlaying(void) {
 
 int MT2D_Dos_Music_IsStreaming(void) {
 	return g_opl && g_music.playing && g_music.streaming;
+}
+
+int MT2D_Dos_Music_Clock_Us(unsigned long *us) {
+	if (!g_isr_on) return 0;
+	*us = g_us; /* one aligned 32 bit read, the interrupt cannot tear it */
+	return g_installs;
 }
 
 void MT2D_Dos_Music_Update(void) {
