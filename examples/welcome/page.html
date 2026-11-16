@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="description" content="MT2D is a small C framework for text based programs and games: an 80x25 character screen that also draws sprites, plays sound and music, and runs from MS-DOS to the browser. This page is an MT2D program.">
+<title>MT2D - Monochrome Text 2D Engine</title>
+<link rel="icon" href="Logo.png">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d0c;
+    --panel: #121614;
+    --line: #243029;
+    --text: #d8e2dc;
+    --muted: #8a9a91;
+    --accent: #7dffb2;
+    --accent-dim: #2f9b63;
+    --key: #1a211e;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); text-decoration-color: var(--accent-dim); text-underline-offset: 3px; }
+  a:hover { text-decoration-color: var(--accent); }
+  code, pre, .mono { font-family: ui-monospace, "Cascadia Mono", "DejaVu Sans Mono", Consolas, monospace; }
+  .wrap { width: min(100% - 32px, 1040px); margin-inline: auto; }
+
+  header.top { border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; gap: 16px; padding: 12px 0; }
+  header.top img { width: 30px; height: auto; image-rendering: pixelated; }
+  header.top b { font-family: ui-monospace, monospace; letter-spacing: .06em; }
+  header.top nav { margin-left: auto; display: flex; gap: 18px; flex-wrap: wrap; font-size: .9rem; }
+  header.top nav a { color: var(--muted); text-decoration: none; }
+  header.top nav a:hover { color: var(--accent); }
+
+  .hero { padding: 40px 0 20px; text-align: center; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.15; letter-spacing: -.01em; }
+  .hero p { margin: 0 auto; max-width: 62ch; color: var(--muted); font-size: 1.05rem; }
+  .hero .cta { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 8px 16px; border: 1px solid var(--accent-dim); border-radius: 8px; color: var(--accent);
+         text-decoration: none; background: transparent; font: inherit; font-size: .95rem; cursor: pointer; }
+  .btn:hover { background: rgba(125, 255, 178, .08); }
+  .btn.solid { background: var(--accent); color: #07140d; border-color: var(--accent); font-weight: 600; }
+  .btn.solid:hover { background: #a3ffc9; }
+
+  /* the engine canvas */
+  #stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+           box-shadow: 0 0 0 1px #000, 0 10px 40px rgba(0, 0, 0, .5), 0 0 60px rgba(125, 255, 178, .06); }
+  #stage:fullscreen { border-radius: 0; border: 0; aspect-ratio: auto; }
+  /* SDL writes the window size in pixels on the canvas style, the stage decides the size here */
+  #canvas { position: absolute; inset: 0; width: 100% !important; height: 100% !important; display: block; image-rendering: pixelated; outline: none; background: #000; }
+  #stage.crt::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+           background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.22) 3px),
+                       radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,.45) 100%); }
+  #status { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); pointer-events: none; font-family: ui-monospace, monospace; }
+
+  #rotate { display: none; position: absolute; inset: 0; z-index: 2; place-items: center; text-align: center; padding: 16px; background: #000;
+            color: var(--accent); font-family: ui-monospace, monospace; font-size: .95rem; }
+  @media (orientation: portrait) and (max-width: 700px) { #rotate { display: grid; } }
+  .controls { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; }
+  .modes, .pad, .tools { display: flex; gap: 6px; flex-wrap: wrap; }
+  .controls button { font: inherit; font-size: .88rem; color: var(--text); background: var(--key); border: 1px solid var(--line); border-radius: 7px;
+                     padding: 6px 12px; min-height: 36px; touch-action: manipulation; user-select: none; cursor: pointer; }
+  .controls button:hover { border-color: var(--accent-dim); }
+  .controls button:active, .controls button.on { background: #203a2c; border-color: var(--accent); color: var(--accent); }
+  .pad button { min-width: 40px; padding: 6px 10px; font-family: ui-monospace, monospace; }
+  .hint { margin: 10px 0 0; font-size: .85rem; color: var(--muted); }
+  kbd { font-family: ui-monospace, monospace; font-size: .8em; background: var(--key); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+
+  section { padding: 44px 0 8px; }
+  section > .wrap > h2 { margin: 0 0 6px; font-size: 1.4rem; }
+  section > .wrap > p.lead { margin: 0 0 22px; color: var(--muted); max-width: 70ch; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; color: var(--accent); font-family: ui-monospace, monospace; font-weight: 600; }
+  .card p { margin: 0; color: var(--muted); font-size: .94rem; }
+  .card code { color: var(--text); font-size: .85em; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+  th, td { padding: 8px 12px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; font-size: .82rem; }
+  tr:last-child td { border-bottom: 0; }
+  .no { color: #5b6b62; }
+  .note { margin: 10px 2px 0; font-size: .85rem; color: var(--muted); }
+
+  pre { margin: 0; padding: 14px 16px; overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font-size: .86rem; line-height: 1.5; }
+  .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .two h3 { margin: 0 0 8px; font-size: .95rem; color: var(--muted); font-weight: 500; }
+
+  ul.links { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 20px; }
+  ul.links li { padding: 6px 0; border-bottom: 1px solid var(--line); }
+  ul.links small { display: block; color: var(--muted); }
+
+  footer { margin-top: 56px; border-top: 1px solid var(--line); padding: 22px 0 40px; color: var(--muted); font-size: .88rem; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+  @media (max-width: 560px) {
+    .controls { justify-content: center; }
+    header.top nav { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <img src="Logo.png" alt="" width="30" height="32">
+    <b>MT2D</b>
+    <nav aria-label="Main">
+      <a href="#demo">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#start">Get started</a>
+      <a href="https://github.com/lucas-zimerman/MT2D">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <h1>Monochrome Text 2D Engine</h1>
+    <p>A small C framework for text based programs and games. An 80x25 grid of characters that also draws sprites, plays sound and music,
+       and runs on a real terminal, in a window, on MS-DOS, on a phone, and right here in your browser.</p>
+    <div class="cta">
+      <a class="btn solid" href="#demo">Try it below</a>
+      <a class="btn" href="https://github.com/lucas-zimerman/MT2D">Source on GitHub</a>
+    </div>
+  </div>
+
+  <section id="demo" style="padding-top: 20px">
+    <div class="wrap">
+      <div id="stage" class="crt">
+        <canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+        <div id="status">Loading...</div>
+        <div id="rotate">Turn your phone to landscape to play.<br>(In portrait the engine draws its rotated screen.)</div>
+      </div>
+
+      <div class="controls">
+        <div class="modes" role="group" aria-label="Screens">
+          <button data-scene="0">Menu</button>
+          <button data-scene="1">Text mode</button>
+          <button data-scene="2">Graphics</button>
+          <button data-scene="3">Sound</button>
+          <button data-scene="4">Music</button>
+          <button data-scene="5">About</button>
+        </div>
+        <div class="pad" role="group" aria-label="Keys">
+          <button data-key="ArrowLeft" aria-label="Left">&larr;</button>
+          <button data-key="ArrowUp" aria-label="Up">&uarr;</button>
+          <button data-key="ArrowDown" aria-label="Down">&darr;</button>
+          <button data-key="ArrowRight" aria-label="Right">&rarr;</button>
+          <button data-key="Enter" data-tap aria-label="Enter">Enter</button>
+          <button data-key=" " data-tap aria-label="Space">Space</button>
+          <button data-key="Escape" data-tap aria-label="Escape">Esc</button>
+        </div>
+        <div class="tools" role="group" aria-label="Display and sound">
+          <button id="mute" class="on" aria-pressed="true">Unmute</button>
+          <button id="crt" class="on" aria-pressed="true">CRT</button>
+          <button id="full">Fullscreen</button>
+        </div>
+      </div>
+      <p class="hint">Use the arrow keys, <kbd>Enter</kbd>, <kbd>Esc</kbd> and the number keys, or the buttons above on a phone (landscape works best).
+        The sound starts muted: press <kbd>M</kbd> or the Unmute button (browsers keep audio off until you interact).</p>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <h2>This page is an MT2D program</h2>
+      <p class="lead">Everything inside the screen above is drawn by the engine itself: the menu, the effects, the sprites, the samples, the piano and the music player.
+        It is the <a href="https://github.com/lucas-zimerman/MT2D/tree/master/examples/welcome"><code>examples/welcome</code></a> program compiled to WebAssembly with Emscripten.
+        The same source style (and most of the same calls) builds for a terminal or for MS-DOS.</p>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>What MT2D offers</h2>
+      <p class="lead">Start with plain text and add what you need.</p>
+      <div class="grid">
+        <div class="card"><h3>Text first</h3><p>One 80x25 screen buffer, CP850 characters, box drawing, message boxes, input boxes and menus in a single call each.
+          Great for college projects and simple terminal games.</p></div>
+        <div class="card"><h3>Graphics when you want them</h3><p>On SDL and MS-DOS VGA the same program can draw image sprites on top of the text screen: parallax, animation, smooth movement.
+          <code>Sprite_Render_on_Window</code></p></div>
+        <div class="card"><h3>Sound and music</h3><p>WAV and OGG through SDL2_mixer, IMF songs on the OPL2 chip and WAV on the Sound Blaster in MS-DOS, and a PC speaker beep that is emulated
+          where there is no speaker. <code>MT2D_Play_Audio</code> <code>MT2D_Play_Music</code> <code>MT2D_System_Beep</code></p></div>
+        <div class="card"><h3>ObjectCore</h3><p>Objects with a screen position, sprites (ASCII or images), states and wait states, dynamic data types, and
+          <b>Cscript</b>: small scripts attached to each state that can call your own C functions.</p></div>
+        <div class="card"><h3>Input</h3><p>Keyboard, touch (basic) and joystick. The joystick API also reads held keys, so several keys work at once and movement is smooth.</p></div>
+        <div class="card"><h3>Small and portable</h3><p>The portable engine is ANSI C (C89), split into small source files so you only link what you use. Low RAM usage, and settings are plain defines.
+          Builds with GCC, Clang, Visual Studio, DJGPP and Open Watcom.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="platforms">
+    <div class="wrap">
+      <h2>Platforms</h2>
+      <p class="lead">One program, many systems.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Graphics</th><th>Terminal</th><th>Keyboard</th><th>Joystick</th><th>Audio</th><th>PC speaker</th><th>Storage</th></tr></thead>
+          <tbody>
+            <tr><td>Windows</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>Linux</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>macOS</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>MS-DOS</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>Android</td><td>&#10003;</td><td class="no">&ndash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>Windows Phone</td><td>&#10003;</td><td class="no">&ndash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>Web (Emscripten)</td><td>&#10003;</td><td class="no">&ndash;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Graphics, controllers and audio files come from SDL2. MS-DOS has its own experimental VGA mode, a keyboard based joystick and OPL2 / Sound Blaster audio.
+        In the browser the text screen is drawn by the SDL backend (there is no real terminal). Details: <a href="https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/general/platforms.md">platforms.md</a>.</p>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <h2>Get started</h2>
+      <p class="lead">A whole program, and how to build the examples.</p>
+      <div class="two">
+        <div>
+          <h3>Hello, MT2D</h3>
+<pre><code>&#35;include &lt;MT2D/MT2D.h&gt;
+&#35;include &lt;MT2D/MT2D_Display.h&gt;
+&#35;include &lt;MT2D/MT2D_Keyboard.h&gt;
+
+int main(void)
+{
+    MT2D_Init();
+    MT2D_Clear_Main_Window();
+    insert_string_on_display((char *)"Hello, MT2D!",
+                             10, 34, DISPLAY_WINDOW1);
+    MT2D_Draw_Window(DISPLAY_WINDOW1);
+    MT2D_Keyboard_keytouched();
+    return 0;
+}</code></pre>
+        </div>
+        <div>
+          <h3>Build the examples</h3>
+<pre><code># every example, native
+cmake -S examples -B build/examples
+cmake --build build/examples
+./examples/helloworld/bin/helloworld
+
+&#35; this page (needs the Emscripten SDK)
+emcmake cmake -S examples/welcome -B build/welcome
+cmake --build build/welcome
+python3 -m http.server 8000 \
+        --directory examples/welcome/bin</code></pre>
+        </div>
+      </div>
+      <p class="note">Documentation: <a href="https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/README.md">Documentation/</a> &middot;
+        <a href="https://github.com/lucas-zimerman/MT2D/blob/master/examples/README.md">examples/</a> (one small program per feature) &middot;
+        <a href="https://github.com/lucas-zimerman/MT2D/blob/master/MIGRATION.md">MIGRATION.md</a></p>
+    </div>
+  </section>
+
+  <section id="showcase">
+    <div class="wrap">
+      <h2>Made with MT2D</h2>
+      <p class="lead">Games and tools built with the engine over the years.</p>
+      <ul class="links">
+        <li><a href="https://www.youtube.com/watch?v=3MYdq7QXjFs">Super Shibe 3000</a></li>
+        <li><a href="https://www.youtube.com/watch?v=atRMo71Xgzk">Project Asteroid</a></li>
+        <li><a href="https://www.youtube.com/watch?v=mg7kxA6tLhQ">Cscript Test Demo</a></li>
+        <li><a href="https://www.youtube.com/watch?v=0nXLyfe7aPA">Contra clone</a><small>ASCII and sprites hybrid</small></li>
+        <li><a href="https://www.youtube.com/watch?v=wm-WmNFX8Mg">PathFind Demo</a><small>also on Windows Phone</small></li>
+        <li><a href="https://www.youtube.com/watch?v=8WkwBKS80oQ">HexStartup++</a><small>images to Hexen loading screens</small></li>
+        <li><a href="https://www.youtube.com/watch?v=JqT4374zego">3D Maze</a></li>
+        <li><a href="https://www.youtube.com/watch?v=ALux2S34D-s">Pong on MS-DOS</a></li>
+        <li><a href="https://github.com/ibm5155/MT2D_TicTacToe">Tic Tac Toe</a><small>source</small></li>
+        <li><a href="https://github.com/ibm5155/MT2D_Snake">Snake</a><small>source</small></li>
+        <li><a href="https://github.com/ibm5155/MT2D_Notepad">Notepad</a><small>source</small></li>
+        <li><a href="https://github.com/ibm5155/Simulador_Montador_asm8086">8086 assembler and emulator</a><small>source</small></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>MT2D is MIT licensed. Songs: Beethoven (public domain).</span>
+    <span><a href="https://github.com/lucas-zimerman/MT2D">github.com/lucas-zimerman/MT2D</a></span>
+  </div>
+</footer>
+
+<script>
+  var statusEl = document.getElementById('status');
+  var stage = document.getElementById('stage');
+  var currentScene = 0;
+  var Module = {
+    canvas: document.getElementById('canvas'),
+    print: function (t) { console.log(t); },
+    printErr: function (t) { console.error(t); },
+    setStatus: function (t) { statusEl.textContent = t; if (!t) statusEl.style.display = 'none'; },
+    onAbort: function () { statusEl.style.display = ''; statusEl.textContent = 'The program crashed, reload the page.'; }
+  };
+  window.onerror = function () { statusEl.style.display = ''; statusEl.textContent = 'Error, see the console.'; };
+
+  /* The engine calls this when the screen changes (see set_page_title in src/main.c). */
+  window.mt2dScene = function (n) {
+    currentScene = n;
+    document.querySelectorAll('[data-scene]').forEach(function (b) {
+      b.classList.toggle('on', Number(b.dataset.scene) === n);
+    });
+  };
+  window.mt2dScene(0);
+
+  /* The buttons send the same keyboard events SDL listens to. */
+  var CODES = { ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Enter: 13, Escape: 27, ' ': 32 };
+  function codeOf(key) {
+    if (key === ' ') return 'Space';
+    if (/^[0-9]$/.test(key)) return 'Digit' + key;
+    if (/^[a-z]$/i.test(key)) return 'Key' + key.toUpperCase();
+    return key;
+  }
+  function send(type, key) {
+    var kc = CODES[key] || key.toUpperCase().charCodeAt(0);
+    window.dispatchEvent(new KeyboardEvent(type, { key: key, code: codeOf(key), keyCode: kc, which: kc, bubbles: true }));
+  }
+  function tap(key) { send('keydown', key); setTimeout(function () { send('keyup', key); }, 60); }
+
+  document.querySelectorAll('.pad button').forEach(function (b) {
+    var key = b.dataset.key, timer = null, tapOnly = b.hasAttribute('data-tap');
+    function down(e) {
+      e.preventDefault();
+      if (tapOnly) { tap(key); return; }
+      send('keydown', key);
+      timer = setInterval(function () { send('keydown', key); }, 90);
+    }
+    function up(e) { if (tapOnly) return; e.preventDefault(); clearInterval(timer); send('keyup', key); }
+    b.addEventListener('pointerdown', down);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointerleave', up);
+    b.addEventListener('pointercancel', up);
+  });
+
+  /* Go to a screen: Esc back to the menu, then the number of the menu entry. */
+  document.querySelectorAll('[data-scene]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var n = Number(b.dataset.scene);
+      if (n === currentScene) return;
+      if (currentScene !== 0) tap('Escape');
+      if (n > 0) setTimeout(function () { tap(String(n)); }, 120);
+    });
+  });
+
+  /* The engine starts muted and calls this whenever the mute state changes (the M key or this button). */
+  var muteBtn = document.getElementById('mute');
+  window.mt2dMuted = function (m) {
+    muteBtn.setAttribute('aria-pressed', String(!!m));
+    muteBtn.classList.toggle('on', !!m);
+    muteBtn.textContent = m ? 'Unmute' : 'Mute';
+  };
+  muteBtn.addEventListener('click', function () { tap('m'); });
+  var crtBtn = document.getElementById('crt');
+  crtBtn.addEventListener('click', function () {
+    var on = stage.classList.toggle('crt');
+    crtBtn.setAttribute('aria-pressed', String(on));
+    crtBtn.classList.toggle('on', on);
+  });
+  document.getElementById('full').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (stage.requestFullscreen) stage.requestFullscreen();
+  });
+
+  /* the page must not scroll while you play */
+  window.addEventListener('keydown', function (e) {
+    if (e.target && /^(input|textarea|select)$/i.test(e.target.tagName)) return;
+    if (e.key === ' ' || e.key.indexOf('Arrow') === 0) {
+      var r = stage.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < window.innerHeight) e.preventDefault();
+    }
+  });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

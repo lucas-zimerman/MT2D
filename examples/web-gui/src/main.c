@@ -17,6 +17,7 @@
 #include <time.h>
 #include <emscripten.h>
 #include "example.h"
+#include "web_timing.h"
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/Joystick/MT2D_Joystick.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>
@@ -195,6 +196,7 @@ static void draw(void)
 /* Called by the browser once per frame. Must return quickly. */
 static void frame(void)
 {
+    if (!web_step_due(60)) return; /* see common/web_timing.h */
     update();
     frame_count++;
     draw();

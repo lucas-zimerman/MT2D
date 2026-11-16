@@ -280,7 +280,7 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...]] [DOS_VGA] [DOS_MUSIC] [DOS_ONLY [NEEDS_VGA]] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...] [SHELL page.html]] [DOS_VGA] [DOS_MUSIC] [DOS_ONLY [NEEDS_VGA]] [ASSETS file ...] [DOS_NAME short])
 #
 #   * DOS_ONLY: an example for MS-DOS only (examples/dos), skipped with every other target. It uses the terminal
 #     backend and its "d" folder is copied next to the executable. NEEDS_VGA also skips it unless -DMT2D_DOS_VGA=ON.
@@ -288,6 +288,7 @@ endfunction()
 #     page common/web_shell.html) and the other examples are skipped there. The output is <example folder>/bin/index.html
 #     (+ .js, .wasm, .data). The SDL font is preloaded into the virtual file system, PRELOAD adds more files
 #     (images, audio) as "<file on disk>@/<name in the browser>": the engine finds them by that name, like in the bin folder.
+#     SHELL replaces the page (a path relative to the example folder, it must contain {{{ SCRIPT }}}).
 #     SDL2_mixer is linked too (audio: MT2D_Play_Audio / MT2D_Play_Music, and the PC speaker emulation MT2D_System_Beep).
 #   * the executable goes to <example folder>/bin
 #   * SDL examples also get the SDL font/icon in bin, ASSETS (paths relative to the example
@@ -300,7 +301,7 @@ endfunction()
 #     .wav sound effects of its "d" folder on the Sound Blaster, in place of the .wav/.ogg files (jump.ogg -> d/jump.wav)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC;DOS_ONLY;NEEDS_VGA" "DOS_NAME" "SOURCES;ASSETS;PRELOAD" ${ARGN})
+    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC;DOS_ONLY;NEEDS_VGA" "DOS_NAME;SHELL" "SOURCES;ASSETS;PRELOAD" ${ARGN})
 
     if(EX_DOS_ONLY)
         if(NOT MT2D_DOS)
@@ -375,6 +376,9 @@ function(mt2d_add_example name)
     if(EX_WEB)
         set_target_properties(${name} PROPERTIES OUTPUT_NAME index SUFFIX ".html")
         set(web_shell "${MT2D_EXAMPLES_DIR}/common/web_shell.html")
+        if(EX_SHELL)
+            set(web_shell "${CMAKE_CURRENT_SOURCE_DIR}/${EX_SHELL}")
+        endif()
         set_target_properties(${name} PROPERTIES LINK_DEPENDS "${web_shell}")
         target_link_options(${name} PRIVATE
             --shell-file "${web_shell}"

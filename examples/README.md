@@ -21,6 +21,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `dos/SetBlaster` | MS-DOS only | The smallest example of how to set up the Sound Blaster (port, irq, dma, rate) with `MT2D_Set_Settings_Argv(MT2D_DOS_SET_AUDIO)` |
 | `web-tui` | SDL, Emscripten only | Text mode game for the browser with PC speaker effects (`MT2D_System_Beep`): a frame callback instead of a `for (;;)` loop, `EM_ASM` (localStorage, page title), html page with touch buttons. See [`web-tui/README.md`](web-tui/README.md) |
 | `web-gui` | SDL + SDL2_mixer, Emscripten only | Image (PNG) game for the browser with sound effects and a looping song: sprites, smooth movement with the joystick API, `MT2D_Play_Audio` / `MT2D_Play_Music`. See [`web-gui/README.md`](web-gui/README.md) |
+| `welcome` | SDL + SDL2_mixer, Emscripten only | The home page of MT2D (published on GitHub Pages) as an MT2D program: text menu, text mode effects, sprite scenes, a sound lab with a PC speaker piano and a music player with a visualizer. See [`welcome/README.md`](welcome/README.md) |
 
 The terminal examples use the engine's native text backend, the SDL ones open a window that emulates the
 text screen and can also draw images (see `MT2D/MT2D_Terminal_Define.h`). SDL examples are only built for DJGPP when the experimental VGA mode is on (see [MS-DOS](#ms-dos-djgpp)), and the music of `playmusic` and `desert` plays as IMF on the OPL2 chip (`playsound` plays its effects through the Sound Blaster).
@@ -76,8 +77,10 @@ SDL2.dll must be next to the executable (vcpkg copies it for you).
 
 ### Web (Emscripten)
 
-`web-tui` and `web-gui` run in the browser, the other examples are skipped there (and these two are skipped
+`web-tui`, `web-gui` and `welcome` run in the browser, the other examples are skipped there (and these two are skipped
 everywhere else). Install the Emscripten SDK and build them with `emcmake`, see [`web-tui/README.md`](web-tui/README.md).
+
+The browser calls the frame function once per screen refresh (120 or 144 times a second on a fast monitor), `common/web_timing.h` (`web_step_due(60)`) keeps the programs at 60 steps a second.
 
 ```bash
 emcmake cmake -S examples/web-gui -B examples/web-gui/build

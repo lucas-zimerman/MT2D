@@ -1,0 +1,53 @@
+name: Pages
+
+# Builds examples/welcome (the home page of MT2D, an MT2D program) with Emscripten.
+# Pull requests only build it, a push to master also publishes it on GitHub Pages
+# (repository Settings > Pages > Source must be "GitHub Actions").
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.10
+      - name: Build the page
+        run: |
+          emcmake cmake -S examples/welcome -B build/welcome -DCMAKE_BUILD_TYPE=Release
+          cmake --build build/welcome -j
+      - name: Check the output
+        run: |
+          ls -l examples/welcome/bin
+          test -f examples/welcome/bin/index.html
+          test -f examples/welcome/bin/index.wasm
+          test -f examples/welcome/bin/Logo.png
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: examples/welcome/bin
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
