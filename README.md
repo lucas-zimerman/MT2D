@@ -9,6 +9,8 @@ and **ObjectCore**: objects with sprites, states and a small script language (Cs
 
 **Documentation: [Documentation/README.md](Documentation/README.md)**
 
+**Try it in the browser: <https://lucas-zimerman.github.io/MT2D/>** (the page is an MT2D program, see [`examples/welcome`](examples/welcome/README.md)).
+
 ## Platforms
 
 ✅ supported, ❌ not supported.
@@ -22,7 +24,7 @@ and **ObjectCore**: objects with sprites, states and a small script language (Cs
 | macOS | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | iOS | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | MS-DOS | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Web (Emscripten) | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| Web (Emscripten) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 * Graphics, joystick (real controller), and audio files come from SDL2. MS-DOS has its own VGA mode (experimental),
   keyboard based joystick, and OPL2 / Sound Blaster audio.

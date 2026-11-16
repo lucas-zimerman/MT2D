@@ -36,6 +36,7 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Add a `SHELL` option to `mt2d_add_example` (`examples/cmake/MT2D.cmake`) to use your own page for a web example ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
 - Add `MT2D_Frame_Wait_Next()` and `MT2D_Frame_Core_Consumed()` (`MT2D/MT2D_Frame.h`, header only): sleep what is left of the frame (`MT2D_FRAME_FPS`, default 30) and read the milliseconds the last frame spent working. Real implementation for MS-DOS (DJGPP, the clock follows the song timer while music plays, `MT2D_Dos_Music_Clock_Us`) and SDL, no-ops on the other platforms; `MT2D_FRAME_HAS_CLOCK` tells which ([#42](https://github.com/lucas-zimerman/MT2D/pull/42))
 - Add `MT2D_Set_Settings(op, param1, param2)` and `MT2D_Set_Settings_Argv(argc, argv)` (`MT2D/MT2D_Settings.h`), one way to configure the engine on every platform. They are macros for the backend of the platform, return `MT2D_Result` (`MT2D_OK`, `MT2D_UNSUPPORTED`, `MT2D_BAD_PARAMETER`, `MT2D_BEFORE_INIT_ONLY`, `MT2D_INVALID`) and the operations are grouped by platform (1xxx Windows, 2xxx Linux, 3xxx macOS, 4xxx MS-DOS, 5xxx SDL, 6xxx shared) ([#38](https://github.com/lucas-zimerman/MT2D/pull/38))
 - Add the SDL settings `MT2D_SDL_SET_WINDOW_SIZE`, `MT2D_SDL_SET_WINDOWED`, `MT2D_SDL_SET_FULLSCREEN` (always at the monitor resolution) and `MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN`. On mobile the window size and windowed requests can return `MT2D_OK` while the window stays as it is ([#38](https://github.com/lucas-zimerman/MT2D/pull/38))
@@ -89,6 +90,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
 - `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
 - Emscripten: `MT2D_System_Beep` no longer waits for the tone to end (it froze the page), the beeps are queued. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
