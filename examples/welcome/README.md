@@ -46,7 +46,7 @@ cmake --build build/welcome
 python3 -m http.server 8000 --directory examples/welcome/bin
 ```
 
-Browsers do not load `.wasm` from `file://`, serve the folder. [`.github/workflows/pages.yml`](../../.github/workflows/pages.yml)
+Use Emscripten 7.0.0 or newer: with 4.0.10 the text screen renders almost empty. Browsers do not load `.wasm` from `file://`, serve the folder. [`.github/workflows/pages.yml`](../../.github/workflows/pages.yml)
 builds it on every pull request and publishes `examples/welcome/bin` on GitHub Pages when `master` changes.
 
 Known limit: with the phone in portrait the engine draws its rotated layout, the page asks for landscape.
