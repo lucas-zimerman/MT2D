@@ -43,6 +43,7 @@ More: [`examples/`](../examples/README.md) (one small program per feature, copy 
 | `MT2D_VAR` vars, globals | [scripting/vars.md](scripting/vars.md) |
 | the text script language, `cscriptc`, `.mto` files | [Object-Scripts.md](Object-Scripts.md) (overview in [scripting/README.md](scripting/README.md)) |
 | set the window size / fullscreen, the sound card, the VGA palette | [general/settings.md](general/settings.md) |
+| hold a frame rate in the game loop (`MT2D_Frame_Wait_Next`) | [general/frame.md](general/frame.md) |
 | play sound or music | [general/audio.md](general/audio.md) |
 | open/read files (`MT2D_FILE`) | [general/files.md](general/files.md) |
 | pack or load named assets, encrypted data (container) | [general/container.md](general/container.md) |
