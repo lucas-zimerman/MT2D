@@ -53,6 +53,7 @@ extern unsigned char VGA_ASCII_COLORS[2]; /*store the index of the colors to be 
 typedef struct {
 	const unsigned char *Pix; /* SizeX*SizeY palette indexes, row major, 0 is transparent */
 	int X, Y, W, H;
+	unsigned long Hash; /* of Pix, X, Y, W and H, made once when the sprite is added: the signature of a tile mixes the hashes of its sprites */
 } VgaSprite;
 
 /* A node of the list of sprites over a tile. The newest sprite is the head of the list, so it is drawn first.
@@ -159,6 +160,14 @@ void Dos_Add_ImagetoBuffer(Sprite *IMG,int X, int Y) {
 	s = &Sprites[id];
 	s->Pix = IMG->Image->Pixels;
 	s->X = X; s->Y = Y; s->W = IMG->SizeX; s->H = IMG->SizeY;
+	{
+		unsigned long h = (unsigned long)s->Pix;
+		h = h * 31 + (unsigned long)s->X;
+		h = h * 31 + (unsigned long)s->Y;
+		h = h * 31 + (unsigned long)s->W;
+		h = h * 31 + (unsigned long)s->H;
+		s->Hash = h;
+	}
 
 	/*screen area of the sprite, then the first and last tile that it touches (this snaps to the tile grid)*/
 	x0 = (X < 0 ? 0 : X);
@@ -176,27 +185,25 @@ void Dos_Add_ImagetoBuffer(Sprite *IMG,int X, int Y) {
 
 /*Number that changes when any sprite, its position or its size changes in the stack of the tile (0 is never returned for a used tile).*/
 static unsigned long TileSignature(long head){
-	unsigned long sig = 1, h;
+	unsigned long sig = 1;
 	while (head) {
 		unsigned long n = NODE_AT(head - 1);
-		const VgaSprite *s = &Sprites[n & NODE_SPRITE_MASK];
-		h = (unsigned long)s->Pix;
-		h = h * 31 + (unsigned long)s->X;
-		h = h * 31 + (unsigned long)s->Y;
-		h = h * 31 + (unsigned long)s->W;
-		h = h * 31 + (unsigned long)s->H;
-		sig = (sig ^ h) * 16777619UL;
+		sig = (sig ^ Sprites[n & NODE_SPRITE_MASK].Hash) * 16777619UL;
 		head = (long)(n >> NODE_SPRITE_BITS);
 	}
 	return sig ? sig : 1;
 }
 
-/*Draws the sprites of the tile over Tile (8 rows of 4 pixels), from the top sprite to the bottom one.*/
+/*Draws the sprites of the tile over Tile (8 rows of 4 pixels), from the top sprite to the bottom one.
+  done[r] has one bit for each pixel of row r that already has a sprite on it. A sprite row that covers the 4 pixels of
+  the tile and has no transparent pixel (the common case) is copied with one dword write.*/
 static void ComposeTile(unsigned char *Tile, int tx, int ty, long head){
-	unsigned long done = 0;/*one bit for each pixel of the tile that already has a sprite on it*/
+	unsigned char done[8];
+	int left = 8;/*rows that still have a pixel without a sprite*/
 	int px = tx << 2, py = ty << 3;
 	int c0, c1, r0, r1, r, c;
-	while (head && done != 0xFFFFFFFFUL) {
+	memset(done, 0, sizeof(done));
+	while (head && left > 0) {
 		unsigned long n = NODE_AT(head - 1);
 		const VgaSprite *s = &Sprites[n & NODE_SPRITE_MASK];
 		const unsigned char *src;
@@ -208,13 +215,26 @@ static void ComposeTile(unsigned char *Tile, int tx, int ty, long head){
 		if (c0 >= c1 || r0 >= r1) continue;
 		src = s->Pix + (py + r0 - s->Y) * s->W + (px + c0 - s->X);
 		for (r = r0; r < r1; r++, src += s->W) {
-			for (c = c0; c < c1; c++) {
-				unsigned long bit = 1UL << (r * 4 + c);
-				if (!(done & bit) && src[c - c0]) {
-					Tile[r * 4 + c] = src[c - c0];
-					done |= bit;
+			unsigned char d = done[r];
+			if (d == 15) continue;
+			if (d == 0 && c0 == 0 && c1 == 4) {
+				unsigned long w;
+				memcpy(&w, src, 4);
+				if (!(((w - 0x01010101UL) & ~w) & 0x80808080UL)) {/*no zero (transparent) byte*/
+					memcpy(Tile + r * 4, &w, 4);
+					done[r] = 15;
+					left--;
+					continue;
 				}
 			}
+			for (c = c0; c < c1; c++) {
+				if (!(d & (1 << c)) && src[c - c0]) {
+					Tile[r * 4 + c] = src[c - c0];
+					d = (unsigned char)(d | (1 << c));
+				}
+			}
+			done[r] = d;
+			if (d == 15) left--;
 		}
 	}
 }
@@ -245,7 +265,7 @@ void MT2D_Dos_Render_VGA_ASCII(unsigned char BUFFER[][80]){
 	unsigned char *dst;
 	long head;
 	int tx, ty, i, r;
-	unsigned short Offset;
+	unsigned int Offset;
 	unsigned char ch, b;
 	int active = (SpritesCnt > 0 || HadSprites);
 	#ifdef MSDOS_VGA_WAIT_RETRACE

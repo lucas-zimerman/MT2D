@@ -55,6 +55,10 @@ bench/run_dosbox.sh /tmp/dosrun
 Pass `-DMSDOS_USE_DOUBLE_BUFFER` to build an old checkout with its double buffer (it does nothing in a checkout with the new renderer). DOSBox does not charge the slow video
 memory bus, so removing writes to the video memory is understated.
 
+`bench_vram.c` (VGA mode 13h) times a full-screen write to video memory against the same write to RAM, plus the renderer's exact tile pattern: it tells
+if a slow frame is the CPU or the video card and its bus. On a simulated 486DX2/66 with an ISA Mach64 a screen takes 24.5 ms in video memory and 1.4 ms in RAM; with a VLB
+card 5.3 ms. Needs no song playing (it uses `uclock()`).
+
 ### Spaceship game (`bench/ship`)
 
 `ship/ship.c` is the main loop of `examples/graphics` (two full screen scrolling layers, planets, a rock, coins and the ship)
