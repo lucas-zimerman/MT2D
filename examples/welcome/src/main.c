@@ -3,6 +3,7 @@
 
    One program, five screens, all of them drawn by the engine:
      menu     text mode menu (arrows / number keys / tap)
+   On a touch screen the space and desert screens show a stick and buttons (MT2D_Touch).
      text     text mode effects drawn straight into the 80x25 buffer (plasma, fire, stars, spiral)
      graphics PNG sprites on the 320x240 virtual screen (space flight, desert parallax, sprite zoo)
      sound    sound effects (MT2D_Play_Audio) and a piano of in-memory WAV notes (MT2D_PlayAudioFromMemory)
@@ -27,6 +28,10 @@
 #include <MT2D/Joystick/MT2D_Joystick.h>
 #include <MT2D/Audio/MT2D_Audio_core.h>
 #include <MT2D/MT2D_Settings.h>
+#include <MT2D/Touch/MT2D_Touch.h>
+#include <MT2D/ObjectCore/Object.h>
+#include <MT2D/ObjectCore/State.h>
+#include <MT2D/ObjectCore/Vars.h>
 
 #define ROWS 25
 #define COLS 80
@@ -872,6 +877,102 @@ static void draw_gfx_scene(void)
 }
 
 /* ---------------------------------------------------------------------------------------------- */
+/* touch controls (MT2D_Touch, see Documentation/general/touch.md)                                */
+/* ---------------------------------------------------------------------------------------------- */
+
+/* A stick and an ESC button on the space and desert screens, plus RETRY once the desert is lost. They write into the joystick
+   state, so the scenes read them like the arrow keys. They are hidden until the screen is touched (desktop players
+   never see them) and only bound on those two screens: with no control bound a tap is the space key, which the menu uses.
+   The scenes cover the text with images, so the controls are images too (tools/make_touch.py draws the ASCII art with
+   the engine font), scaled to text cells: a character is 4 x 9.6 pixels of the 320x240 screen. */
+#define TOUCH_NONE 0
+#define TOUCH_SPACE 1
+#define TOUCH_DESERT 2
+#define TOUCH_CAUGHT 3 /* the desert after the worm got the truck: also RETRY */
+
+static Object *t_stick, *t_esc, *t_retry;
+static int touch_layout = TOUCH_NONE;
+static int touch_off;          /* turned off with T or the page's "Touch keys" button: nothing is bound, a tap is space again */
+static int touch_reported = -1; /* what the page's button shows */
+
+static ObjectState *touch_state(const char *name, const char *file)
+{
+    ObjectState *st = MT2D_OBJECT_CREATE_STATE((char *)name);
+    Sprite *s = Load_Sprite_Image((char *)file, 0, 0);
+    if (s) {
+        s->ScaleX = s->SizeX / 2;
+        s->ScaleY = s->SizeY * 6 / 5;
+    }
+    MT2D_ObjectState_ADD(st, s, 1, 0); /* wait 1: the state can loop */
+    return st;
+}
+
+static Object *touch_control(int x, int y, const char *up, const char *down, const char *area)
+{
+    ObjectState **states = (ObjectState **)malloc(3 * sizeof(ObjectState *));
+    states[0] = touch_state("up", up);     /* Deselect */
+    states[1] = touch_state("down", down); /* Select */
+    if (area) states[2] = touch_state("area", area);
+    return Object_Create(false, false, 0, 0, x, y, states, area ? 3 : 2); /* size 0: the size of the sprite */
+}
+
+static void touch_init(void)
+{
+    MT2D_Touch_Init();
+    t_stick = touch_control(6, 184, "t_thumb0.png", "t_thumb1.png", "t_area.png"); /* the area is drawn here, the thumb moves in it */
+    Object_Add_Variable(t_stick, MT2D_Object_Create_Var_String("Btn_Type", "Axis"));
+    Object_Add_Variable(t_stick, MT2D_Object_Create_Var_String("Ax_Style", "Reactive"));
+    Object_Add_Variable(t_stick, MT2D_Object_Create_Var_String("Ax_Area", "area"));
+    t_esc = touch_control(285, 203, "t_esc0.png", "t_esc1.png", NULL); /* joystick button 1 */
+    t_retry = touch_control(242, 203, "t_retry0.png", "t_retry1.png", NULL);
+    Object_Add_Variable(t_retry, MT2D_Object_Create_Var_Int("Btn_Id", 2));
+}
+
+static void touch_set_layout(int want)
+{
+    if (want == touch_layout) return;
+    MT2D_Touch_Unbind(t_stick);
+    MT2D_Touch_Unbind(t_esc);
+    MT2D_Touch_Unbind(t_retry);
+    if (want != TOUCH_NONE) {
+        MT2D_Touch_Bind(t_stick);
+        MT2D_Touch_Bind(t_esc);
+    }
+    if (want == TOUCH_CAUGHT) MT2D_Touch_Bind(t_retry);
+    touch_layout = want;
+}
+
+/* T / the page button: off, or on (shown right away, even before a touch) */
+static void touch_toggle(void)
+{
+    if (!touch_off && MT2D_Touch_Visible()) {
+        touch_off = 1;
+    } else {
+        touch_off = 0;
+        MT2D_Touch_Show(MT2D_TOUCH_SHOW);
+    }
+}
+
+/* tells the page whether the controls are shown, when it changes (they also appear by themselves at the first touch) */
+static void touch_report(void)
+{
+    int shown = !touch_off && MT2D_Touch_Visible();
+    if (shown == touch_reported) return;
+    touch_reported = shown;
+    EM_ASM({
+        if (window.mt2dTouch) window.mt2dTouch($0);
+    }, shown);
+}
+
+/* the touch buttons, after MT2D_Touch_Update */
+static void touch_buttons(void)
+{
+    if (touch_layout == TOUCH_NONE) return;
+    if (MT2D_Joystick_Button_Touched(1)) goto_scene(SCENE_MENU);
+    else if (touch_layout == TOUCH_CAUGHT && MT2D_Joystick_Button_Touched(2)) desert_reset();
+}
+
+/* ---------------------------------------------------------------------------------------------- */
 /* sound lab                                                                                      */
 /* ---------------------------------------------------------------------------------------------- */
 
@@ -1087,7 +1188,9 @@ static void on_key(int key)
         else if (key == K_RIGHT || key == ' ') text_fx = text_fx % FX_COUNT + 1;
         else if (key == K_LEFT) text_fx = (text_fx + FX_COUNT - 2) % FX_COUNT + 1;
     } else if (scene == SCENE_GFX) {
-        if (gfx_scene == 2 && d_over && key == enter_pressed) {
+        if (key == 't') {
+            touch_toggle();
+        } else if (gfx_scene == 2 && d_over && key == enter_pressed) {
             desert_reset();
         } else if (key >= '1' && key <= '3') {
             if (key == '2' && gfx_scene != 2) desert_reset();
@@ -1155,7 +1258,13 @@ static void frame(void)
 {
     if (!web_step_due(60)) return; /* see common/web_timing.h */
     MT2D_Joystick_Update(); /* reads the window events and the held keys (the graphics scenes move with them) */
+    MT2D_Touch_Update();    /* after the joystick update: the touch stick and buttons write into the same state */
+    touch_buttons();
     read_keys();
+    if (scene != SCENE_GFX || gfx_scene == 3 || touch_off) touch_set_layout(TOUCH_NONE); /* a tap is space again: the menu opens items with it */
+    else if (gfx_scene == 1) touch_set_layout(TOUCH_SPACE);
+    else touch_set_layout(d_over ? TOUCH_CAUGHT : TOUCH_DESERT);
+    touch_report();
     MT2D_Clear_Main_Window(); /* also clears the images of the last frame */
 
     if (scene == SCENE_MENU) draw_menu();
@@ -1164,6 +1273,7 @@ static void frame(void)
     else if (scene == SCENE_SOUND) draw_sound_scene();
     else if (scene == SCENE_MUSIC) draw_music_scene();
     else draw_about_scene();
+    MT2D_Touch_Render(); /* last: the controls are on top of the scene */
     MT2D_Draw_Window(DISPLAY_WINDOW1);
     frame_count++;
 }
@@ -1180,6 +1290,7 @@ int main(int argc, char **argv)
     MT2D_Init();
     MT2D_Set_Settings(MT2D_SDL_SET_WINDOWED, 0, 0);
     MT2D_Joystick_Init();
+    touch_init();
     MT2D_Audio_Init();
     Mix_SetPostMix(post_mix, NULL);
     for (i = 0; i < 9; i++) note_wav[i] = make_note(white_hz[i]);

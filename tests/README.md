@@ -30,12 +30,13 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 | `test_frame.cpp` | `_MSDOS/M2Frame.c` (frame pacing: drift, late frames, work time; the clock and the sleep are simulated with `MT2D_FRAME_EXTERNAL`) |
 | `test_frame_sdl.cpp` | `SDL/MT2D_SDL_Frame.c` (the same pacing for SDL, also across the 32 bit clock wrap; simulated with `MT2D_FRAME_SDL_EXTERNAL`, no SDL needed) |
 | `test_layout.cpp` | `MT2D_Layout.c`, `Tools/Video/MT2D_Generic_Line.c` |
+| `test_touch.cpp` | `Touch/MT2D_Touch.c` (buttons, Fixed / Reactive sticks, taps, show modes, bind errors; the fingers are fed with `MT2D_Touch_Finger_*`, built with `MT2D_USE_TOUCH`) and the getters of `Joystick/MT2D_Joystick.c` |
 
 ## Not covered
 
 Code that needs a terminal, a window, a joystick or an OS API cannot run in a
 headless test: `SDL/`, `_WINDOWS/`, `_LINUX/`, `_MSDOS/`, `_ANDROID/`,
-`_EMNISCRIPT/`, `Audio` playback, `Cursor`, `Joystick`, `InputBox`,
+`_EMNISCRIPT/`, `Audio` playback, `Cursor`, the `Joystick` backends, `InputBox`,
 `MessageBox`, `Tools/UserInterface/MT2D_Menu.c` and
 `ObjectCore/STDContainer.c` (needs SDL audio). That includes the settings of each backend
 (`MT2D_SDL_Set_Settings`, `MT2D_Dos_Sound_Configure`, the VGA palette): their parameter checks are not tested.

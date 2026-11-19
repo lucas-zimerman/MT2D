@@ -165,6 +165,7 @@ function(mt2d_engine_target target backend)
             SDL/IO/SDL_MT2D_FILE.c
             SDL/IO/SDL_MT2D_Keyboard.c
             SDL/Render/MT2D_SDL_Render.c
+            Touch/MT2D_Touch.c
         )
         if(MT2D_HAS_MIXER)
             list(APPEND sources SDL/Audio/MT2D_SDL_Audio.c)

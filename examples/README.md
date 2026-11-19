@@ -13,7 +13,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `playsound` | SDL + SDL2_mixer, MS-DOS | `MT2D_Play_Audio`: plays `.wav` / `.ogg` sound effects, many at the same time (on MS-DOS the `.wav` files of `d` through the Sound Blaster) |
 | `playmusic` | SDL + SDL2_mixer, MS-DOS | `MT2D_Play_Music`: streams and loops a song with a visualizer (`.ogg` with SDL2_mixer; on MS-DOS an IMF song on the OPL2 chip, see [`playmusic/NOTICE.md`](playmusic/NOTICE.md) for its credits) |
 | `asciigraphics` | terminal | Plasma, starfield and spiral drawn with the MS-DOS block characters |
-| `graphics` | SDL | PNG images drawn on top of the text screen, parallax scrolling, smooth movement with the joystick API |
+| `graphics` | SDL | PNG images drawn on top of the text screen, parallax scrolling, smooth movement with the joystick API, touch stick and button (`MT2D_Touch`) |
 | `cscript` | SDL | Scripts (Cscript) attached to object states |
 | `sprites` | SDL | Animated PNG sprites (walk cycle, spinning coins, ghosts) with `Object`, `ObjectState` and `ObjectScene` |
 | `desert` | SDL, MS-DOS (VGA) | Object scripts (`ObjectCore_LoadScript`, globals, `CreateObject`, `GotoStateIfHitObject`, `random()`): a monster truck drifts away from a leaping sand worm over parallax scenery, with a looping soundtrack and sound effects played by the scripts (`PlayMusic`, `PlaySound`, need SDL2_mixer; MS-DOS only plays the soundtrack, as IMF music on the OPL2 chip) |

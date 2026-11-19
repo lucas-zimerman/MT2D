@@ -161,9 +161,11 @@
           <button id="mute" class="on" aria-pressed="true">Unmute</button>
           <button id="crt" class="on" aria-pressed="true">CRT</button>
           <button id="full">Fullscreen</button>
+          <button id="touch" aria-pressed="false" style="display: none">Touch keys</button>
         </div>
       </div>
       <p class="hint">Use the arrow keys, <kbd>Enter</kbd>, <kbd>Esc</kbd> and the number keys, or the buttons above on a phone (landscape works best).
+        On the Graphics screen, <kbd>T</kbd> or the Touch keys button shows or hides the on-screen stick and buttons (they appear by themselves on a touch screen).
         The sound starts muted: press <kbd>M</kbd> or the Unmute button (browsers keep audio off until you interact).</p>
     </div>
   </section>
@@ -307,10 +309,12 @@ python3 -m http.server 8000 \
   /* The engine calls this when the screen changes (see set_page_title in src/main.c). */
   window.mt2dScene = function (n) {
     currentScene = n;
+    touchBtn.style.display = n === 2 ? '' : 'none'; /* the touch keys only exist on the Graphics screen */
     document.querySelectorAll('[data-scene]').forEach(function (b) {
       b.classList.toggle('on', Number(b.dataset.scene) === n);
     });
   };
+  var touchBtn = document.getElementById('touch');
   window.mt2dScene(0);
 
   /* The buttons send the same keyboard events SDL listens to. */
@@ -351,6 +355,13 @@ python3 -m http.server 8000 \
       if (n > 0) setTimeout(function () { tap(String(n)); }, 120);
     });
   });
+
+  /* T on the Graphics screen: the engine shows or hides its touch keys and calls this with the result. */
+  window.mt2dTouch = function (on) {
+    touchBtn.setAttribute('aria-pressed', String(!!on));
+    touchBtn.classList.toggle('on', !!on);
+  };
+  touchBtn.addEventListener('click', function () { tap('t'); });
 
   /* The engine starts muted and calls this whenever the mute state changes (the M key or this button). */
   var muteBtn = document.getElementById('mute');

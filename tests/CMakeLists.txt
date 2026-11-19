@@ -49,6 +49,8 @@ add_library(mt2d_engine STATIC
     ${ENGINE}/ObjectCore/Vars.c
     ${ENGINE}/Tools/Video/MT2D_Generic_Line.c
     ${ENGINE}/_LINUX/MT2D_Linux_CP850.c
+    ${ENGINE}/Joystick/MT2D_Joystick.c
+    ${ENGINE}/Touch/MT2D_Touch.c
 )
 # compat first so its MT2D/MT2D.h wins over the real one.
 target_include_directories(mt2d_engine PUBLIC
@@ -60,6 +62,9 @@ target_include_directories(mt2d_engine PUBLIC
 # The engine is old code, keep the build output readable.
 target_compile_options(mt2d_engine PRIVATE -w $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>)
 
+# MT2D_Touch is SDL only in games, the tests build its portable part and feed the fingers by hand.
+target_compile_definitions(mt2d_engine PUBLIC MT2D_USE_TOUCH)
+
 # The settings are forwarded to the backend of the platform (SDL, DOS, ...), which the tests do not build.
 # MT2D_SETTINGS_NO_PLATFORM makes MT2D_Settings.c and the test use the shared fallbacks.
 set_source_files_properties(${ENGINE}/MT2D_Settings.c PROPERTIES COMPILE_DEFINITIONS MT2D_SETTINGS_NO_PLATFORM)
@@ -70,7 +75,7 @@ set_source_files_properties(${ENGINE}/SDL/MT2D_SDL_Frame.c PROPERTIES COMPILE_DE
 
 # The text compiler (ObjectCore/Parser) is optional, games that ship compiled objects only need the loader.
 option(MT2D_CSCRIPT_PARSER "Build the Cscript/object text compiler" ON)
-set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout settings frame frame_sdl cp850 objectloader objectglobals music mixer wav)
+set(TEST_NAMES vars state spriteblock cscript object sprites text_image stdfunctions container aes display layout settings frame frame_sdl cp850 objectloader objectglobals music mixer wav touch)
 if(MT2D_CSCRIPT_PARSER)
     target_sources(mt2d_engine PRIVATE ${ENGINE}/ObjectCore/Parser/CscriptCompiler.c)
     target_compile_definitions(mt2d_engine PUBLIC MT2D_USING_CSCRIPT_PARSER)

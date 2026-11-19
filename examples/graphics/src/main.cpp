@@ -6,12 +6,18 @@
    keys that are being held, so the movement is smooth (no waiting for the keyboard repeat) and several
    keys work at the same time. With SDL the arrow keys act as the left stick.
    The images are made by tools/make_assets.py (cyan = transparent).
+   On a touch screen (SDL: Android, the browser) a stick and an ESC button show up after the first touch,
+   see MT2D/Touch/MT2D_Touch.h: they are objects that write into the same joystick state.
 */
 #include <stdio.h>
 #include <stdlib.h>
 #include "example.h"
 #include <MT2D/ObjectCore/Sprites.h>
 #include <MT2D/Joystick/MT2D_Joystick.h>
+#include <MT2D/Touch/MT2D_Touch.h>
+#include <MT2D/ObjectCore/Object.h>
+#include <MT2D/ObjectCore/State.h>
+#include <MT2D/ObjectCore/Vars.h>
 
 #define SCREEN_W 320
 #define SCREEN_H 240
@@ -33,6 +39,43 @@ static Sprite *load(const char *name)
         s->ScaleY = s->SizeY;
     }
     return s;
+}
+
+/* One state showing an ASCII sprite (cells: w*h characters, row major) */
+static ObjectState *touch_state(const char *name, int w, int h, const char *cells)
+{
+    ObjectState *st = MT2D_OBJECT_CREATE_STATE((char *)name);
+    MT2D_ObjectState_ADD(st, Sprite_Create_Ascii_From_Cells(w, h, cells), 1, 0);
+    return st;
+}
+
+/* Touch stick: the "area" sprite is where the thumb moves, the object itself is the thumb */
+static Object *touch_stick(void)
+{
+    ObjectState **states = (ObjectState **)malloc(3 * sizeof(ObjectState *));
+    Object *o;
+    states[0] = touch_state("up", 3, 1, "(o)");
+    states[1] = touch_state("down", 3, 1, "(O)");
+    states[2] = touch_state("area", 11, 5,
+                            ".---------."
+                            "|         |"
+                            "|         |"
+                            "|         |"
+                            "'---------'");
+    o = Object_Create(false, false, 0, 0, 1, 18, states, 3);
+    Object_Add_Variable(o, MT2D_Object_Create_Var_String("Btn_Type", "Axis"));
+    Object_Add_Variable(o, MT2D_Object_Create_Var_String("Ax_Style", "Reactive"));
+    Object_Add_Variable(o, MT2D_Object_Create_Var_String("Ax_Area", "area"));
+    return o;
+}
+
+/* Touch button 1 (mapped to ESC below) */
+static Object *touch_button(void)
+{
+    ObjectState **states = (ObjectState **)malloc(2 * sizeof(ObjectState *));
+    states[0] = touch_state("up", 7, 3, ".-----.| ESC |'-----'");
+    states[1] = touch_state("down", 7, 3, ".=====.[ ESC ]'====='");
+    return Object_Create(false, false, 0, 0, 71, 19, states, 2); /* Btn_Type and Btn_Id default to button 1 */
 }
 
 /* Note: images are always drawn on top of the text screen, so the score text only
@@ -59,6 +102,9 @@ int main(int argc, char **argv)
     MT2D_Init();
     MT2D_Joystick_Init();
     MT2D_Joystick_Map_Button01(escape_pressed); /* button 1 = the ESC key */
+    MT2D_Touch_Init();
+    MT2D_Touch_Bind(touch_stick());
+    MT2D_Touch_Bind(touch_button());
 
     far_stars = load("stars_far.png");
     near_stars = load("stars_near.png");
@@ -101,9 +147,11 @@ int main(int argc, char **argv)
         sprintf(text, " SCORE %03d ", score);
         insert_string_on_display(text, 0, 1, DISPLAY_WINDOW1);
         insert_string_on_display((char *)" arrows: move   ESC: quit ", 23, 27, DISPLAY_WINDOW1);
+        MT2D_Touch_Render(); /* the touch controls, last so they are on top of the text */
         MT2D_Draw_Window(DISPLAY_WINDOW1);
 
         MT2D_Joystick_Update(); /* reads the window events and the held keys */
+        MT2D_Touch_Update();    /* after the joystick update: adds the touch stick and button */
         if (MT2D_Joystick_Button_Touched(1)) break;
         ship_x += stick_to_pixels(MT2D_Joystick_Get_LeftAxisX());
         ship_y += stick_to_pixels(MT2D_Joystick_Get_LeftAxisY());
@@ -128,6 +176,7 @@ int main(int argc, char **argv)
         tick++;
         MT2D_System_Delay(30);
     }
+    MT2D_Touch_Close();
     MT2D_Joystick_Close();
     return 0;
 }

@@ -17,12 +17,18 @@ itself), the game here is plain C. Text is drawn under the images, so the game o
 (`assets/gameover.png`, made from the engine font by [`tools/make_banner.py`](tools/make_banner.py)) and the score is on the first text row,
 which the scene leaves uncovered.
 
+On a touch screen the space flight and the desert show a stick, an ESC button and, once the truck is caught, a RETRY button
+([`MT2D_Touch`](../../Documentation/general/touch.md)). They feed the joystick state, so the scenes read them like the arrow keys. They
+appear after the first touch and are only bound on those two screens: with no control bound, a tap is the space key (the menu opens
+items with it). They are images too, for the same reason as the banner: [`tools/make_touch.py`](tools/make_touch.py) draws the ASCII
+art with the engine font (`assets/t_*.png`).
+
 The piano does not use `MT2D_System_Beep`: with the SDL backend the PC speaker emulation and audio files cannot be used in the same run (see
 [`Documentation/general/audio.md`](../../Documentation/general/audio.md)), and this program plays files.
 
 The program runs at 60 steps a second whatever the refresh rate of the screen ([`../common/web_timing.h`](../common/web_timing.h)).
 
-Keys: arrows and Enter in the menu, `1`-`5` open a screen, `Esc` goes back, `M` mutes. The page has buttons for the same keys.
+Keys: arrows and Enter in the menu, `1`-`5` open a screen, `Esc` goes back, `M` mutes, `T` shows or hides the touch keys of the Graphics screen. The page has buttons for the same keys.
 The page starts muted (`M` or the Unmute button turns the sound on): the browser keeps the sound locked until the first key press anyway, the song starts then.
 
 ## Files
