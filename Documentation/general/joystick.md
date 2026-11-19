@@ -78,10 +78,9 @@ MT2D_Joystick_Close();
 | `Init()` / `Close()` / `Update()` | macros for the backend: `MT2D_Joystick_Init` etc. |
 | `bool Touched()` | something happened since the last read |
 | `bool ArrowKey_Touched()`, `LeftArrow_Touched()` | both return `Left_Modified` (same thing) |
-| `bool RightArrow_Touched()` | `Right_Modified`, never true: no backend ever sets the right stick |
+| `bool RightArrow_Touched()` | `Right_Modified`: only a touch stick ([touch.md](touch.md)) sets the right stick |
 | `int Get_LeftAxisX/Y()` | see above; clears the flags |
-| `int Get_RightAxisX()` | always 0 |
-| `int Get_RightAxisY()` | returns `Right_X_axis` (always 0) |
+| `int Get_RightAxisX/Y()` | the right stick, only set by a touch stick ([touch.md](touch.md)), otherwise 0 |
 | `bool Button_Touched(int ID)` | `ID` 1..4. `0` or `5+` index outside the array |
 | `Map_Button01..04(int key)` | see above |
 
@@ -93,5 +92,6 @@ Struct `MT2D_Joystick` (public in the header): `Left_X_axis`, `Left_Y_axis`, `Le
 
 * Key releases are applied one frame late (`MT2D_SDL_Flush_Key_Releases` at the start of `Update`) so a tap that begins and ends inside
   one frame is still seen.
-* On Android a touch is stored in the key list as the space key (32), so `Map_Button0N(' ')` turns a screen touch into a button.
+* While no touch control is bound, a touch is stored in the key list as the space key (32), so `Map_Button0N(' ')` turns a screen
+  touch into a button. Touch buttons and sticks that write into this joystick state: [touch.md](touch.md).
 * The key list is shared with `MT2D_Keyboard_*`; see [keyboard.md](keyboard.md).

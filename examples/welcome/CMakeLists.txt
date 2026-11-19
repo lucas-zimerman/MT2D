@@ -19,6 +19,9 @@ foreach(f ${GFX}/stars_far.png ${GFX}/stars_near.png ${GFX}/ship.png ${GFX}/plan
           ${DES}/dust0.png ${DES}/dust1.png ${DES}/dust2.png ${DES}/dust3.png
           ${DES}/roar.wav ${DES}/screech.wav ${DES}/thud.wav ${DES}/whoosh.wav
           ${CMAKE_CURRENT_SOURCE_DIR}/assets/gameover.png
+          ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_area.png ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_thumb0.png ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_thumb1.png
+          ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_esc0.png ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_esc1.png
+          ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_retry0.png ${CMAKE_CURRENT_SOURCE_DIR}/assets/t_retry1.png
           ${SND}/blip.wav ${SND}/coin.wav ${SND}/explosion.ogg ${SND}/jump.ogg ${SND}/laser.wav ${SND}/powerup.wav
           ${MUS}/ode.ogg ${MUS}/elise.ogg)
     get_filename_component(name ${f} NAME)

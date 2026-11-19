@@ -5,9 +5,11 @@
 #include "../Joystick/MT2D_Joystick.h"
 #include "../MT2D_Debug.h"
 #include "MT2D_SDL_main.h"
+#include "../Touch/MT2D_Touch.h"
 
 extern MT2D_Joystick *GlobalJoystickHandler;
 extern int MT2D_SDL_Alt_Enter_Fullscreen;
+extern SDL_DisplayMode mode; /* the window size, MT2D_SDL_main.c */
 
 
 
@@ -86,6 +88,49 @@ void MT2D_SDL_ADD_Key_Buffer(int32_t Key) {
 }
 
 
+/*
+	Finger events go to MT2D_Touch. SDL gives 0..1 of the window; a portrait window (height >= width) shows the
+	screen rotated by 90 degrees (see Render_New), so the game's x is the window's y and its y is 1 - the window's x.
+*/
+static int MT2D_SDL_Touch_Clamp(float v) {
+	if (v < 0.0f) v = 0.0f;
+	if (v > 1.0f) v = 1.0f;
+	return (int)(v * MT2D_TOUCH_RANGE);
+}
+
+static void MT2D_SDL_Touch_Event(SDL_Event *e) {
+	static int SpaceByTouch = 0; /* released on the lift even if controls were bound meanwhile */
+	int x, y;
+	if (mode.h >= mode.w) {
+		x = MT2D_SDL_Touch_Clamp(e->tfinger.y);
+		y = MT2D_SDL_Touch_Clamp(1.0f - e->tfinger.x);
+	}
+	else {
+		x = MT2D_SDL_Touch_Clamp(e->tfinger.x);
+		y = MT2D_SDL_Touch_Clamp(e->tfinger.y);
+	}
+	if (e->type == SDL_FINGERDOWN) {
+		MT2D_Touch_Finger_Down((long)e->tfinger.fingerId, x, y);
+		if (MT2D_Touch_Count() == 0) {
+			/* no touch controls: a touch is the space key, as before MT2D_Touch */
+			MT2D_SDL_ADD_Key_Buffer(32);
+			MainEvents.Keyboard_Pressed = true;
+			MainEvents.Keyboard.keysym.sym = 32;
+			SpaceByTouch = 1;
+		}
+	}
+	else if (e->type == SDL_FINGERMOTION) {
+		MT2D_Touch_Finger_Move((long)e->tfinger.fingerId, x, y);
+	}
+	else {
+		MT2D_Touch_Finger_Up((long)e->tfinger.fingerId, x, y);
+		if (SpaceByTouch) {
+			MT2D_SDL_Defer_Key_Release(32);
+			SpaceByTouch = 0;
+		}
+	}
+}
+
 void MT2D_SDL_Event_Handler(void) {
 	while(SDL_PollEvent(&Events) != 0) {//As this function implicitly calls SDL_PumpEvents(), you can only call this function in the thread that set the video mode. 
 		if (Events.type == SDL_KEYDOWN && MT2D_SDL_Alt_Enter_Fullscreen &&
@@ -118,14 +163,8 @@ void MT2D_SDL_Event_Handler(void) {
 				MainEvents.Window_Started = true;
 			}
 		}
-		else if (Events.type == SDL_FINGERDOWN) {
-			MT2D_SDL_ADD_Key_Buffer(32);
-			MainEvents.Keyboard_Pressed = true;
-			MainEvents.Keyboard.keysym.sym = 32;
-		}
-		else if (Events.type == SDL_FINGERUP) {
-			MT2D_Ide_Printf((char*)"Touch Up");
-			MT2D_SDL_REMOVE_Key_Buffer(32);
+		else if (Events.type == SDL_FINGERDOWN || Events.type == SDL_FINGERMOTION || Events.type == SDL_FINGERUP) {
+			MT2D_SDL_Touch_Event(&Events);
 		}
 
 		else if (Events.type == SDL_JOYAXISMOTION) {
@@ -182,9 +221,8 @@ void MT2D_SDL_Event_Handler_NoLoop(void) {
 				MainEvents.Window_Started = true;
 			}
 		}
-		else if (Events.type == SDL_FINGERDOWN) {
-			MainEvents.Keyboard_Pressed = true;
-			MainEvents.Keyboard.keysym.sym = 32;
+		else if (Events.type == SDL_FINGERDOWN || Events.type == SDL_FINGERMOTION || Events.type == SDL_FINGERUP) {
+			MT2D_SDL_Touch_Event(&Events);
 		}
 		else if (Events.type == SDL_JOYAXISMOTION) {
 			if (Events.jaxis.axis == 0) {

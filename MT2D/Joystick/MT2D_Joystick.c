@@ -54,5 +54,5 @@ int MT2D_Joystick_Get_RightAxisX(void) {
 int MT2D_Joystick_Get_RightAxisY(void) {
 	GlobalJoystickHandler->Right_Modified = false;
 	GlobalJoystickHandler->Touched = false;
-	return GlobalJoystickHandler->Right_X_axis;
+	return GlobalJoystickHandler->Right_Y_axis;
 }

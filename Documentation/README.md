@@ -33,6 +33,7 @@ More: [`examples/`](../examples/README.md) (one small program per feature, copy 
 | write text, draw boxes/lines, move the cursor | [tui/display.md](tui/display.md) |
 | read the keyboard | [general/keyboard.md](general/keyboard.md) |
 | held keys, several keys at once ("joystick") | [general/joystick.md](general/joystick.md) |
+| touch screen buttons and sticks (they feed the joystick) | [general/touch.md](general/touch.md) |
 | show a menu | [tui/menus.md](tui/menus.md) |
 | message boxes, text/number/password input, delay, beep | [tui/io.md](tui/io.md) |
 | draw images, use SDL | [gui/README.md](gui/README.md) |
@@ -62,6 +63,7 @@ screen and the widgets drawn on it, `gui/` = what only SDL / DOS VGA add (images
 | `MT2D_Layout.*`, `MessageBox/`, `InputBox/`, `Tools/UserInterface/`, `Tools/Video/` | text UI built on the buffers |
 | `ObjectCore/` | sprites, objects, states, scenes, Cscript, vars (still C++ except the loader and globals), see [scripting/](scripting/README.md) |
 | `Audio/`, `Container/`, `File/` | audio front end, packed asset container, file wrapper |
+| `Touch/` | touch controls: objects bound as buttons / sticks that write into the joystick state, see [general/touch.md](general/touch.md) |
 | `SDL/` | SDL2 backend (window, images, audio, keyboard, joystick) |
 | `_WINDOWS/`, `_LINUX/`, `_MSDOS/`, `_ANDROID/`, `_EMNISCRIPT/` | OS specific code (keep it here) |
 | `MT2D_Terminal_Define.h` | feature switches, see [general/platforms.md](general/platforms.md) |

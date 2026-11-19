@@ -26,6 +26,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/Audio/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/IO/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/SDL/Render/*.c) \
+	$(wildcard $(LOCAL_PATH)/MT2D/Touch/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/Tools/UserInterface/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/_ANDROID/*.c) \
 	$(wildcard $(LOCAL_PATH)/MT2D/_ANDROID/IO/*.c) \
