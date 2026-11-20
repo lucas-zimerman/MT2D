@@ -40,6 +40,11 @@
 #include <MT2D/_MSDOS/Files/bmp.h>
 #endif
 
+#if defined(MT2D_LINUX_SIXEL)
+#include <MT2D/_LINUX/Render/MT2D_Linux_Image.h>
+#include <MT2D/_LINUX/Render/MT2D_Linux_Render.h>
+#endif
+
 #if defined(MT2D_USING_CONTAINER)
 #include <MT2D/Container/MT2D_Container.h>
 #endif
@@ -191,6 +196,32 @@ static Sprite *Load_Dos_Image_Sprite(char *file, int ScaleX, int ScaleY) {
         S->refCount = 0;
         return S;
 }
+#elif defined(MT2D_LINUX_SIXEL)
+static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY);
+/* Terminal graphics (Sixel): loads an 8 bit BMP, see MT2D_Linux_Image.h */
+static Sprite *Load_Linux_Image_Sprite(char *file, int ScaleX, int ScaleY) {
+        Sprite *S;
+        char path[32];
+        FILE *fl = fopen(MT2D_Linux_Image_Path(file, path, sizeof(path)), "rb");
+        if (!fl) return 0;
+        S = (Sprite*)malloc(sizeof(Sprite));
+        if (!S) {
+                fclose(fl);
+                return 0;
+        }
+        S->Text = 0;
+        S->Image = 0;
+        if (!MT2D_Linux_Load_BMP(fl, S)) {
+                fclose(fl);
+                free(S);
+                return Create_Placeholder_Sprite(ScaleX, ScaleY);
+        }
+        fclose(fl);
+        S->ScaleX = ScaleX;
+        S->ScaleY = ScaleY;
+        S->refCount = 0;
+        return S;
+}
 #endif
 #ifndef SDL_USE
 static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY) {
@@ -224,6 +255,8 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
         return S;
 #elif defined(MSDOS_USE_GRAPHICS)
         return Load_Dos_Image_Sprite(file, ScaleX, ScaleY);
+#elif defined(MT2D_LINUX_SIXEL)
+        return Load_Linux_Image_Sprite(file, ScaleX, ScaleY);
 #else
         return Create_Placeholder_Sprite(ScaleX, ScaleY);
 #endif
@@ -270,6 +303,11 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                                  Dos_Add_ImagetoBuffer(img, pos_x, pos_y);
                                  out = true;
                          }
+#elif defined(MT2D_LINUX_SIXEL)
+                         if (img->Image && witch_window == DISPLAY_WINDOW1) {
+                                 MT2D_Linux_Sixel_Queue_Image(img, pos_x, pos_y);
+                                 out = true;
+                         }
 #endif
                  }
          }
@@ -300,6 +338,10 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                          else if (Me->Image) {
                                  free(Me->Image->Pixels);
                                  free(Me->Image);
+                         }
+#elif defined(MT2D_LINUX_SIXEL)
+                         else if (Me->Image) {
+                                 MT2D_Linux_Image_Free(Me->Image);
                          }
 #endif
                          free(Me);

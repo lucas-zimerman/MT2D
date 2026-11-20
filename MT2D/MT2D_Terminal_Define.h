@@ -36,6 +36,17 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 /*Optional: -DMSDOS_VGA_WAIT_RETRACE waits the vertical retrace before drawing a frame.*/
 
 
+/* Linux (terminal mode): draw the screen as a Sixel image (graphics, bitmap font) instead of text. Needs a terminal */
+/* with Sixel support (xterm -ti vt340, foot, mlterm, wezterm, ...). Graphics only: no sound. Image sprites load the 8 bit */
+/* BMP files of the MS-DOS VGA mode ("name.png" -> "d/name.bmp"). */
+/* MT2D_Init exits with an error (code 1) when the terminal does not report Sixel, MT2D_SIXEL=1 skips that check. */
+/* Ignored with SDL_USE and on the other platforms. Pass -DMT2D_TERMINAL_USE_GRAPHICS or uncomment the line below. */
+/* #define MT2D_TERMINAL_USE_GRAPHICS */
+
+/* Linux (terminal mode): play sound effects and music (.wav, .ogg) with command line players (paplay, pw-play, aplay, */
+/* ffplay), nothing is linked. No IMF music. Ignored with SDL_USE and on the other platforms. */
+/* #define MT2D_TERMINAL_USE_AUDIO */
+
 /* #define SDL_USE_AUDIO */
 /* #define DEBUG_OBJECTCORE */
 #define MT2D_USING_CONTAINER
@@ -58,6 +69,16 @@ MT2D_Terminal_Define.h Created by: Lucas Zimerman Fraulob
 #if !defined(_WIN32) && !defined(__MSDOS__) && !defined(__DOS__) && !defined(SDL_USE) /* If there`s no way of using some form of hardware aceleration for displaying the screen, */
 /* tell it`s using an ancient way of displaying stuff... */
    #define MT2D_RENDERING_PRINTF /* we are forced to use printf :( */
+#endif
+
+/* The Sixel renderer of the Linux terminal backend (internal, use MT2D_TERMINAL_USE_GRAPHICS) */
+#if defined(MT2D_TERMINAL_USE_GRAPHICS) && defined(linux) && !defined(SDL_USE) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+   #define MT2D_LINUX_SIXEL
+#endif
+
+/* The command line player audio of the Linux terminal backend (internal, use MT2D_TERMINAL_USE_AUDIO) */
+#if defined(MT2D_TERMINAL_USE_AUDIO) && defined(linux) && !defined(SDL_USE) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+   #define MT2D_LINUX_AUDIO
 #endif
 
 #if defined(_DEBUG) /*|| 1*/ /*uncomment that line too allow a manual debug*/

@@ -30,6 +30,8 @@ Off unless you uncomment them there or pass `-D...` to the compiler.
 | `MT2D_SDL_GPU` | SDL_GPU instead of SDL render calls |
 | `MSDOS_USE_GRAPHICS` | MS-DOS VGA mode, see [gui/limitations.md](../gui/limitations.md) |
 | `MSDOS_USE_DOUBLE_BUFFER` | **no longer works** (accepted, but does nothing): the VGA renderer writes each changed tile once, no flicker and no 64 KB buffer. Remove it from your build, see [MIGRATION.md](../../MIGRATION.md) |
+| `MT2D_TERMINAL_USE_GRAPHICS` | Linux terminal mode: draw the screen as a Sixel image (see below) |
+| `MT2D_TERMINAL_USE_AUDIO` | Linux terminal mode: play `.wav` / `.ogg` with command line players (see below) |
 | `MSDOS_VGA_WAIT_RETRACE` | only with `MSDOS_USE_GRAPHICS`: wait the vertical retrace before drawing a frame |
 | `MT2D_SCREEN_RESIZE`, `MT2D_SDL_USING_DIRECTX_RENDER`, `DEBUG_OBJECTCORE` | see the comments in the file |
 
@@ -45,4 +47,26 @@ project. Per target details are in [`../CONTRIBUTING.md`](../../CONTRIBUTING.md)
 `examples/cmake/djgpp.cmake`). SDL links: `-lSDL2 -lSDL2_image` (+ `-lSDL2_mixer` for audio).
 
 Linux native terminal: ncurses with wide characters, UTF-8 terminal, CP850 is converted when drawn.
+With `MT2D_TERMINAL_USE_GRAPHICS` (CMake examples: `-DMT2D_TERMINAL_GRAPHICS=ON`) the screen is drawn as a Sixel image
+instead: every cell is an 8x16 bitmap font glyph (640x384 pixels, white on black), a frame equal to the previous one is
+not sent again. curses is still used for the keyboard. It needs a terminal with Sixel support (xterm started with
+`-ti vt340`, foot, mlterm, wezterm, ...). Graphics only: the sound is a separate flag (`MT2D_TERMINAL_USE_AUDIO`, below).
+`MT2D_Init` asks the terminal for its device attributes (`ESC [ c`, waits up to 2 s) and, when Sixel (attribute 4) is not
+listed, prints an error to stderr and exits with code 1. `MT2D_SIXEL=1` in the environment skips the check, for a terminal
+that draws Sixel but does not say so.
+Image sprites (`Load_Sprite_Image`) load the 8 bit BMP files of the MS-DOS VGA mode (index 0 = transparent, see
+`examples/tools/png2dos.py`): `"ship.png"` is read from `d/ship.bmp`, and a name ending in `.bmp` is used as it is. They are placed
+on a 320x240 virtual screen like with SDL and drawn over the text (up to 256 images and 255 colors per frame). The container
+variant (`Load_Sprite_Image_From_Container`) still gives the `<!>` placeholder.
+Ignored with `SDL_USE` and on other platforms.
+
+With `MT2D_TERMINAL_USE_AUDIO` (CMake examples: `-DMT2D_TERMINAL_AUDIO=ON`) `MT2D_Play_Audio` / `MT2D_Play_Music` (and the
+`FromMemory` / container versions) play `.wav` and `.ogg` files with command line players, nothing is linked: a sound effect
+runs `paplay || pw-play || aplay`, the music (one song at a time, looped) `paplay || pw-play || ffplay || aplay`. `aplay` only
+plays `.wav`; for `.ogg` you need `paplay`/`pw-play` with libsndfile, or `ffplay`. The file is looked for as given and then in
+`d/`. IMF songs (MS-DOS) are not played, and without a player the sounds are silent. The players run with their input and output
+on `/dev/null` so they never draw on the terminal. The sound plays on the machine that runs the game, not through an ssh
+connection. The music stops when the game ends, however it ends (exit, Ctrl+C, a closed terminal, `kill -9`). Sound effects that are
+already playing finish by themselves.
+It works with or without the Sixel graphics.
 Android: `Android.mk`. MS-DOS: DJGPP or Open Watcom, 8.3 file names.

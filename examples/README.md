@@ -117,6 +117,19 @@ cmake -S examples -B build/dos -DCMAKE_TOOLCHAIN_FILE=$PWD/examples/cmake/djgpp.
 cmake --build build/dos
 ```
 
+#### Linux Sixel graphics
+
+`-DMT2D_TERMINAL_GRAPHICS=ON` (defines `MT2D_TERMINAL_USE_GRAPHICS`) draws the Linux terminal backend as a Sixel image, so image
+sprites work in a terminal with Sixel support (foot, wezterm, mlterm, `xterm -ti vt340`). The images come from the converted BMPs of
+the `d` folder, like on MS-DOS. Only the examples that do not need the joystick are built this way (`desert`).
+`-DMT2D_TERMINAL_AUDIO=ON` adds the sound (`.wav` / `.ogg`, played by `paplay` / `pw-play` / `aplay` / `ffplay`, so it must be installed): the
+wav and ogg assets are copied next to the executable.
+
+```bash
+cmake -S examples/desert -B build/desert -DMT2D_TERMINAL_GRAPHICS=ON && cmake --build build/desert
+cd examples/desert/bin && ./desert
+```
+
 The examples of the `dos` folder only build for MS-DOS: `dos/SetBlaster` (`setblast.exe [port irq dma rate]`, the port is
 hexadecimal, it plays `d/coin.wav`) works in the text mode, `dos/DiscoPallete` (`discopal.exe`, SPACE changes the effect,
 ESC quits) needs `-DMT2D_DOS_VGA=ON`. Both use the settings API of `MT2D/MT2D_Settings.h`.
