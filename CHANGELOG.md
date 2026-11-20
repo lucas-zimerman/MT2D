@@ -36,6 +36,9 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Add Sixel graphics to the Linux terminal backend: define `MT2D_TERMINAL_USE_GRAPHICS` (CMake examples: `-DMT2D_TERMINAL_GRAPHICS=ON`) to draw the screen as a Sixel image with an 8x16 bitmap font, and image sprites from the 8 bit BMPs of the MS-DOS VGA mode (`d/<name>.bmp`, see `Documentation/general/platforms.md`). `MT2D_Init` exits with code 1 when the terminal does not report Sixel support, `MT2D_SIXEL=1` skips the check ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
+- Add `.wav` / `.ogg` sound and music to the Linux terminal backend with command line players (`paplay`, `pw-play`, `aplay`, `ffplay`): define `MT2D_TERMINAL_USE_AUDIO` (CMake examples: `-DMT2D_TERMINAL_AUDIO=ON`). The music stops when the game ends, IMF songs are not played ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
+- Add a `TERMINAL_GRAPHICS` option to `mt2d_add_example` (`examples/cmake/MT2D.cmake`), used by `desert` to run on the Sixel terminal ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - Add `MT2D_Touch` (`MT2D/Touch/MT2D_Touch.h`): ObjectCore objects bound with `MT2D_Touch_Bind` become touch screen buttons (joystick buttons 1..4) and sticks (left / right, `Fixed` or `Reactive` with a thumb moving in an area sprite), configured with object vars and drawn by `MT2D_Touch_Render`. SDL only (desktop, Android, Emscripten), empty inline functions elsewhere. With no control bound a touch is still the space key, see [touch.md](Documentation/general/touch.md) ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))
 - Add a `SHELL` option to `mt2d_add_example` (`examples/cmake/MT2D.cmake`) to use your own page for a web example ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
 - Add `MT2D_Frame_Wait_Next()` and `MT2D_Frame_Core_Consumed()` (`MT2D/MT2D_Frame.h`, header only): sleep what is left of the frame (`MT2D_FRAME_FPS`, default 30) and read the milliseconds the last frame spent working. Real implementation for MS-DOS (DJGPP, the clock follows the song timer while music plays, `MT2D_Dos_Music_Clock_Us`) and SDL, no-ops on the other platforms; `MT2D_FRAME_HAS_CLOCK` tells which ([#42](https://github.com/lucas-zimerman/MT2D/pull/42))
@@ -91,6 +94,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- Resizing the terminal made a game on the Linux terminal backend wait for a key press (`KEY_RESIZE` was read as a key) ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - `MT2D_Joystick_Get_RightAxisY` returned the right stick X axis ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))
 - The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
 - `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))

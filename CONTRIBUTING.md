@@ -12,6 +12,8 @@ Engine features are toggled with defines in `MT2D/MT2D_Terminal_Define.h`, for e
 
 - `SDL_USE`: draw with SDL2 instead of the system terminal (disabled by default).
 - `SDL_USE_AUDIO`: enable SDL audio.
+- `MT2D_TERMINAL_USE_GRAPHICS`: Linux terminal mode only, draw the screen as a Sixel image (needs a Sixel terminal).
+- `MT2D_TERMINAL_USE_AUDIO`: Linux terminal mode only, play `.wav` / `.ogg` with command line players (`paplay`, `pw-play`, `aplay`, `ffplay`).
 - `SDL_stbimage`: use `SDL_stbimage` instead of SDL_image (for platforms such as UWP).
 - `MT2D_SDL_GPU`: use SDL_GPU instead of the SDL render calls.
 

@@ -10,6 +10,7 @@
 #   * terminal (default) -> the engine's native text backend:
 #                           DJGPP = MS-DOS text video memory, Windows = console API,
 #                           Linux / macOS = curses (ncursesw is required).
+#                           -DMT2D_TERMINAL_GRAPHICS=ON draws it as a Sixel image instead (Linux, Sixel terminal).
 #   * SDL                -> a window that emulates the text screen, also draws images.
 #                           Needs SDL2 + SDL2_image (and optionally SDL2_mixer for audio files).
 #                           Not available with DJGPP.
@@ -45,6 +46,12 @@ option(MT2D_DOS_VGA "Build the MS-DOS VGA renderer instead of the text mode one 
 if(MT2D_DOS AND MT2D_DOS_VGA)
     add_definitions(-DMSDOS_USE_GRAPHICS)
 endif()
+
+# Sixel graphics for the Linux terminal backend, see MT2D_Terminal_Define.h (MT2D_TERMINAL_USE_GRAPHICS).
+option(MT2D_TERMINAL_GRAPHICS "Draw the Linux terminal screen as a Sixel image (needs a Sixel terminal)" OFF)
+
+# Sound for the Linux terminal backend (paplay / pw-play / aplay / ffplay, nothing is linked), see MT2D_Terminal_Define.h (MT2D_TERMINAL_USE_AUDIO).
+option(MT2D_TERMINAL_AUDIO "Play .wav / .ogg with command line players on the Linux terminal backend" OFF)
 
 # The object text compiler (ObjectCore/Parser) is optional: games can ship compiled
 # objects (.mto, made by the cscriptc tool) and only need the small ObjectLoader. Off by default on DOS.
@@ -217,6 +224,9 @@ function(mt2d_engine_target target backend)
             _LINUX/MT2D_Linux_Init.c
             _LINUX/MT2D_Linux_System_Calls.c
             _LINUX/Render/MT2D_Linux_Render.c
+            _LINUX/Render/MT2D_Linux_Sixel.c
+            _LINUX/Render/MT2D_Linux_Image.c
+            _LINUX/Audio/MT2D_Linux_Audio.c
             _LINUX/IO/MT2D_Linux_Keyboard.c
         )
     endif()
@@ -259,6 +269,12 @@ function(mt2d_engine_target target backend)
         if(NOT APPLE)
             set(CURSES_NEED_WIDE TRUE)
         endif()
+        if(MT2D_TERMINAL_GRAPHICS)
+            target_compile_definitions(${target} PUBLIC MT2D_TERMINAL_USE_GRAPHICS)
+        endif()
+        if(MT2D_TERMINAL_AUDIO)
+            target_compile_definitions(${target} PUBLIC MT2D_TERMINAL_USE_AUDIO)
+        endif()
         find_package(Curses REQUIRED)
         target_include_directories(${target} PUBLIC ${CURSES_INCLUDE_DIRS})
         target_link_libraries(${target} PUBLIC ${CURSES_LIBRARIES})
@@ -281,7 +297,7 @@ function(mt2d_engine_target target backend)
 endfunction()
 
 # --------------------------------------------------------------------------------------------
-# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...] [SHELL page.html]] [DOS_VGA] [DOS_MUSIC] [DOS_ONLY [NEEDS_VGA]] [ASSETS file ...] [DOS_NAME short])
+# mt2d_add_example(<name> SOURCES src/a.cpp ... [SDL] [WEB [PRELOAD file@/name ...] [SHELL page.html]] [DOS_VGA] [TERMINAL_GRAPHICS] [DOS_MUSIC] [DOS_ONLY [NEEDS_VGA]] [ASSETS file ...] [DOS_NAME short])
 #
 #   * DOS_ONLY: an example for MS-DOS only (examples/dos), skipped with every other target. It uses the terminal
 #     backend and its "d" folder is copied next to the executable. NEEDS_VGA also skips it unless -DMT2D_DOS_VGA=ON.
@@ -294,6 +310,8 @@ endfunction()
 #   * the executable goes to <example folder>/bin
 #   * SDL examples also get the SDL font/icon in bin, ASSETS (paths relative to the example
 #     folder) are copied to bin too
+#   * TERMINAL_GRAPHICS: an SDL example that also runs on the Linux Sixel graphics terminal (-DMT2D_TERMINAL_GRAPHICS=ON): it is
+#     built with the terminal backend and the "d" folder next to the executable (no joystick on that backend, no sound)
 #   * DOS_NAME is the executable name used with DJGPP (8.3 file names)
 #   * SDL examples are skipped (with a message) when building with DJGPP, unless they also pass DOS_VGA
 #     and the build uses -DMT2D_DOS_VGA=ON (the VGA renderer then draws their images, see tools/png2dos.py)
@@ -302,7 +320,7 @@ endfunction()
 #     .wav sound effects of its "d" folder on the Sound Blaster, in place of the .wav/.ogg files (jump.ogg -> d/jump.wav)
 # --------------------------------------------------------------------------------------------
 function(mt2d_add_example name)
-    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC;DOS_ONLY;NEEDS_VGA" "DOS_NAME;SHELL" "SOURCES;ASSETS;PRELOAD" ${ARGN})
+    cmake_parse_arguments(EX "SDL;WEB;DOS_VGA;DOS_MUSIC;DOS_ONLY;NEEDS_VGA;TERMINAL_GRAPHICS" "DOS_NAME;SHELL" "SOURCES;ASSETS;PRELOAD" ${ARGN})
 
     if(EX_DOS_ONLY)
         if(NOT MT2D_DOS)
@@ -341,6 +359,14 @@ function(mt2d_add_example name)
             message(STATUS "MT2D example '${name}' needs SDL and is skipped for DJGPP")
             return()
         endif()
+    endif()
+
+    if(EX_SDL AND EX_TERMINAL_GRAPHICS AND MT2D_TERMINAL_GRAPHICS AND NOT MT2D_DOS AND NOT MT2D_WEB AND NOT WIN32)
+        # Linux Sixel graphics (-DMT2D_TERMINAL_GRAPHICS=ON): the terminal backend draws the images from
+        # the converted BMPs of the "d" folder, like the MS-DOS VGA mode.
+        set(EX_SDL FALSE)
+        set(EX_DOS_IMAGES TRUE)
+        set(EX_TERMINAL_GFX TRUE)
     endif()
 
     if(EX_SDL)
@@ -410,6 +436,10 @@ function(mt2d_add_example name)
         list(APPEND files "${MT2D_EXAMPLES_DIR}/assets/msdos_fnt.png" "${MT2D_EXAMPLES_DIR}/assets/msdos.ico")
     endif()
     foreach(a ${EX_ASSETS})
+        if(EX_TERMINAL_GFX AND MT2D_TERMINAL_AUDIO AND a MATCHES "\\.(wav|ogg)$")
+            list(APPEND files "${CMAKE_CURRENT_SOURCE_DIR}/${a}") # played by the command line players, from the executable folder
+            continue()
+        endif()
         if(EX_DOS_IMAGES AND NOT a MATCHES "\\.txt$")
             continue() # MS-DOS: only the scripts, the images come from the "d" folder
         endif()
