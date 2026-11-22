@@ -45,6 +45,16 @@ MT2D_INLINE int MT2D_Dos_Audio_Init(void) {
 #define MT2D_PlayAudioFromMemory(audio, size, free) MT2D_Dos_Sound_PlayMemory((audio), (size), (free))
 #define MT2D_PlayMusicFromMemory(music, size, free) MT2D_Dos_Music_PlayMemory((music), (size), (free), MT2D_MUSIC_LOOP)
 #define MT2D_PlaySoundFromMemory(memoryBlock, size, free) MT2D_Dos_Sound_PlayMemory((memoryBlock), (size), (free))
+#elif defined(MT2D_LINUX_AUDIO)
+/* Linux terminal: .wav / .ogg played by command line players, see _LINUX/Audio/MT2D_Linux_Audio.h */
+#include <MT2D/_LINUX/Audio/MT2D_Linux_Audio.h>
+#define MT2D_Audio_Init() MT2D_Linux_Audio_Init()
+#define MT2D_Audio_Close() MT2D_Linux_Audio_Close()
+#define MT2D_Play_Audio(name) MT2D_Linux_Play_Sound(name)
+#define MT2D_Play_Music(name) MT2D_Linux_Play_Music(name)
+#define MT2D_PlayAudioFromMemory(audio, size, free) MT2D_Linux_Play_Sound_From_Memory((audio), (size), (free))
+#define MT2D_PlayMusicFromMemory(music, size, free) MT2D_Linux_Play_Music_From_Memory((music), (size), (free))
+#define MT2D_PlaySoundFromMemory(memoryBlock, size, free) MT2D_Linux_Play_Sound_From_Memory((memoryBlock), (size), (free))
 #else
 #ifndef MT2D_AUIDO_WARN
 #define MT2D_AUIDO_WARN

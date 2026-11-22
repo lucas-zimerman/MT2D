@@ -11,6 +11,7 @@
 #include <curses.h>
 #include <wchar.h>
 #include "../MT2D_Linux_CP850.h"
+#include "../Render/MT2D_Linux_Render.h"
 
 void MT2D_Linux_Start_Curses(void);
 
@@ -46,11 +47,19 @@ static wint_t peeked_char;
 bool MT2D_Linux_Keyboard_touched(void) {
 	if (pending_special || has_peeked) return true;
 	MT2D_Linux_Start_Curses();
-	nodelay(stdscr, TRUE);
-	peeked_status = get_wch(&peeked_char);
-	nodelay(stdscr, FALSE);
-	has_peeked = (peeked_status != ERR);
-	return has_peeked;
+	for (;;) {
+		nodelay(stdscr, TRUE);
+		peeked_status = get_wch(&peeked_char);
+		nodelay(stdscr, FALSE);
+		if (peeked_status == ERR) return false;
+		if (peeked_status == KEY_CODE_YES && peeked_char == KEY_RESIZE) {
+			/* the terminal was resized: not a key, so it must not make the game wait for one */
+			MT2D_Linux_Screen_Resized();
+			continue;
+		}
+		has_peeked = true;
+		return true;
+	}
 }
 
 int MT2D_Linux_Keyboard_keytouched(void) {
@@ -70,6 +79,7 @@ int MT2D_Linux_Keyboard_keytouched(void) {
 		} else {
 			status = get_wch(&ch);
 		}
+		if (status == KEY_CODE_YES && ch == KEY_RESIZE) MT2D_Linux_Screen_Resized();
 		key = (status == ERR || (status == KEY_CODE_YES && ch == KEY_RESIZE)) ? -1 : MT2D_Linux_Read_Key(status, ch);
 	} while (key < 0);
 	return key;

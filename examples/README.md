@@ -17,7 +17,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `cscript` | SDL | Scripts (Cscript) attached to object states |
 | `sprites` | SDL | Animated PNG sprites (walk cycle, spinning coins, ghosts) with `Object`, `ObjectState` and `ObjectScene` |
 | `desert` | SDL, MS-DOS (VGA) | Object scripts (`ObjectCore_LoadScript`, globals, `CreateObject`, `GotoStateIfHitObject`, `random()`): a monster truck drifts away from a leaping sand worm over parallax scenery, with a looping soundtrack and sound effects played by the scripts (`PlayMusic`, `PlaySound`, need SDL2_mixer; MS-DOS only plays the soundtrack, as IMF music on the OPL2 chip) |
-| `dos/DiscoPallete` | MS-DOS (VGA) only | Funky animations made only with the palette: a spiral is drawn once and every frame a whole new palette is sent with `MT2D_Set_Settings_Argv(MT2D_DOS_SET_PALETTE)` |
+| `dos/DiscoPallete` | MS-DOS (VGA) only | Funky animations made only with the palette: a spiral is drawn once and every frame a whole new palette is sent with `MT2D_Set_Settings_Argv(MT2D_SET_PALETTE)` |
 | `dos/SetBlaster` | MS-DOS only | The smallest example of how to set up the Sound Blaster (port, irq, dma, rate) with `MT2D_Set_Settings_Argv(MT2D_DOS_SET_AUDIO)` |
 | `web-tui` | SDL, Emscripten only | Text mode game for the browser with PC speaker effects (`MT2D_System_Beep`): a frame callback instead of a `for (;;)` loop, `EM_ASM` (localStorage, page title), html page with touch buttons. See [`web-tui/README.md`](web-tui/README.md) |
 | `web-gui` | SDL + SDL2_mixer, Emscripten only | Image (PNG) game for the browser with sound effects and a looping song: sprites, smooth movement with the joystick API, `MT2D_Play_Audio` / `MT2D_Play_Music`. See [`web-gui/README.md`](web-gui/README.md) |
@@ -115,6 +115,19 @@ the music of `desert` plays on the OPL2 chip (`desert/d/desert.imf`), there are 
 ```bash
 cmake -S examples -B build/dos -DCMAKE_TOOLCHAIN_FILE=$PWD/examples/cmake/djgpp.cmake -DMT2D_DOS_VGA=ON
 cmake --build build/dos
+```
+
+#### Linux Sixel graphics
+
+`-DMT2D_TERMINAL_GRAPHICS=ON` (defines `MT2D_TERMINAL_USE_GRAPHICS`) draws the Linux terminal backend as a Sixel image, so image
+sprites work in a terminal with Sixel support (foot, wezterm, mlterm, `xterm -ti vt340`). The images come from the converted BMPs of
+the `d` folder, like on MS-DOS. Only the examples that do not need the joystick are built this way (`desert`).
+`-DMT2D_TERMINAL_AUDIO=ON` adds the sound (`.wav` / `.ogg`, played by `paplay` / `pw-play` / `aplay` / `ffplay`, so it must be installed): the
+wav and ogg assets are copied next to the executable.
+
+```bash
+cmake -S examples/desert -B build/desert -DMT2D_TERMINAL_GRAPHICS=ON && cmake --build build/desert
+cd examples/desert/bin && ./desert
 ```
 
 The examples of the `dos` folder only build for MS-DOS: `dos/SetBlaster` (`setblast.exe [port irq dma rate]`, the port is

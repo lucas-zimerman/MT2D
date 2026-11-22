@@ -43,7 +43,7 @@ have no operation yet). A backend answers `MT2D_UNSUPPORTED` to the operations o
 | `MT2D_SDL_SET_FULLSCREEN` (5002) | `MT2D_Set_Settings` | none | always at the monitor resolution (borderless, the video mode is not changed). Before or after init |
 | `MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN` (5003) | `MT2D_Set_Settings` | 1 on, 0 off | default 0. When on, Alt+Enter (also keypad Enter) switches fullscreen / windowed and the program does not see that Enter |
 | `MT2D_DOS_SET_AUDIO` (4000) | `MT2D_Set_Settings_Argv` | `port, irq, dma, rate` | Sound Blaster setup, see below |
-| `MT2D_DOS_SET_PALETTE` (4001) | `MT2D_Set_Settings_Argv` | 256 colors `0xRRGGBB` | the whole VGA palette, see below |
+| `MT2D_SET_PALETTE` (6000) | `MT2D_Set_Settings_Argv` | 256 colors `0xRRGGBB` | the whole palette of the graphics (MS-DOS VGA, Linux Sixel), see below |
 
 The SDL operations exist when `SDL_USE` is defined (Android, Windows UWP and Emscripten builds need it anyway).
 Without `SDL_USE` they return `MT2D_UNSUPPORTED`.
@@ -69,12 +69,15 @@ Fullscreen (and Alt+Enter) are expected to work wherever SDL supports a fullscre
 
 Example: [`examples/dos/SetBlaster`](../../examples/dos/SetBlaster/src/main.c).
 
-## MS-DOS palette: `MT2D_DOS_SET_PALETTE`
+## Palette: `MT2D_SET_PALETTE`
 
-`{ MT2D_DOS_SET_PALETTE, c0, c1, ... c255 }`: `argc` must be exactly 257, else `MT2D_BAD_PARAMETER`. Only with the VGA mode
-(`MSDOS_USE_GRAPHICS`), the text mode answers `MT2D_UNSUPPORTED`. Only the low 24 bits of a color are used, the VGA keeps 6 bits
-per component. Index 0 is the transparent color of the sprites and 16 / 31 are the text colors.
-Loading a BMP also programs the palette (with its own), so set yours after loading the images.
+`{ MT2D_SET_PALETTE, c0, c1, ... c255 }`: `argc` must be exactly 257, else `MT2D_BAD_PARAMETER`. Only the colors of the graphics have a
+palette: the MS-DOS VGA mode (`MSDOS_USE_GRAPHICS`) and the Linux Sixel graphics (`MT2D_TERMINAL_USE_GRAPHICS`). Every other
+build (the text modes, SDL, Windows) answers `MT2D_UNSUPPORTED`. Only the low 24 bits of a color are used, the VGA keeps 6 bits per
+component (the Sixel graphics keep 8). Index 0 is the transparent color of the sprites and 16 / 31 are the text colors (black and white
+in the default palette).
+Loading a BMP also sets the palette (with its own), so set yours after loading the images. On Linux `MT2D_Init` calls this same setting
+with the default VGA palette, and the next frame is sent again with the new colors.
 Changing only the palette moves colors without redrawing: [`examples/dos/DiscoPallete`](../../examples/dos/DiscoPallete/src/main.c)
 draws a spiral once and animates it with a new palette every frame.
 

@@ -39,7 +39,7 @@ MT2D_Result MT2D_Dos_Set_Settings_Argv(int argc, const int *argv)
                 return MT2D_UNSUPPORTED;
 #endif
         default:
-                return MT2D_UNSUPPORTED; /* e.g. MT2D_DOS_SET_PALETTE needs the VGA mode */
+                return MT2D_UNSUPPORTED; /* e.g. MT2D_SET_PALETTE needs the VGA mode */
         }
 }
 #endif
