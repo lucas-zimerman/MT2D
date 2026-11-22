@@ -89,6 +89,7 @@ are the text-script names (`CscriptFunctions.h`).
 | `SetVar` | 3 | dst, src | `dst = src` (int/char/float, converted to dst's type) |
 | `VarInc`, `VarDec` | 3 | var | `var += 1` / `-= 1` |
 | `VarAdd`, `VarSub` | 3 | var, value | `var += value` / `-= value` |
+| `Cscript_Calc` | 3 | count, store, operand, (`"op"`, operand)... | `store = math`, see [Calc](#calc). Not in the compiler list, register it as a global |
 | `RemoveObject` | 2 | | `CanDelete = true` |
 | `JumpToStateIfVarEq` / `NotEq` / `Lower` / `Higher` / `LowerEq` / `HigherEq` | 3 | state, a, b | go to state if `a op b` (Eq compares `a == b`; the argument roles are `[1]`,`[2]`) |
 | `JumpToStateIfRandom` | 3 | state, chance, max | if `rand() % max <= chance`. `max` 0 divides by zero. Lands on frame 1, skipping frame 0 |
@@ -102,6 +103,39 @@ are the text-script names (`CscriptFunctions.h`).
 | `Cscript_AddVar_ToObject` | 3 | var | add a copy of a var to `self`. Its duplicate check compares `args[i]` with user var `i`, so it is only valid while the object has at most one user var |
 
 `CreateObject` requires `self->MyScene` (the caller must be in a scene) and uses the model's `Solid`, `RenderOnly` and `Size`.
+
+## Calc
+
+`Cscript_Calc` stores the result of a small formula. `args[0]` is how many args come after it (the store and the math),
+`args[1]` is where the result goes, then an operand and pairs of operator and operand. Operators are `VAR_STRING` vars
+holding one of `+` `-` `*` `/` `%`. `*` `/` `%` are done before `+` `-`, there are no parentheses.
+
+```c
+/* x = a + b * 2 */
+Cscript_New3V(Cscript_Calc, 7, MT2D_Object_Create_Var_Int("n", 6), MT2D_Object_Create_Var_Pointer("x"),
+              MT2D_Object_Create_Var_Pointer("a"), MT2D_Object_Create_Var_String("op", "+"),
+              MT2D_Object_Create_Var_Pointer("b"), MT2D_Object_Create_Var_String("op", "*"),
+              MT2D_Object_Create_Var_Int("c", 2));
+```
+
+From an object script, register it as a global that takes any amount of args:
+
+```c
+ObjectCore_AddGlobalCScriptVars("Calc", Cscript_Calc, -1);
+```
+```
+global Calc(6, x, a, "+", b, "*", 2)      // x = a + b * 2
+global Calc(4, Pos_X, global PlayerX, "-", Size_X)
+```
+
+* The type of the store picks the math. A float store: everything is done in `float` (`%` is refused). Any other store:
+  everything is done in `int`, a float operand is truncated when it is read. Scripts only declare `int` vars, so a
+  float store is a global var or a var added from C (`MT2D_Object_Create_Var_Float`).
+* The store can be part of the math (`Calc(4, x, y, "-", x)` is `x = y - x`).
+* `/` and `%` round toward zero on every compiler: `-7 / 2` is `-3`, `-7 % 2` is `-1`.
+* Nothing is stored when the count is not 2, 4, 6 ..., an operator is not one of the five, an operand is a text,
+  the object has no var with the store's name, or a `/` or `%` divides by 0. An operand the object does not have is 0.
+* The count is not checked against the real number of args: a count that is too big reads past them.
 
 ## While loops
 

@@ -5,6 +5,10 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* Var and state names are equal: the first char is compared before strcmp, so most names are rejected
+   without a call (cheap on 16 bit DOS). a and b are evaluated twice. */
+#define MT2D_NAME_EQ(a, b) ((a)[0] == (b)[0] && strcmp((a), (b)) == 0)
+
 int Cscript_VAR_Get_Integer(Object *object, MT2D_VAR *Var);
 
 /**
@@ -17,7 +21,7 @@ int Cscript_Get_Object_VarIndex(MT2D_VAR *Var) {
         Object *O = (Object*)Var->Data.p;
         int i = 0;
         for (; i < O->User_Vars_Count; i++) {
-                if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+                if (MT2D_NAME_EQ(O->User_Vars[i].Name, Var->Name)) {
                         out = i;
                         i = O->User_Vars_Count;
                 }
@@ -37,7 +41,7 @@ int Cscript_Get_Object_Internal_Data(MT2D_VAR *Var) {
         if (O) {
                 int i = 0;
                 for (; i < O->User_Vars_Count; i++) {
-                        if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+                        if (MT2D_NAME_EQ(O->User_Vars[i].Name, Var->Name)) {
                                 Return = MT2D_Object_VAR_GetInt(&O->User_Vars[i]);
                                 i = O->User_Vars_Count;
                         }
@@ -60,7 +64,7 @@ void Cscript_Set_Object_Internal_Data(Object *caller, MT2D_VAR *Var, MT2D_VAR *N
                 /* check vars */
                 int i = 0;
                 for (; i < O->User_Vars_Count; i++) {
-                        if (strcmp(O->User_Vars[i].Name, Var->Name) == 0) {
+                        if (MT2D_NAME_EQ(O->User_Vars[i].Name, Var->Name)) {
                                 MT2D_Object_VAR_SetVar(&O->User_Vars[i], NewVar);
                                 i = O->User_Vars_Count;
                         }
@@ -118,7 +122,7 @@ VARS[0] = State Name
 void Cscript_Object_SetState(Object *Object, MT2D_VAR **StateName) {
         int i = 0;
         while (i < Object->States_Count) {
-                if (strcmp(Object->State[i]->Name, (char*)StateName[0]->Name) == 0) {
+                if (MT2D_NAME_EQ(Object->State[i]->Name, StateName[0]->Name)) {
                         Object->ActualState = i;
                         Object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                         Object->ActualFrameWait = Object->State[i]->WaitSprites[0];
@@ -174,7 +178,7 @@ void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
         int SEL_RANGE = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[1]);
         if (rand() % MAX <= SEL_RANGE) {
                 while (i < object->States_Count) {
-                        if (strcmp(object->State[i]->Name, (char*)JUMPTO_CHANCE_MAX[0]->Name) == 0) {
+                        if (MT2D_NAME_EQ(object->State[i]->Name, JUMPTO_CHANCE_MAX[0]->Name)) {
                                 object->ActualState = i;
                                 object->ActualFrame = 0;
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -213,7 +217,7 @@ void Cscript_JumpToStateIfVarLowerEq(Object *object, MT2D_VAR **Vars) {
         int Right = Cscript_VAR_Get_Integer(object, Vars[2]);
         if (Left <= Right) {
                         while (i < object->States_Count) {
-                        if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
+                        if (MT2D_NAME_EQ(object->State[i]->Name, Vars[0]->Name)) {
                                 object->ActualState = i;
                                 object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -235,7 +239,7 @@ void Cscript_JumpToStateIfVarHigherEq(Object *object, MT2D_VAR **Vars) {
         int Right = Cscript_VAR_Get_Integer(object, Vars[2]);
         if (Left >= Right) {
                 while (i < object->States_Count) {
-                        if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
+                        if (MT2D_NAME_EQ(object->State[i]->Name, Vars[0]->Name)) {
                                 object->ActualState = i;
                                 object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -261,11 +265,11 @@ void Cscript_JumpToStateIfVarEq(Object *object, MT2D_VAR **Vars) {
         }
 
         if (Now == MAX) {
-                if (strcmp(Vars[0]->Name, "Moving") == 0) {
+                if (MT2D_NAME_EQ(Vars[0]->Name, "Moving")) {
                         i = 0;
                 }
                 while (i < object->States_Count) {
-                        if (strcmp(object->State[i]->Name, Vars[0]->Name) == 0) {
+                        if (MT2D_NAME_EQ(object->State[i]->Name, Vars[0]->Name)) {
                                 object->ActualState = i;
                                 object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first state. */
                                 object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -367,7 +371,7 @@ void Cscript_JumpFramesIfVar(Object *object, MT2D_VAR **Vars) {
 static void Cscript_Private_GotoStateByName(Object *object, const char *Name) {
         int i;
         for (i = 0; i < object->States_Count; i++) {
-                if (strcmp(object->State[i]->Name, Name) == 0) {
+                if (MT2D_NAME_EQ(object->State[i]->Name, Name)) {
                         object->ActualState = i;
                         object->ActualFrame = -1; /* after this call the function is going to be increased by one so we avoid the code to miss the first frame. */
                         object->ActualFrameWait = object->State[i]->WaitSprites[0];
@@ -461,7 +465,7 @@ Var:
 void Cscript_AddVar_ToObject(Object *Caller, MT2D_VAR **Var){
         int i =0;
         while(i < Caller->User_Vars_Count){
-                if(strcmp(Var[i]->Name,Caller->User_Vars[i].Name) == 0){
+                if(MT2D_NAME_EQ(Var[i]->Name, Caller->User_Vars[i].Name)){
                         i = Caller->User_Vars_Count;
                 }
                 i++;            
@@ -745,6 +749,145 @@ void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR) {
                 MT2D_Object_SUB(VAR[0], One);
         }
         MT2D_VAR_Free(One,1);
+}
+
+/* The operator of a Calc var: '+', '-', '*', '/' or '%' from a VAR_STRING var, 0 for anything else. */
+static char Private_Calc_Op(MT2D_VAR *Var) {
+        const char *s;
+        if (!Var || Var->Type != VAR_STRING || !Var->Data.p) return 0;
+        s = (const char*)Var->Data.p;
+        if (s[0] == 0 || s[1] != 0 || !strchr("+-*/%", s[0])) return 0;
+        return s[0];
+}
+
+/* C89 lets a compiler round a negative / down; when the preprocessor rounds toward zero the compiler does too
+   (true on x86: idiv), so the fix-up is not built. */
+#if (-7 / 2) == -3 && (-7 % 2) == -1
+#define MT2D_CALC_DIV_TRUNCATES 1
+#else
+#define MT2D_CALC_DIV_TRUNCATES 0
+#endif
+
+/* a / b (Mod = 0) or a % b (Mod = 1) rounded toward zero on every compiler. b must not be 0.
+   b = -1 does not divide: INT_MIN / -1 does not fit an int and makes x86 raise the divide error
+   ("Divide overflow" on DOS), so the result is -a (INT_MIN stays INT_MIN) and 0. */
+static int Private_Calc_Div(int a, int b, int Mod) {
+        int q, r;
+        if (b == -1) return Mod ? 0 : (int)(0u - (unsigned)a);
+        q = a / b;
+        r = a % b;
+#if !MT2D_CALC_DIV_TRUNCATES
+        if (r != 0 && ((r < 0) != (a < 0))) { /* the compiler rounded down */
+                q += 1;
+                r -= b;
+        }
+#endif
+        return Mod ? r : q;
+}
+
+/* The var a Calc arg stands for: the var of the caller with that name for a VAR_POINTER (0 when it has none),
+   the var itself for anything else (a number or a global var). */
+static MT2D_VAR *Private_Calc_Var(Object *object, MT2D_VAR *Var) {
+        int i;
+        if (Var->Type != VAR_POINTER) return Var;
+        for (i = 0; i < object->User_Vars_Count; i++) {
+                if (MT2D_NAME_EQ(object->User_Vars[i].Name, Var->Name)) return &object->User_Vars[i];
+        }
+        return 0;
+}
+
+/* The value of an operand, 0 for a var the caller does not have. */
+static int Private_Calc_Int(Object *object, MT2D_VAR *Var) {
+        MT2D_VAR *v = Private_Calc_Var(object, Var);
+        return v ? MT2D_Object_VAR_GetInt(v) : 0;
+}
+
+static float Private_Calc_Float(Object *object, MT2D_VAR *Var) {
+        MT2D_VAR *v = Private_Calc_Var(object, Var);
+        if (!v) return 0.0f;
+        if (v->Type == VAR_FLOAT) return v->Data.f;
+        return (float)MT2D_Object_VAR_GetInt(v);
+}
+
+/* VARS[2..count] in int, 0 when the list is wrong or divides by 0 */
+static int Private_Calc_Ints(Object *object, MT2D_VAR **VARS, int count, int *Out) {
+        int i, value, term, total = 0, neg = 0;
+        char op;
+        term = Private_Calc_Int(object, VARS[2]);
+        for (i = 3; i + 1 <= count; i += 2) {
+                op = Private_Calc_Op(VARS[i]);
+                if (!op || VARS[i + 1]->Type == VAR_STRING) return 0;
+                value = Private_Calc_Int(object, VARS[i + 1]);
+                if (op == '*') term *= value;
+                else if (op == '/' || op == '%') {
+                        if (value == 0) return 0;
+                        term = Private_Calc_Div(term, value, op == '%');
+                }
+                else { /* + or -: the term is done, add it with its sign (no imul) */
+                        if (neg) total -= term; else total += term;
+                        neg = op == '-';
+                        term = value;
+                }
+        }
+        *Out = neg ? total - term : total + term;
+        return 1;
+}
+
+/* the same in float, % is refused */
+static int Private_Calc_Floats(Object *object, MT2D_VAR **VARS, int count, float *Out) {
+        int i;
+        float value, term, total = 0.0f, sign = 1.0f;
+        char op;
+        term = Private_Calc_Float(object, VARS[2]);
+        for (i = 3; i + 1 <= count; i += 2) {
+                op = Private_Calc_Op(VARS[i]);
+                if (!op || op == '%' || VARS[i + 1]->Type == VAR_STRING) return 0;
+                value = Private_Calc_Float(object, VARS[i + 1]);
+                if (op == '*') term *= value;
+                else if (op == '/') {
+                        if (value == 0.0f) return 0;
+                        term /= value;
+                }
+                else {
+                        total += sign * term;
+                        sign = op == '-' ? -1.0f : 1.0f;
+                        term = value;
+                }
+        }
+        *Out = total + sign * term;
+        return 1;
+}
+
+/**
+Store = math, without parentheses: * / % before + -, then left to right.
+VARS[0] = how many vars come after it (the store and the math): 2, 4, 6 ...
+VARS[1] = where the result is stored
+VARS[2] = the first operand, then pairs of operator ("+" "-" "*" "/" "%" as VAR_STRING) and operand.
+        Cscript_New3V(Cscript_Calc, 7, count6, x, a, plus, b, times, two)   ->   x = a + b * 2
+The type of the store picks the math: a VAR_FLOAT store is computed in float (no %), any other in int.
+Nothing is stored when the list is wrong (bad count, an operator that is not one, a store the caller does not have)
+or on a / or % by 0.
+**/
+void Cscript_Calc(Object *object, MT2D_VAR **VARS) {
+        MT2D_VAR Result;
+        MT2D_VAR *store;
+        int count, total;
+        float totalF;
+        if (!VARS || !VARS[0] || VARS[0]->Type == VAR_STRING) return;
+        count = Cscript_VAR_Get_Integer(object, VARS[0]);
+        if (count < 2 || (count & 1)) return;
+        if (VARS[1]->Type == VAR_STRING || VARS[2]->Type == VAR_STRING) return;
+        store = Private_Calc_Var(object, VARS[1]);
+        if (!store) return;
+        if (store->Type == VAR_FLOAT) {
+                if (!Private_Calc_Floats(object, VARS, count, &totalF)) return;
+                MT2D_VAR_Init_Float(&Result, "Result", totalF);
+        }
+        else {
+                if (!Private_Calc_Ints(object, VARS, count, &total)) return;
+                MT2D_VAR_Init_Int(&Result, "Result", total);
+        }
+        MT2D_Object_VAR_SetVar(store, &Result);
 }
 
 /* The file is the text of a VAR_STRING var, or the Name of any other var. */
