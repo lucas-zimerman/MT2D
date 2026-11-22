@@ -4,6 +4,8 @@
 
 ### Breaking
 
+- `WINDOW2`, `DISPLAY_WINDOW2`, `transfer_window1_to_window2()` and `transfer_window2_to_window1()` were removed: `WINDOW1` is the only engine screen buffer (2080 bytes less). Popups and menus draw on `WINDOW1` and put back the cells they covered, see [MIGRATION.md](MIGRATION.md) ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
+- The `which` argument of `insert_string_on_display`, `insert_number_on_display`, `MT2D_Create_Window_Layout`, `MT2D_Draw_Window` and `Sprite_Render_on_Window` is now a window pointer (`unsigned char (*)[MAX_HOR]`), `NULL` meaning `WINDOW1`. `DISPLAY_WINDOW1` is now `0`, so calls that pass it need no change. Image sprites are only queued for the main screen ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
 - `ObjectCore` is C too: `ObjectCore/*.cpp` became `.c` (same names, update build lists; the empty `ColisionSystem.cpp/.h` were removed) and the portable engine now compiles as ANSI C (C89). C++ keeps `Cscript_New(fn, ...)` and the overloaded `MT2D_Object_Set_Var`; from C use `Cscript_New3V/4V` and `MT2D_Object_Set_Var_Bool/Int/Float/Data`, see [MIGRATION.md](MIGRATION.md) ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - `Sprite` no longer uses an anonymous union: `Text` and `Image` are separate pointers (the unused one is `0`), 4 bytes bigger on 32 bit targets ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
 - The engine is now written in C: every `.cpp` of `MT2D/` outside `ObjectCore/` became a `.c` file (same names, so build lists must be updated), and the headers have C linkage (`extern "C"`), so C++ projects keep working. `ObjectCore` is still C++ for now, see [MIGRATION.md](MIGRATION.md) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
@@ -36,6 +38,7 @@ ObjectPosX(Object) = 12;
 
 ### Features
 
+- Draw on your own screen buffers: declare an `MT2D_Window` (`MT2D/MT2D_Window.h`) and pass it to the display functions, and save / restore a rectangle of a buffer with `MT2D_Window_Save_Area` / `MT2D_Window_Restore_Area` ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
 - Add Sixel graphics to the Linux terminal backend: define `MT2D_TERMINAL_USE_GRAPHICS` (CMake examples: `-DMT2D_TERMINAL_GRAPHICS=ON`) to draw the screen as a Sixel image with an 8x16 bitmap font, and image sprites from the 8 bit BMPs of the MS-DOS VGA mode (`d/<name>.bmp`, see `Documentation/general/platforms.md`). Like the VGA mode it has one 256 color palette: the VGA default at `MT2D_Init`, replaced by loading a BMP or by `MT2D_SET_PALETTE`. `MT2D_DOS_SET_PALETTE` (not released yet) is now that shared setting (6000), it works on the MS-DOS VGA mode and the Linux Sixel graphics `MT2D_Init` exits with code 1 when the terminal does not report Sixel support, `MT2D_SIXEL=1` skips the check ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - Add `.wav` / `.ogg` sound and music to the Linux terminal backend with command line players (`paplay`, `pw-play`, `aplay`, `ffplay`): define `MT2D_TERMINAL_USE_AUDIO` (CMake examples: `-DMT2D_TERMINAL_AUDIO=ON`). The music stops when the game ends, IMF songs are not played ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - Add a `TERMINAL_GRAPHICS` option to `mt2d_add_example` (`examples/cmake/MT2D.cmake`), used by `desert` to run on the Sixel terminal ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
@@ -94,6 +97,7 @@ ObjectPosX(Object) = 12;
 
 ### Fixes
 
+- The MS-DOS text renderer read one cell past each row of the screen buffer ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
 - Resizing the terminal made a game on the Linux terminal backend wait for a key press (`KEY_RESIZE` was read as a key) ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - `MT2D_Joystick_Get_RightAxisY` returned the right stick X axis ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))
 - The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
