@@ -123,6 +123,7 @@ ObjectPosX(Object) = 12;
 - Remove `#pragma region`/`endregion` from `MT2D_Terminal_Define.h`, which DJGPP's GCC rejects with `-Werror` ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
 - MS-DOS VGA: sprites that were not aligned to the 4x8 tile grid missed their last row/column of tiles, and the tile change detection (a 16 bit hash with a `>5` typo) could skip a redraw, leaving ghost pixels ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
 - Fix the ANSI C CI check: the errors now name the offending file in the job log, not only in the annotation ([#39](https://github.com/lucas-zimerman/MT2D/pull/39))
+- Strict C89 check with clang (Apple clang too): `bool` no longer fails with `-pedantic-errors` (`MT2D_CDecl.h` switches off `-Wc99-extensions` for clang in C89) and 17 `.c` / `.h` files got the final newline they were missing ([#49](https://github.com/lucas-zimerman/MT2D/pull/49))
 
 ## 2.0.1 - 2019-03-24
 
