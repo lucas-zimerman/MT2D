@@ -213,21 +213,21 @@ static std::vector<unsigned char> MakeBmp() {
     return b;
 }
 
-static FILE *TempFile(const std::vector<unsigned char> &bytes) {
-    FILE *f = tmpfile();
-    fwrite(bytes.data(), 1, bytes.size(), f);
-    rewind(f);
+static MT2D_FILE *TempFile(const std::vector<unsigned char> &bytes) {
+    MT2D_FILE *f = MT2D_FILE_OPEN_TEMP();
+    MT2D_FILE_WRITE(f, (void *)bytes.data(), 1, bytes.size());
+    MT2D_FILE_SEEK(f, 0L, SEEK_SET);
     return f;
 }
 
 TEST(bmp_loads_pixels_and_palette) {
     DefaultPalette();
     int before8 = Rgb(8);
-    FILE *f = TempFile(MakeBmp());
+    MT2D_FILE *f = TempFile(MakeBmp());
     Sprite s;
     memset(&s, 0, sizeof(s));
     CHECK_EQ(MT2D_Linux_Load_BMP(f, &s), 1);
-    fclose(f);
+    MT2D_FILE_CLOSE(f);
     CHECK_EQ(s.SizeX, 3);
     CHECK_EQ(s.SizeY, 2);
     CHECK_EQ((int)s.type, 1);
@@ -247,19 +247,19 @@ TEST(bmp_rejects_bad_files) {
     memset(&s, 0, sizeof(s));
     std::vector<unsigned char> bad = MakeBmp();
     bad[0] = 'X';
-    FILE *f = TempFile(bad);
+    MT2D_FILE *f = TempFile(bad);
     CHECK_EQ(MT2D_Linux_Load_BMP(f, &s), 0);
-    fclose(f);
+    MT2D_FILE_CLOSE(f);
     bad = MakeBmp();
     Le(bad, 28, 24, 2); // 24 bpp is not supported
     f = TempFile(bad);
     CHECK_EQ(MT2D_Linux_Load_BMP(f, &s), 0);
-    fclose(f);
+    MT2D_FILE_CLOSE(f);
     bad = MakeBmp();
     bad.resize(bad.size() - 3); // truncated pixels
     f = TempFile(bad);
     CHECK_EQ(MT2D_Linux_Load_BMP(f, &s), 0);
-    fclose(f);
+    MT2D_FILE_CLOSE(f);
     CHECK(s.Image == NULL);
     CHECK_EQ(Rgb(3), before); // a bad file does not change the palette
 }
@@ -269,6 +269,10 @@ TEST(image_path) {
     CHECK(strcmp(MT2D_Linux_Image_Path("assets/Planet_Blue.png", out, sizeof(out)), "d/planet_b.bmp") == 0);
     CHECK(strcmp(MT2D_Linux_Image_Path("ship.png", out, sizeof(out)), "d/ship.bmp") == 0);
     CHECK(strcmp(MT2D_Linux_Image_Path("x/ship.bmp", out, sizeof(out)), "x/ship.bmp") == 0);
+}
+
+TEST(load_image_sprite_missing_file) {
+    CHECK(MT2D_Linux_Load_Image_Sprite("no_such_image_for_the_test.png", 1, 1) == NULL);
 }
 
 TEST(device_attributes_reply) {

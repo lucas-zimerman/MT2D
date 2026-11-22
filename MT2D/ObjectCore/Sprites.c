@@ -196,32 +196,6 @@ static Sprite *Load_Dos_Image_Sprite(char *file, int ScaleX, int ScaleY) {
         S->refCount = 0;
         return S;
 }
-#elif defined(MT2D_LINUX_SIXEL)
-static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY);
-/* Terminal graphics (Sixel): loads an 8 bit BMP, see MT2D_Linux_Image.h */
-static Sprite *Load_Linux_Image_Sprite(char *file, int ScaleX, int ScaleY) {
-        Sprite *S;
-        char path[32];
-        FILE *fl = fopen(MT2D_Linux_Image_Path(file, path, sizeof(path)), "rb");
-        if (!fl) return 0;
-        S = (Sprite*)malloc(sizeof(Sprite));
-        if (!S) {
-                fclose(fl);
-                return 0;
-        }
-        S->Text = 0;
-        S->Image = 0;
-        if (!MT2D_Linux_Load_BMP(fl, S)) {
-                fclose(fl);
-                free(S);
-                return Create_Placeholder_Sprite(ScaleX, ScaleY);
-        }
-        fclose(fl);
-        S->ScaleX = ScaleX;
-        S->ScaleY = ScaleY;
-        S->refCount = 0;
-        return S;
-}
 #endif
 #ifndef SDL_USE
 static Sprite *Create_Placeholder_Sprite(int ScaleX, int ScaleY) {
@@ -256,7 +230,7 @@ Sprite * Load_Sprite_Image(char * file, int ScaleX, int ScaleY)
 #elif defined(MSDOS_USE_GRAPHICS)
         return Load_Dos_Image_Sprite(file, ScaleX, ScaleY);
 #elif defined(MT2D_LINUX_SIXEL)
-        return Load_Linux_Image_Sprite(file, ScaleX, ScaleY);
+        return MT2D_Linux_Load_Image_Sprite(file, ScaleX, ScaleY); /* _LINUX/Render/MT2D_Linux_Image.c */
 #else
         return Create_Placeholder_Sprite(ScaleX, ScaleY);
 #endif

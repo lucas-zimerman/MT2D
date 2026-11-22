@@ -13,7 +13,7 @@ ends with ".bmp" is used as it is.
 #define MT2DLIN_IMAGE_H
 
 #include <stddef.h>
-#include <stdio.h>
+#include <MT2D/File/MT2D_File.h>
 #include <MT2D/ObjectCore/Sprites.h>
 
 struct MT2D_Internal_Image {
@@ -27,7 +27,11 @@ const char *MT2D_Linux_Image_Path(const char *file, char *out, size_t outSize);
 /* Reads an uncompressed 8 bit BMP into S (Image, SizeX, SizeY, type = 1) and sets the palette of the screen with the palette of
    the file (MT2D_Sixel_Palette_Set_Bgra), like the MS-DOS VGA mode programs the DAC: all the images of a program should share one
    palette. Returns 0 on any problem, S and the palette are left untouched. */
-int MT2D_Linux_Load_BMP(FILE *file, Sprite *S);
+int MT2D_Linux_Load_BMP(MT2D_FILE *file, Sprite *S);
+
+/* Loads the image of a sprite (png name -> d/<8 chars>.bmp). Returns 0 when the file does not exist, a "<!>" placeholder
+   sprite when it is not a valid 8 bit BMP. The palette of the file becomes the palette of the screen. */
+Sprite *MT2D_Linux_Load_Image_Sprite(const char *file, int ScaleX, int ScaleY);
 
 void MT2D_Linux_Image_Free(MT2D_Internal_Image *image);
 MT2D_C_END
