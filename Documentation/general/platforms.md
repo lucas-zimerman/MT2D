@@ -70,7 +70,7 @@ runs `paplay || pw-play || aplay`, the music (one song at a time, looped) `papla
 plays `.wav`; for `.ogg` you need `paplay`/`pw-play` with libsndfile, or `ffplay`. The file is looked for as given and then in
 `d/`. IMF songs (MS-DOS) are not played, and without a player the sounds are silent. The players run with their input and output
 on `/dev/null` so they never draw on the terminal. The sound plays on the machine that runs the game, not through an ssh
-connection. The music stops when the game ends, however it ends (exit, Ctrl+C, a closed terminal, `kill -9`). Sound effects that are
+connection. The music stops when the game ends, however it ends (exit, Ctrl+C, a closed terminal, `kill -9`). On Linux the kernel tells the music shell at once (`PR_SET_PDEATHSIG`), on macOS a small watcher in that shell checks once a second that the game still exists, so after a `kill -9` the music can play up to 1 second more. Sound effects that are
 already playing finish by themselves.
 It works with or without the Sixel graphics.
 Android: `Android.mk`. MS-DOS: DJGPP or Open Watcom, 8.3 file names.

@@ -28,6 +28,21 @@
 #define MUSIC_CHAIN "afplay \"$1\""
 #endif
 
+/* A game that dies without running atexit (kill -9, a closed terminal) must not leave the music playing. Linux asks the
+   kernel (PR_SET_PDEATHSIG, immediate). Without it (macOS) the music shell starts a watcher that checks once a second
+   that the game still exists. -DMT2D_AUDIO_WATCHER forces the watcher on Linux too, to test it. */
+#if !defined(__linux__) && !defined(MT2D_AUDIO_WATCHER)
+#define MT2D_AUDIO_WATCHER
+#endif
+#ifdef MT2D_AUDIO_WATCHER
+/* P = the game (the parent of this shell), S = this shell. If the game is gone the watcher sends TERM to the shell,
+   which runs the trap. It also ends by itself when the shell ends (a player that failed), so it never lingers. */
+#define MUSIC_WATCHER "P=$PPID; S=$$; ( while kill -0 $P 2>/dev/null && kill -0 $S 2>/dev/null; do sleep 1; done; " \
+	"kill -0 $P 2>/dev/null || kill -TERM $S ) & "
+#else
+#define MUSIC_WATCHER ""
+#endif
+
 static pid_t music_pid = 0;
 static char music_temp[64]; /* temp file of a song played from memory, "" when there is none */
 static int atexit_set = 0;
@@ -102,7 +117,7 @@ static void Start_Music(const char *path) {
 		/* The player runs in the background and the shell waits for it ("wait" is interrupted by a signal at once, a
 		   foreground player would delay the trap until the song ends). On SIGTERM, sent by Stop_Music or by the kernel when
 		   the game dies (also kill -9, a closed terminal), the trap ends the whole group: the shell and the player. */
-		Exec_Script("trap 'trap - TERM; kill 0' TERM; while :; do { " MUSIC_CHAIN "; } & wait $! || exit 1; done", path);
+		Exec_Script("trap 'trap - TERM; kill 0' TERM; " MUSIC_WATCHER "while :; do { " MUSIC_CHAIN "; } & wait $! || exit 1; done", path);
 	}
 	setpgid(pid, pid); /* also here: the kill must not race the child */
 	music_pid = pid;
