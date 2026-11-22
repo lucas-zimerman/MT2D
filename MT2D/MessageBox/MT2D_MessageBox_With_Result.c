@@ -9,21 +9,15 @@
 
 int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, char *option_1, char *option_2){
 /* OUTPUTE int 1, int 2 */
+	static unsigned char covered[52 * 10]; /* WINDOW1 cells under the 50x8 box and its shadow */
 	int i=0,j=0;
 	int pos_hor=10,pos_ver=7;
-	while(i<MAX_VER){ /* Transfere window1 para window2 */
-		while(j<MAX_HOR){
-			WINDOW2[i][j]=WINDOW1[i][j];
-			j++;
-		}
-		i++;
-		j=0;
-	}
-	MT2D_Create_Window_Layout(pos_hor-1,pos_ver-1,50,8,true,true,true,' ',DISPLAY_WINDOW2);
+	MT2D_Window_Save_Area(covered,pos_hor-1,pos_ver-1,52,10,DISPLAY_WINDOW1);
+	MT2D_Create_Window_Layout(pos_hor-1,pos_ver-1,50,8,true,true,true,' ',DISPLAY_WINDOW1);
 	i=strlen(error_mensage_title);
 	while(j<i){ /* Escreve titulo do texto em tela */
 		if(pos_hor>MAX_HOR)break;
-		WINDOW2[pos_ver][pos_hor]=error_mensage_title[j];
+		WINDOW1[pos_ver][pos_hor]=error_mensage_title[j];
 		j++;
 		pos_hor++;
 	}
@@ -35,7 +29,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	while(j<i){ /* Escreve Texto na tela */
 		if(pos_hor==59){pos_hor=10;pos_ver++;}
 		if(pos_ver==12)break;
-		WINDOW2[pos_ver][pos_hor]=error_mensage[j];
+		WINDOW1[pos_ver][pos_hor]=error_mensage[j];
 		j++;
 		pos_hor++;
 	}
@@ -45,7 +39,7 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	pos_ver=13;
 	while(j<i){ /* Digita opcao 1 na tela */
 		if(pos_hor==35)break;
-		WINDOW2[pos_ver][pos_hor]=option_1[j];
+		WINDOW1[pos_ver][pos_hor]=option_1[j];
 		j++;
 		pos_hor++;
 	}
@@ -55,15 +49,16 @@ int MT2D_MessageBox_With_Result(char *error_mensage_title,char *error_mensage, c
 	pos_ver=13;
 	while(j<i){ /* Digita opcao 2 na tela */
 		if(pos_hor==59)break;
-		WINDOW2[pos_ver][pos_hor]=option_2[j];
+		WINDOW1[pos_ver][pos_hor]=option_2[j];
 		j++;
 		pos_hor++;
 	}
 	i=10;
-	WINDOW2[13][10]='(';WINDOW2[13][11]='1';WINDOW2[13][12]=')';
-	WINDOW2[13][35]='(';WINDOW2[13][36]='2';WINDOW2[13][37]=')';
+	WINDOW1[13][10]='(';WINDOW1[13][11]='1';WINDOW1[13][12]=')';
+	WINDOW1[13][35]='(';WINDOW1[13][36]='2';WINDOW1[13][37]=')';
 	i=0;
-    MT2D_Draw_Window(DISPLAY_WINDOW2);
+    MT2D_Draw_Window(DISPLAY_WINDOW1);
+	MT2D_Window_Restore_Area(covered,9,6,52,10,DISPLAY_WINDOW1);
 	while(i!='1' && i!='2'){
 		i=MT2D_Keyboard_keytouched();
 		if(i==224)

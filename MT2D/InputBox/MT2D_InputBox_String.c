@@ -16,6 +16,7 @@
 #include <string.h>
 
 char *MT2D_InputBox_String(char *mensage){
+	static unsigned char covered[75 * 8]; /* WINDOW1 cells under the 73x6 box and its shadow */
 /* ESC return a null value, delete erase the last char, key left key right move the cursor. */
 /* Enter finish the string */
 	char *string=0;
@@ -33,33 +34,27 @@ char *MT2D_InputBox_String(char *mensage){
 		j=0;
 		pos_hor=win_hor+1;
 		pos_ver=win_ver+1;
-		while(i<MAX_VER-1	){
-			while(j<MAX_HOR){
-				WINDOW2[i][j]=WINDOW1[i][j];
-				j++;
-			}
-			i++;
-			j=0;
-		}
-		MT2D_Create_Window_Layout(win_hor,win_ver,73,6,true,false,false,' ',DISPLAY_WINDOW2);
+		MT2D_Window_Save_Area(covered,win_hor,win_ver,75,8,DISPLAY_WINDOW1);
+		MT2D_Create_Window_Layout(win_hor,win_ver,73,6,true,false,false,' ',DISPLAY_WINDOW1);
 		while(j<mensage_size){ /* Put the mensage on the window */
 				if(pos_hor==win_hor+70){pos_hor=win_hor+1;pos_ver++;}
 				if(pos_ver==win_ver+4 )break;
-				WINDOW2[pos_ver][pos_hor]=mensage[j];
+				WINDOW1[pos_ver][pos_hor]=mensage[j];
 				j++;
 				pos_hor++;
 		}
 		for(i=win_hor+2,  j=win_ver+3;i<win_hor+73;i++){
-			WINDOW2[j][i]=219;
+			WINDOW1[j][i]=219;
 		}
 		if(string_size>0){
 			if(string_size>70)	k=string_size-71;
 			else k=0;
 			for(i=win_hor+2,  j=win_ver+3;k<string_size;i++, k++){
-				WINDOW2[j][i]=string[k];
+				WINDOW1[j][i]=string[k];
 			}
 		}
-		MT2D_Draw_Window(DISPLAY_WINDOW2);
+		MT2D_Draw_Window(DISPLAY_WINDOW1);
+		MT2D_Window_Restore_Area(covered,win_hor,win_ver,75,8,DISPLAY_WINDOW1);
 		while (!MT2D_Keyboard_touched()) {
 			MT2D_System_Delay(1);
 		}

@@ -19,7 +19,7 @@ struct Sprite {
 | Backends | **all** (text, SDL, DOS VGA) | SDL, DOS VGA only ([../gui/limitations.md](../gui/limitations.md)) |
 | Load | `Load_Sprite(file)`, `Sprite_Create_Ascii_From_Cells(w, h, cells)` | `Load_Sprite_Image(file, sx, sy)`, `Load_Sprite_Image_From_Container(...)` |
 | Position unit | text cells: `x` = column, `y` = row | pixels on the 320x240 virtual screen |
-| Drawn | immediately into `WINDOW1` / `WINDOW2` | queued, shown by the next `MT2D_Draw_Window` |
+| Drawn | immediately into the window (`WINDOW1` for `NULL`) | queued, shown by the next `MT2D_Draw_Window` |
 | Scale | ignored | `ScaleX/ScaleY` |
 
 ## Functions
@@ -30,12 +30,12 @@ struct Sprite {
 | `Sprite *Sprite_Create_Ascii_From_Cells(int w, int h, const char *cells)` | `w*h` bytes, row major, **`0` = transparent**. `NULL` if width, height or opaque cell count is over 65535, or no memory |
 | `char Sprite_Get_Char(const Sprite *s, int x, int y)` | `0` for transparent, out of range, `NULL` or image sprites |
 | `Sprite *Load_Sprite_Image(char *file, int ScaleX, int ScaleY)` | `NULL` when the file is missing. The examples pass `0, 0` and then set `s->ScaleX = s->SizeX` |
-| `bool Sprite_Render_on_Window(Sprite *s, int which, int x, int y)` | see below |
+| `bool Sprite_Render_on_Window(Sprite *s, unsigned char (*window)[MAX_HOR], int x, int y)` | see below |
 | `void Sprite_Delete(Sprite *s)` | decrements `refCount`, frees at 0 |
 
 `Sprite_Render_on_Window`:
-* ASCII: copied into `WINDOW1` (or `WINDOW2`) right now, clipped to 80x25, transparent cells skipped, returns `true`.
-* Image: SDL queues it and still returns **`false`**; DOS VGA queues it (only for `DISPLAY_WINDOW1`) and returns `true`; targets
+* ASCII: copied into `window` (`WINDOW1` for `NULL`) right now, clipped to 80x25, transparent cells skipped, returns `true`.
+* Image: only for the main screen (`NULL` or `WINDOW1`), any other window returns `false`. SDL queues it and still returns **`false`**; DOS VGA queues it and returns `true`; targets
   without image support draw nothing and return `false`. Do not use the return value as an error check.
 * `NULL` sprite returns `false`.
 

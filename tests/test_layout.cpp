@@ -13,7 +13,17 @@ enum {
 
 static void clear_windows() {
     memset(WINDOW1, 0, sizeof(WINDOW1));
-    memset(WINDOW2, 0, sizeof(WINDOW2));
+}
+
+TEST(window_draws_on_custom_window) {
+    static MT2D_Window custom;
+    clear_windows();
+    memset(custom, 0, sizeof(custom));
+    MT2D_Create_Window_Layout(0, 0, 4, 4, false, false, false, '.', custom);
+    CHECK_EQ(custom[0][0], TOP_LEFT);
+    CHECK_EQ(custom[4][4], BOTTOM_RIGHT);
+    CHECK_EQ(custom[1][1], '.');
+    CHECK_EQ(WINDOW1[0][0], 0);
 }
 
 TEST(window_draws_border_corners_and_background) {
@@ -35,19 +45,6 @@ TEST(window_draws_border_corners_and_background) {
     // inside is filled with the background char
     CHECK_EQ(WINDOW1[3][6], ' ');
     CHECK_EQ(WINDOW1[7][14], ' ');
-    // nothing is written on the other buffer
-    CHECK_EQ(WINDOW2[2][5], 0);
-}
-
-TEST(window_draws_on_window2) {
-    clear_windows();
-    MT2D_Create_Window_Layout(0, 0, 4, 4, false, false, false, '.', DISPLAY_WINDOW2);
-    CHECK_EQ(WINDOW2[0][0], TOP_LEFT);
-    CHECK_EQ(WINDOW2[0][4], TOP_RIGHT);
-    CHECK_EQ(WINDOW2[4][0], BOTTOM_LEFT);
-    CHECK_EQ(WINDOW2[4][4], BOTTOM_RIGHT);
-    CHECK_EQ(WINDOW2[1][1], '.');
-    CHECK_EQ(WINDOW1[0][0], 0);
 }
 
 TEST(window_without_shadow_leaves_outside_untouched) {

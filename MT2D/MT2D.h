@@ -11,7 +11,7 @@ This file will contain the basic MT2D windows display system core
                 on the future.
                 Return: none
         -Print_Display()
-                Description: Takes all the video buffer on WINDOW1 or WINDOW2 and put it on the terminal or screen memory
+                Description: Takes a screen buffer (WINDOW1 when NULL) and put it on the terminal or screen memory
                 Return: none
         -goto_topscreen()
                 Description: Move the terminal blink position to the top of the screen (WINDOWS ONLY)
@@ -20,20 +20,17 @@ This file will contain the basic MT2D windows display system core
                 Description: Change the cursor position to any valid place (WINDOWS ONLY)
                 Return: none
         -create_window_layout()
-                Description: Draw a Window with specific position, size and others elements on it on WINDOW1 or WINDOW2
+                Description: Draw a Window with specific position, size and others elements on it on a screen buffer (WINDOW1 when NULL)
                 Buffer.
                 Return: none
-        -transfer_window1_to_window2()
-                Description: Transfer the WINDOW1 buffer to WINDOW2
-                Return: none
-        -transfer_window2_to_window1()
-                Description: Transfer the WINDOW2 buffer to WINDOW1
+        -MT2D_Window_Save_Area() / MT2D_Window_Restore_Area()
+                Description: Save a rectangle of a screen buffer into a buffer and put it back later (used by the popups)
                 Return: none
         -insert_string_on_display()
-                Description: Write a string on a specific location of WINDOW1 or WINDOW2.
+                Description: Write a string on a specific location of a screen buffer (WINDOW1 when NULL).
                 Return: none
         -insert_number_on_display()
-                Description: Write a number on a specific location of WINDOW1 or WINDOW2 (integer only)
+                Description: Write a number on a specific location of a screen buffer (WINDOW1 when NULL, integer only)
                 Return: none
 ======================================================================*/
 
@@ -56,6 +53,7 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
 
 #include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/MT2D_CDecl.h> /* C linkage macros and "bool" */
+#include <MT2D/MT2D_Window.h> /* WINDOW1, MT2D_Window, MAX_HOR, MAX_VER, DISPLAY_WINDOW1 */
 
 #ifdef SDL_USE /* SDL2.lib SDL2main.lib SDL2_image.lib SDL2_ttf.lib */
         #ifdef WINDOWS_TARGET
@@ -67,20 +65,15 @@ linker settings: (In case of codeblocks: project -> build options -> linker sett
     #endif
 #endif
 
-#define DISPLAY_WINDOW1 1
-#define DISPLAY_WINDOW2 0
-#define MAX_HOR 80
-#define MAX_VER 25
 #define MT2D_WINDOWED_MODE /* Can be disabled : set the initial window size, if not defines it starts in fullscreen mode */
 
 MT2D_C_BEGIN
-extern unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
-extern unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
-void transfer_window1_to_window2(void);
-void transfer_window2_to_window1(void);
-void insert_string_on_display(char *x, int pos_ver, int pos_hor, bool which);
-void insert_number_on_display(int number, int pos_y,int pos_x, bool display);
+/* window: the buffer to use, NULL (DISPLAY_WINDOW1) for WINDOW1 */
+void MT2D_Window_Save_Area(unsigned char *buffer, int x, int y, int w, int h, unsigned char (*window)[MAX_HOR]);
+void MT2D_Window_Restore_Area(unsigned char *buffer, int x, int y, int w, int h, unsigned char (*window)[MAX_HOR]);
+void insert_string_on_display(char *x, int pos_ver, int pos_hor, unsigned char (*window)[MAX_HOR]);
+void insert_number_on_display(int number, int pos_y,int pos_x, unsigned char (*window)[MAX_HOR]);
 MT2D_C_END
 
 #ifdef WINDOWS_DESKTOP_TARGET

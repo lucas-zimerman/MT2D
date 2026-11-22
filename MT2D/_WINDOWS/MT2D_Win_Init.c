@@ -14,7 +14,6 @@
 #include <string.h>
 
 extern unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
-extern unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
 
 
 bool MT2D_Win_Init(void) {// Return: true - it started without any kind of problem, false : there were a problem when MT2D was started

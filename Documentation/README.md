@@ -3,7 +3,7 @@
 Short notes written from the source code, one topic per file.
 
 MT2D = "Monochrome Text 2D Engine". Everything draws into an **80x25 text screen buffer**
-(`WINDOW1` / `WINDOW2`, one byte per cell, CP850 characters). On some backends images (sprites) can be
+(`WINDOW1`, one byte per cell, CP850 characters). On some backends images (sprites) can be
 drawn on top of that text screen.
 
 ## Minimal program

@@ -26,51 +26,47 @@
 #include <string.h>
 
 unsigned char WINDOW1[MAX_VER + 1][MAX_HOR];
-unsigned char WINDOW2[MAX_VER + 1][MAX_HOR];
-
-void transfer_window1_to_window2(void){
-    int i=0;
-    int j=0;
-    while (i < MAX_VER - 1)
-        {
-        while (j < MAX_HOR){
-              WINDOW2[i][j] = WINDOW1[i][j];
-              j++;
-         }
-         i++;
-         j=0;
-    }
+/* Copies the cells of window (WINDOW1 when NULL) inside the w x h rectangle at (x, y) into buffer (w * h bytes).
+   Cells outside the screen are skipped. Popups use it to put back what they covered. */
+void MT2D_Window_Save_Area(unsigned char *buffer, int x, int y, int w, int h, unsigned char (*window)[MAX_HOR]) {
+        int i, j;
+        window = MT2D_WINDOW_OR_MAIN(window);
+        for (i = 0; i < h; i++) {
+                if (y + i < 0 || y + i > MAX_VER) continue;
+                for (j = 0; j < w; j++) {
+                        if (x + j < 0 || x + j >= MAX_HOR) continue;
+                        buffer[i * w + j] = window[y + i][x + j];
+                }
+        }
 }
 
-void transfer_window2_to_window1(void){
-    int i=0;
-    int j=0;
-    while (i < MAX_VER - 1){
-          while ( j < MAX_HOR){
-                WINDOW1[i][j] = WINDOW2[i][j];
-                j++;
-          }
-          i++;
-          j=0;
-    }
+/* Puts back on window (WINDOW1 when NULL) the cells saved by MT2D_Window_Save_Area with the same rectangle. */
+void MT2D_Window_Restore_Area(unsigned char *buffer, int x, int y, int w, int h, unsigned char (*window)[MAX_HOR]) {
+        int i, j;
+        window = MT2D_WINDOW_OR_MAIN(window);
+        for (i = 0; i < h; i++) {
+                if (y + i < 0 || y + i > MAX_VER) continue;
+                for (j = 0; j < w; j++) {
+                        if (x + j < 0 || x + j >= MAX_HOR) continue;
+                        window[y + i][x + j] = buffer[i * w + j];
+                }
+        }
 }
 
-void insert_string_on_display(char *x, int pos_ver, int pos_hor, bool which){
+void insert_string_on_display(char *x, int pos_ver, int pos_hor, unsigned char (*window)[MAX_HOR]){
         int j=0;
+        window = MT2D_WINDOW_OR_MAIN(window);
         while (x[j] != '\0'){
                 if(pos_hor>MAX_HOR)
                     break;
-                if(which==DISPLAY_WINDOW1)
-                    WINDOW1[pos_ver][pos_hor]=x[j];
-                else
-                    WINDOW2[pos_ver][pos_hor]=x[j];
+                window[pos_ver][pos_hor]=x[j];
                 j++;
                 pos_hor++;
         }
 }
 
 
-void insert_number_on_display(int number, int pos_y,int pos_x, bool display){
+void insert_number_on_display(int number, int pos_y,int pos_x, unsigned char (*window)[MAX_HOR]){
 /* Based on a generic itoa code without the null termination */
         int base=10;
         unsigned char *str=0;
@@ -78,10 +74,7 @@ void insert_number_on_display(int number, int pos_y,int pos_x, bool display){
         int i = 0;
         int j=0;
     bool isNegative = false;
-        if(display)
-                str=&WINDOW1[pos_y][pos_x];
-        else
-                str=&WINDOW2[pos_y][pos_x];
+        str=&MT2D_WINDOW_OR_MAIN(window)[pos_y][pos_x];
 
 
     /* Handle 0 explicitely, otherwise empty string is printed for 0 */

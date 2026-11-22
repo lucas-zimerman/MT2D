@@ -34,34 +34,23 @@ void MT2D_Dos_Clear_Main_Window(void) {
 }
 
 #ifndef MSDOS_USE_GRAPHICS
-void MT2D_Dos_Draw_Window(int which) {
+void MT2D_Dos_Draw_Window(unsigned char (*window)[MAX_HOR]) {
 	unsigned int x, y, offset;
-	if (which == DISPLAY_WINDOW1) {//code that will save directly into video memory
-		for (x = 0; x <= MAX_HOR; x++) {
+	window = MT2D_WINDOW_OR_MAIN(window);
+	{ /* save directly into video memory */
+		for (x = 0; x < MAX_HOR; x++) { /* x == MAX_HOR would read past the row */
 			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
 				offset = (80 * y + x) * 2;
 
 #ifdef __DJGPP__
-				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW1[y][x]);
+				_farpokeb(_dos_ds, 0xB8000 + offset, window[y][x]);
 #else
-				pokeb(0xB800, offset, WINDOW1[y][x]);
+				pokeb(0xB800, offset, window[y][x]);
 #endif
 			}
 		}
 	}
-	else {
-		for (x = 0; x <= MAX_HOR; x++) {
-			for (y = 0; y <= MAX_VER; y++) {//should be 25 but the windows code isn't ready for that
-				offset = (80 * y + x) * 2;
-#ifdef __DJGPP__
-				_farpokeb(_dos_ds, 0xB8000 + offset, WINDOW2[y][x]);
-#else
-				pokeb(0xB800, offset, WINDOW2[y][x]);
-#endif
-			}
-		}
-	}
-	//transfer window1 or 2 memory to video memory, also include other systems that have video memory acess here too
+	//transfer window1 memory to video memory, also include other systems that have video memory acess here too
 	//"ansi" function that will work with any operational system
 }
 #else
@@ -69,13 +58,9 @@ void MT2D_Dos_Draw_Window(int which) {
 #endif
 
 #ifdef MSDOS_USE_GRAPHICS
-void MT2D_Dos_Draw_Window(int which) {
-	if (which == DISPLAY_WINDOW1) {//code that will save directly into video memory
-        MT2D_Dos_Render_VGA_ASCII(WINDOW1);
-	}
-	else{
-        MT2D_Dos_Render_VGA_ASCII(WINDOW2);
-	}
+void MT2D_Dos_Draw_Window(unsigned char (*window)[MAX_HOR]) {
+	window = MT2D_WINDOW_OR_MAIN(window);
+	MT2D_Dos_Render_VGA_ASCII(window);
 }
 #endif
 

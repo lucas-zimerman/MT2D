@@ -6,7 +6,7 @@ What each target can and cannot do.
 
 * The screen is a grid of 80x25 cells, one byte each (CP850). No colour or attribute data in the buffers.
 * Text screen limits: see [../tui/display.md](../tui/display.md) (no row check in `insert_string_on_display`,
-  `transfer_window*` copies 24 rows, `MT2D_Line_Draw_Vertical` fills a row and `MT2D_Line_Draw_Horizontal` fills a column).
+  `MT2D_Line_Draw_Vertical` fills a row and `MT2D_Line_Draw_Horizontal` fills a column).
 * Popups, menus and input boxes **block** (own loop). Do not call them from a game loop that must keep running.
 * Menus have no cancel key ([../tui/menus.md](../tui/menus.md)). Input boxes return `""` on `ESC` and the string must be freed.
 * `MT2D_Joystick_*` and `MT2D_Keyboard_*` should not be used in the same program, and the joystick is the keyboard

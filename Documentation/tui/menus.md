@@ -23,8 +23,8 @@ int MT2D_Menu(char *title, int title_position, int x, int y, int style, bool sha
 * Input: up/down arrows (wraps around), `Enter`, or the digit of the option (`1`-`9` only, entries 10+ need arrows).
   **There is no cancel**: `ESC` does nothing. Add a "Back" entry.
 * The marker is always `>`; pass any character for `cursor` and `0` for `style`.
-* It blocks until a choice is made. It draws on `WINDOW2` (a copy of `WINDOW1`), so `WINDOW1` is not
-  modified, but the menu stays on the screen until you redraw `WINDOW1`.
+* It blocks until a choice is made. It draws on `WINDOW1` and puts back the cells it covered before
+  returning, so `WINDOW1` is left as it was, but the menu stays on the screen until you redraw `WINDOW1`.
 
 ```c
 int choice = MT2D_Short_Menu((char *)"MAIN MENU", 20, 10, 5, true, ' ', '>',

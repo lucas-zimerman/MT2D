@@ -372,15 +372,10 @@ void MT2D_SDL_Clear_Main_Window(void) {
 }
 
 
-void MT2D_SDL_Draw_Window(int which) {
+void MT2D_SDL_Draw_Window(unsigned char (*window)[MAX_HOR]) {
 	int i = 0;
 	int j = 0;
-	if (which == DISPLAY_WINDOW1) {
-		Render_New(WINDOW1);
-	}
-	else {
-		Render_New(WINDOW2);
-	}
+	Render_New(MT2D_WINDOW_OR_MAIN(window));
 	SDL_Render();
 }
 
