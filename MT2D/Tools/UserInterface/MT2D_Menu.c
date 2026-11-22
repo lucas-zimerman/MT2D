@@ -20,7 +20,10 @@
 #include <stdlib.h>
 
 extern unsigned char WINDOW1[MAX_VER+1][MAX_HOR];
-extern unsigned char WINDOW2[MAX_VER+1][MAX_HOR];
+
+/* The box is 55 + 1 columns wide plus the shadow, and at most MAX_VER + 1 rows tall (18 options). */
+#define MENU_AREA_W 57
+#define MENU_AREA_H (MAX_VER + 1)
 
 int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int vertical_position,int style,bool shadow,char background,char cursor,char *option1,char *option2,char *option3,char *option4,char *option5,char *option6,char *option7,char *option8,char *option9,char *option10,char *option11,char *option12,char *option13,char *option14,char *option15,char *option16,char *option17,char *option18,int total_option){
 	int size_x=51;
@@ -29,6 +32,8 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 	int i=0,j=0,buff=0;
 	int position_select=1;
 	int l1,j1;
+	int area_h;
+	static unsigned char covered[MENU_AREA_W * MENU_AREA_H]; /* WINDOW1 cells under the menu */
 	if(vertical_position+5+total_option>=24){
 
 		while(vertical_position+6+total_option>23)vertical_position--;
@@ -40,38 +45,40 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 		if(total_option==1)exit(-1);
 		else return -1;
 	} /* ==========================WINDOW STARTUP ================================================================== */
-	transfer_window1_to_window2();
-	MT2D_Create_Window_Layout(horizontal_position,vertical_position,size_x,size_y,shadow,true,false,background,DISPLAY_WINDOW2);
-	insert_string_on_display(title_menu,vertical_position+1,horizontal_position+1+title_position,DISPLAY_WINDOW2);
-	insert_string_on_display("Select an option with the keys or press the option key",vertical_position+3,horizontal_position+1,DISPLAY_WINDOW2);
+	area_h=size_y+2;
+	if(area_h>MENU_AREA_H)area_h=MENU_AREA_H;
+	MT2D_Window_Save_Area(covered,horizontal_position,vertical_position,MENU_AREA_W,area_h,DISPLAY_WINDOW1);
+	MT2D_Create_Window_Layout(horizontal_position,vertical_position,size_x,size_y,shadow,true,false,background,DISPLAY_WINDOW1);
+	insert_string_on_display(title_menu,vertical_position+1,horizontal_position+1+title_position,DISPLAY_WINDOW1);
+	insert_string_on_display("Select an option with the keys or press the option key",vertical_position+3,horizontal_position+1,DISPLAY_WINDOW1);
 	while(i<total_option){
-		WINDOW2[j1][l1]=')';
-		WINDOW2[j1][l1-1]='1'+i;
+		WINDOW1[j1][l1]=')';
+		WINDOW1[j1][l1-1]='1'+i;
 		switch(i){
-		case 0: 	insert_string_on_display(option1,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 1: 	insert_string_on_display(option2,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 2: 	insert_string_on_display(option3,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 3: 	insert_string_on_display(option4,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 4: 	insert_string_on_display(option5,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 5: 	insert_string_on_display(option6,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 6: 	insert_string_on_display(option7,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 7: 	insert_string_on_display(option8,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 8: 	insert_string_on_display(option9,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 9: 	insert_string_on_display(option10,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 10: 	insert_string_on_display(option11,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 11: 	insert_string_on_display(option12,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 12: 	insert_string_on_display(option13,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 13: 	insert_string_on_display(option14,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 14: 	insert_string_on_display(option15,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 15: 	insert_string_on_display(option16,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 16: 	insert_string_on_display(option17,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
-		case 17: 	insert_string_on_display(option18,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW2); break;
+		case 0: 	insert_string_on_display(option1,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 1: 	insert_string_on_display(option2,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 2: 	insert_string_on_display(option3,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 3: 	insert_string_on_display(option4,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 4: 	insert_string_on_display(option5,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 5: 	insert_string_on_display(option6,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 6: 	insert_string_on_display(option7,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 7: 	insert_string_on_display(option8,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 8: 	insert_string_on_display(option9,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 9: 	insert_string_on_display(option10,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 10: 	insert_string_on_display(option11,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 11: 	insert_string_on_display(option12,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 12: 	insert_string_on_display(option13,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 13: 	insert_string_on_display(option14,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 14: 	insert_string_on_display(option15,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 15: 	insert_string_on_display(option16,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 16: 	insert_string_on_display(option17,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
+		case 17: 	insert_string_on_display(option18,vertical_position+4+i,horizontal_position+4,DISPLAY_WINDOW1); break;
 		}
 		j1++;
 		i++;
 /* ==================================MENU CORE =========================================== */
 	}while(!selected_option){
-		MT2D_Draw_Window(DISPLAY_WINDOW2);
+		MT2D_Draw_Window(DISPLAY_WINDOW1);
 		MT2D_Cursor_Set_Position(vertical_position+4+position_select-1,horizontal_position+2);
 		while(!MT2D_Keyboard_touched());
 		buff=MT2D_Keyboard_keytouched();
@@ -81,24 +88,24 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 			case arrow_up_pressed:
 				if(position_select==1){
 					position_select=total_option;
-					WINDOW2[vertical_position+4+position_select-1][horizontal_position+1]='>';
-					WINDOW2[vertical_position+4+position_select-total_option][horizontal_position+1]=background;
+					WINDOW1[vertical_position+4+position_select-1][horizontal_position+1]='>';
+					WINDOW1[vertical_position+4+position_select-total_option][horizontal_position+1]=background;
 
 				}else{
 					position_select--;
-					WINDOW2[vertical_position+4+position_select-1][horizontal_position+1]='>';
-					WINDOW2[vertical_position+4+position_select][horizontal_position+1]=background;
+					WINDOW1[vertical_position+4+position_select-1][horizontal_position+1]='>';
+					WINDOW1[vertical_position+4+position_select][horizontal_position+1]=background;
 				}
 				break;
 			case arrow_down_pressed:
 				if(position_select==total_option){
 					position_select=1;
-					WINDOW2[vertical_position+4+position_select-1][horizontal_position+1]='>';
-					WINDOW2[vertical_position+4+position_select+total_option-2][horizontal_position+1]=background;
+					WINDOW1[vertical_position+4+position_select-1][horizontal_position+1]='>';
+					WINDOW1[vertical_position+4+position_select+total_option-2][horizontal_position+1]=background;
 				}else{
 					position_select++;
-					WINDOW2[vertical_position+4+position_select-1][horizontal_position+1]='>';
-					WINDOW2[vertical_position+4+position_select-2][horizontal_position+1]=background;
+					WINDOW1[vertical_position+4+position_select-1][horizontal_position+1]='>';
+					WINDOW1[vertical_position+4+position_select-2][horizontal_position+1]=background;
 				}break;
 			default: buff=0;
 			}
@@ -109,6 +116,7 @@ int MT2D_Menu(char *title_menu,int title_position,int horizontal_position,int ve
 			}
 		}else if(buff==enter_pressed) selected_option=position_select;
 	}
+	MT2D_Window_Restore_Area(covered,horizontal_position,vertical_position,MENU_AREA_W,area_h,DISPLAY_WINDOW1);
 	return selected_option;
 }
 

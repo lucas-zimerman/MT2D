@@ -2,6 +2,40 @@
 
 How to update code written for older MT2D versions.
 
+## WINDOW2 removed (Unreleased)
+
+The engine keeps one screen buffer, `WINDOW1`. `WINDOW2` was a second 80x26 buffer used by the popups and menus;
+they now draw on `WINDOW1` and put back the cells they covered when they close.
+
+- `WINDOW2`, `DISPLAY_WINDOW2`, `transfer_window1_to_window2()` and `transfer_window2_to_window1()` are gone.
+- The `which` argument of `insert_string_on_display`, `insert_number_on_display`, `MT2D_Create_Window_Layout`,
+  `MT2D_Draw_Window` and `Sprite_Render_on_Window` is now a pointer to a buffer's rows
+  (`unsigned char (*window)[MAX_HOR]`): `NULL` means `WINDOW1`. `DISPLAY_WINDOW1` is now `0` (`NULL`), so calls that
+  pass it need no change. A variable holding `1` or `0` must be replaced by `NULL` or a buffer.
+- Code that used `WINDOW2` as an off screen buffer can declare its own (`MT2D_Window`, in `MT2D/MT2D_Window.h`):
+
+```c
+static MT2D_Window back;
+insert_string_on_display((char *)"Loading", 12, 36, back);
+MT2D_Draw_Window(back);
+```
+
+- To draw something on top of the screen and remove it later, save the area with `MT2D_Window_Save_Area` and put it
+  back with `MT2D_Window_Restore_Area`:
+
+```c
+/* before */
+transfer_window1_to_window2();
+insert_string_on_display((char *)"Paused", 12, 37, DISPLAY_WINDOW2);
+MT2D_Draw_Window(DISPLAY_WINDOW2);
+/* after */
+unsigned char covered[6];
+MT2D_Window_Save_Area(covered, 37, 12, 6, 1, DISPLAY_WINDOW1);
+insert_string_on_display((char *)"Paused", 12, 37, DISPLAY_WINDOW1);
+MT2D_Draw_Window(DISPLAY_WINDOW1);
+MT2D_Window_Restore_Area(covered, 37, 12, 6, 1, DISPLAY_WINDOW1);
+```
+
 ## Engine converted to C (Unreleased)
 
 Everything under `MT2D/` except `ObjectCore/` is C now.

@@ -8,7 +8,6 @@
 
 static void clear_windows() {
     memset(WINDOW1, 0, sizeof(WINDOW1));
-    memset(WINDOW2, 0, sizeof(WINDOW2));
 }
 
 static Sprite *make_sprite(const char *row1, const char *row2) {
@@ -68,15 +67,16 @@ TEST(render_on_window1) {
     CHECK_EQ(WINDOW1[4][11], 'B');
     CHECK_EQ(WINDOW1[5][10], 'C');
     CHECK_EQ(WINDOW1[5][11], 'D');
-    CHECK_EQ(WINDOW2[4][10], 0); // other buffer untouched
 }
 
-TEST(render_on_window2) {
+TEST(render_on_custom_window) {
+    static MT2D_Window custom;
     clear_windows();
+    memset(custom, 0, sizeof(custom));
     Sprite *s = make_sprite("AB", 0);
-    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW2, 1, 1));
-    CHECK_EQ(WINDOW2[1][1], 'A');
-    CHECK_EQ(WINDOW2[1][2], 'B');
+    CHECK(Sprite_Render_on_Window(s, custom, 1, 1));
+    CHECK_EQ(custom[1][1], 'A');
+    CHECK_EQ(custom[1][2], 'B');
     CHECK_EQ(WINDOW1[1][1], 0);
 }
 
@@ -115,9 +115,9 @@ TEST(render_clips_top_and_bottom) {
     CHECK_EQ(WINDOW1[0][0], 'C');
     CHECK_EQ(WINDOW1[0][1], 'D');
     clear_windows();
-    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW2, 3, MAX_VER - 1));
-    CHECK_EQ(WINDOW2[MAX_VER - 1][3], 'A');
-    CHECK_EQ(WINDOW2[MAX_VER - 1][4], 'B');
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW1, 3, MAX_VER - 1));
+    CHECK_EQ(WINDOW1[MAX_VER - 1][3], 'A');
+    CHECK_EQ(WINDOW1[MAX_VER - 1][4], 'B');
 }
 
 TEST(render_fully_offscreen_writes_nothing) {

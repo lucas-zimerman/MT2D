@@ -258,27 +258,28 @@ Sprite *Load_Sprite_Image_From_Container(char *file, int ScaleX, int ScaleY) {
                 That could be caused if you tried to malloc an array of sprites smaller than the number of sprites loaded
         - Actual Frame is outside of the sprite range loaded
 */
- bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y) { /* output: out = false : invalid sprite | out = true : valid sprite */
+ bool Sprite_Render_on_Window(Sprite *img, unsigned char (*window)[MAX_HOR], int pos_x, int pos_y) { /* output: out = false : invalid sprite | out = true : valid sprite */
         /* to be implemented: Sprites Scale */
          bool out = false;
+         bool main_screen = !window || window == WINDOW1; /* images only go on the main screen */
          if (img) {
                  if (img->type == 0) { /* render as a sprite */
                          out = true;
-                         MT2D_Text_Image_Blit(img->Text, (unsigned char*)(witch_window == DISPLAY_WINDOW1 ? WINDOW1 : WINDOW2), MAX_HOR, MAX_VER, pos_x, pos_y);
+                         MT2D_Text_Image_Blit(img->Text, (unsigned char*)MT2D_WINDOW_OR_MAIN(window), MAX_HOR, MAX_VER, pos_x, pos_y);
                  }
                  else {
 #ifdef SDL_USE
                          /* lets optimize a bit... */
-                         if (pos_x <= 320 && pos_x + img->ScaleX >= 0) {
+                         if (main_screen && pos_x <= 320 && pos_x + img->ScaleX >= 0) {
                                  SDL_Add_ImagetoBuffer(img, pos_x, pos_y);
                          }
 #elif defined(MSDOS_USE_GRAPHICS)
-                         if (img->Image && witch_window == DISPLAY_WINDOW1) {
+                         if (img->Image && main_screen) {
                                  Dos_Add_ImagetoBuffer(img, pos_x, pos_y);
                                  out = true;
                          }
 #elif defined(MT2D_LINUX_SIXEL)
-                         if (img->Image && witch_window == DISPLAY_WINDOW1) {
+                         if (img->Image && main_screen) {
                                  MT2D_Linux_Sixel_Queue_Image(img, pos_x, pos_y);
                                  out = true;
                          }

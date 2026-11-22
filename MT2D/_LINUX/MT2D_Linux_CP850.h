@@ -5,7 +5,7 @@ MT2D_Linux_CP850.h / MT2D_Linux_CP850.cpp
 Code page 850 (MS-DOS Latin 1) <-> Unicode conversion used by the
 terminal (curses) backend of Linux and macOS.
 
-The engine display buffers (WINDOW1/WINDOW2) hold CP850 bytes, like on
+The engine display buffers (WINDOW1) hold CP850 bytes, like on
 MS-DOS. Modern terminals speak Unicode, so every byte is converted to
 its Unicode character before being drawn, and every typed character
 is converted back to CP850 before it is given to the game.

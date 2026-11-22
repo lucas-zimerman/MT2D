@@ -1,5 +1,6 @@
 #include <MT2D/MT2D_Terminal_Define.h>
 #include <MT2D/ObjectCore/MT2D_CDecl.h>
+#include <MT2D/MT2D_Window.h>
 
 #if defined(SDL_USE)
 #include <MT2D/SDL/Render/MT2D_SDL_Render.h>
@@ -20,7 +21,7 @@
 #else
 MT2D_C_BEGIN
 void MT2D_Clear_Main_Window(void);
-void MT2D_Draw_Window(int which);
+void MT2D_Draw_Window(unsigned char (*window)[MAX_HOR]); /* shows window, WINDOW1 when NULL */
 MT2D_C_END
 #endif
 

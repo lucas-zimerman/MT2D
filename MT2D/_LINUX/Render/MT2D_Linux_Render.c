@@ -113,8 +113,8 @@ void MT2D_Linux_Clear_Main_Window(void) {
 
 #ifdef MT2D_LINUX_SIXEL
 /* Graphics mode: the 80x24 cells are drawn as a Sixel image with a bitmap font, the queued images go over it. */
-void MT2D_Linux_Draw_Window(int which) {
-	unsigned char (*buffer)[MAX_HOR] = (which == DISPLAY_WINDOW1) ? WINDOW1 : WINDOW2;
+void MT2D_Linux_Draw_Window(unsigned char (*window)[MAX_HOR]) {
+	unsigned char (*buffer)[MAX_HOR] = MT2D_WINDOW_OR_MAIN(window);
 	unsigned int len;
 	int i, sx, sy, sx1, sy1;
 	MT2D_Linux_Start_Curses();
@@ -153,9 +153,9 @@ static void MT2D_Linux_Add_Char(unsigned char c) {
 	addch(' ');
 }
 
-void MT2D_Linux_Draw_Window(int which) {
+void MT2D_Linux_Draw_Window(unsigned char (*window)[MAX_HOR]) {
 	int x, y;
-	unsigned char (*buffer)[MAX_HOR] = (which == DISPLAY_WINDOW1) ? WINDOW1 : WINDOW2;
+	unsigned char (*buffer)[MAX_HOR] = MT2D_WINDOW_OR_MAIN(window);
 	MT2D_Linux_Start_Curses();
 	for (y = 0; y < 24; y++) {
 		move(y, 0);

@@ -25,7 +25,7 @@ void SDL_Clear_RenderBuffers(void);
 
 /**/
 void MT2D_SDL_Clear_Main_Window(void);
-void MT2D_SDL_Draw_Window(int which);
+void MT2D_SDL_Draw_Window(unsigned char (*window)[MAX_HOR]); /* shows window, WINDOW1 when NULL */
 MT2D_C_END
 
 #endif

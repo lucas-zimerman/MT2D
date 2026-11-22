@@ -35,7 +35,7 @@ void MT2D_Win_Clear_Main_Window(void) {
 }
 
 
-void MT2D_Win_Draw_Window(int which) {
+void MT2D_Win_Draw_Window(unsigned char (*window)[MAX_HOR]) {
 	//transfer window1 or 2 memory to video memory, also include other systems that have video memory acess here too
 	//"ansi" function that will work with any operational system
 	int x, y;
@@ -48,24 +48,13 @@ void MT2D_Win_Draw_Window(int which) {
 		SetConsoleScreenBufferSize(wHnd, bufferSize);
 		buffer_started = true;
 	}
-	if (which == DISPLAY_WINDOW1) {
-		for (y = 0; y < MAX_VER; ++y)
+	window = MT2D_WINDOW_OR_MAIN(window);
+	for (y = 0; y < MAX_VER; ++y)
+	{
+		for (x = 0; x < MAX_HOR; ++x)
 		{
-			for (x = 0; x < MAX_HOR; ++x)
-			{
-				consoleBuffer[x + MAX_HOR * y].Char.AsciiChar = (unsigned char)WINDOW1[y][x];//insere o caracter
-				consoleBuffer[x + MAX_HOR * y].Attributes = 7;//rand() % 255;//cor do caracter + cor de fundo
-			}
-		}
-	}
-	else {
-		for (y = 0; y < MAX_VER; ++y)
-		{
-			for (x = 0; x < MAX_HOR; ++x)
-			{
-				consoleBuffer[x + MAX_HOR * y].Char.AsciiChar = (unsigned char)WINDOW2[y][x];//insere o caracter
-				consoleBuffer[x + MAX_HOR * y].Attributes = 7;//rand() % 255;//cor do caracter + cor de fundo
-			}
+			consoleBuffer[x + MAX_HOR * y].Char.AsciiChar = (unsigned char)window[y][x];//insere o caracter
+			consoleBuffer[x + MAX_HOR * y].Attributes = 7;//rand() % 255;//cor do caracter + cor de fundo
 		}
 	}
 	WriteConsoleOutputA(wHnd, consoleBuffer, characterBufferSize, characterPosition, &consoleWriteArea);//troca o buffer do console para o novo buffer

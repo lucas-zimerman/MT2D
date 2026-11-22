@@ -1,7 +1,7 @@
 # Input / output helpers
 
-Popups, input boxes and system calls. All popups copy `WINDOW1` to `WINDOW2`, draw on `WINDOW2` and **block**
-until finished. `WINDOW1` is not changed, but the popup stays on screen until you call
+Popups, input boxes and system calls. All popups draw on `WINDOW1`, **block** until finished
+and then put back the cells they covered. `WINDOW1` is left as it was, but the popup stays on screen until you call
 `MT2D_Draw_Window(DISPLAY_WINDOW1)`. Examples: `examples/inputpopup`, `examples/playpcspeaker`.
 
 ## Message boxes

@@ -3,6 +3,7 @@
 #include <MT2D/ObjectCore/MT2D_CDecl.h>
 #include <MT2D/ObjectCore/Coordinates.h>
 #include <MT2D/MT2D_Terminal_Define.h>
+#include <MT2D/MT2D_Window.h>
 #include <MT2D/ObjectCore/MT2D_Text_Image.h>
 #include <MT2D/ObjectCore/MT2D_Internal_Image.h>
 
@@ -45,7 +46,9 @@ Sprite *Sprite_Create_Ascii_From_Cells(int SizeX, int SizeY, const char *cells);
         Returns 0 (transparent) for null sprites, image sprites or out of range positions.
 **/
 char Sprite_Get_Char(const Sprite *Me, int x, int y);
-bool Sprite_Render_on_Window(Sprite *img, int witch_window, int pos_x, int pos_y);
+/* ASCII sprites are copied into window (WINDOW1 when NULL). Image sprites are queued for the next MT2D_Draw_Window,
+   only when window is NULL or WINDOW1 (false otherwise). */
+bool Sprite_Render_on_Window(Sprite *img, unsigned char (*window)[MAX_HOR], int pos_x, int pos_y);
 void Sprite_Delete(Sprite *Me);
 MT2D_C_END
 #endif  

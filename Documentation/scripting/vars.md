@@ -75,5 +75,5 @@ scripts can read and write it with `global Name`. Register it before loading the
 
 ## MT2D engine "vars" that are not `MT2D_VAR`
 
-Plain C globals of the engine, for orientation: `WINDOW1`/`WINDOW2` ([../tui/display.md](../tui/display.md)),
+Plain C globals of the engine, for orientation: `WINDOW1` ([../tui/display.md](../tui/display.md)),
 `SCREEN_WIDTH`, `SCREEN_HEIGHT`, `FONT_SIZEX/Y`, `FONT_RESIZEX/Y`, `SDL_SOUND_TYPE` (SDL backend, `MT2D_SDL_Defines.h`).
