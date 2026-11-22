@@ -8,7 +8,7 @@
         or, for the operations that take a list of integers (a sound card setup, a palette), or when
         the values come from an array (a script, a config file):
 
-          int pal[1 + 256] = { MT2D_DOS_SET_PALETTE, 0x000000, 0x0000AA, ... };
+          int pal[1 + 256] = { MT2D_SET_PALETTE, 0x000000, 0x0000AA, ... };
           MT2D_Set_Settings_Argv(1 + 256, pal);
 
         Each operation below says which of the two calls handles it; the other call answers
@@ -39,8 +39,6 @@ typedef enum MT2D_Setting_Operation {
                                         rate also 0) is not overridden: the BLASTER variable gives port, irq and dma, MT2D_DOS_SOUND_RATE the rate.
                                         port 0x210-0x280, irq 3-15, dma 0, 1 or 3, rate 4000-44100 Hz. If the card is running it is restarted with
                                         the new setup, otherwise it is used by the next MT2D_Audio_Init(). MT2D_UNSUPPORTED without DJGPP. */
-        MT2D_DOS_SET_PALETTE = 4001, /* MT2D_Set_Settings_Argv. VGA only: { op, 0xRRGGBB x 256 }, the whole palette (argc must be 257, else MT2D_BAD_PARAMETER).
-                                        Index 0 is the transparent color of the sprites. */
 
         /* 5xxx SDL */
         MT2D_SDL_SET_WINDOW_SIZE = 5000, /* MT2D_Set_Settings. param1 = width, param2 = height (pixels) of the window to be created, before MT2D_Init() only.
@@ -48,7 +46,7 @@ typedef enum MT2D_Setting_Operation {
         MT2D_SDL_SET_WINDOWED    = 5001, /* MT2D_Set_Settings. leave fullscreen. param1 = width, param2 = height, both 0 keeps the current size. Works before and after MT2D_Init().
                                             MT2D_OK only means the request was given to SDL, see the note below. */
         MT2D_SDL_SET_FULLSCREEN  = 5002, /* MT2D_Set_Settings. no params, always at the monitor resolution (borderless, the video mode is not changed). Works before and after MT2D_Init(). */
-        MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN = 5003 /* MT2D_Set_Settings. param1: 1 = Alt+Enter switches between fullscreen and windowed (the key is not given to the game),
+        MT2D_SDL_ALT_ENTER_TOGGLE_FULLSCREEN = 5003, /* MT2D_Set_Settings. param1: 1 = Alt+Enter switches between fullscreen and windowed (the key is not given to the game),
                                             0 = it is a normal key (default). Works before and after MT2D_Init(). */
 
         /* Note: SDL has no way to tell if the platform honors a window size or windowed request, so on some platforms
@@ -56,7 +54,11 @@ typedef enum MT2D_Setting_Operation {
            MT2D_SDL_SET_WINDOWED can return MT2D_OK and the window stays as it is. Do not assume the size you asked for:
            read the real one from the window resize events (the engine already follows them). */
 
-        /* 6xxx shared: none yet */
+        /* 6xxx shared */
+        MT2D_SET_PALETTE = 6000 /* MT2D_Set_Settings_Argv. Palette of the graphics: { op, 0xRRGGBB x 256 }, the whole palette (argc must be 257, else MT2D_BAD_PARAMETER). Only the
+                                    low 24 bits of a color are used. Index 0 is the transparent color of the sprites and 16 / 31 are the text colors (black, white in the default palette).
+                                    MS-DOS VGA mode (MSDOS_USE_GRAPHICS, the DAC keeps 6 bits per component) and Linux Sixel graphics (MT2D_TERMINAL_USE_GRAPHICS, 8 bits). Loading a BMP
+                                    sets the palette of the file, MT2D_Init of the Sixel graphics sets the VGA default with this same setting. MT2D_UNSUPPORTED everywhere else. */
 } MT2D_Setting_Operation;
 
 /* Result of the settings calls. Negative = refused, 0 = invalid call, 1 = done. */

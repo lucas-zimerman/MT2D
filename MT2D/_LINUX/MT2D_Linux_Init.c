@@ -67,16 +67,22 @@ bool MT2D_Linux_Init(void) { /* Return: true - it started without any kind of pr
 #ifdef MT2D_LINUX_SIXEL
 	/* MT2D_SIXEL=1 skips the check, for a terminal that draws Sixel but does not say so */
 	const char *force = getenv("MT2D_SIXEL");
+	int palette[1 + MT2D_SIXEL_COLORS];
 	if (!(force && force[0] == '1') && !MT2D_Linux_Terminal_Has_Sixel()) {
 		fputs("MT2D: this terminal does not support Sixel graphics (built with MT2D_TERMINAL_USE_GRAPHICS).\n"
 			"Use a Sixel terminal (foot, wezterm, mlterm, xterm -ti vt340), or set MT2D_SIXEL=1 if yours supports it.\n", stderr);
 		exit(1);
 	}
+	/* the VGA default palette goes in through the palette setting, the same way a program changes it */
+	palette[0] = MT2D_SET_PALETTE;
+	MT2D_Sixel_Default_Palette(palette + 1);
+	if (MT2D_Linux_Set_Settings_Argv(1 + MT2D_SIXEL_COLORS, palette) != MT2D_OK)
+		output = false;
 #endif
 	return output;
 }
 
-/* No setting is supported on this backend yet. */
+/* No setting with one or two params is supported on this backend yet. */
 MT2D_Result MT2D_Linux_Set_Settings(MT2D_Setting_Operation operation, int param1, int param2) {
 	(void)operation; (void)param1; (void)param2;
 	return MT2D_UNSUPPORTED;
@@ -85,6 +91,15 @@ MT2D_Result MT2D_Linux_Set_Settings(MT2D_Setting_Operation operation, int param1
 MT2D_Result MT2D_Linux_Set_Settings_Argv(int argc, const int *argv) {
 	if (argc < 1 || argv == NULL)
 		return MT2D_INVALID;
+#ifdef MT2D_LINUX_SIXEL
+	if (argv[0] == MT2D_SET_PALETTE) {
+		/* argv: the 256 0xRRGGBB colors, the whole palette */
+		if (argc != 1 + MT2D_SIXEL_COLORS)
+			return MT2D_BAD_PARAMETER;
+		MT2D_Sixel_Palette_Set_Rgb(0, argv + 1, MT2D_SIXEL_COLORS);
+		return MT2D_OK;
+	}
+#endif
 	return MT2D_UNSUPPORTED;
 }
 

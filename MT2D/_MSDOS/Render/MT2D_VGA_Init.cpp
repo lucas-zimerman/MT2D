@@ -58,7 +58,7 @@ MT2D_Result MT2D_Dos_VGA_Set_Settings_Argv(int argc, const int *argv) {
   if (argc < 1 || argv == 0) {
     return MT2D_INVALID;
   }
-  if (argv[0] == MT2D_DOS_SET_PALETTE) {
+  if (argv[0] == MT2D_SET_PALETTE) {
     /* argv: the 256 0xRRGGBB colors, the whole palette */
     if (argc != 1 + 256) {
       return MT2D_BAD_PARAMETER;

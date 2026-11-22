@@ -28,6 +28,9 @@ static bool ncurses_started = false;
 #define SIXEL_H (SIXEL_ROWS * MT2D_SIXEL_CELL_H)
 #define SIXEL_MAX_IMAGES 256
 #define SIXEL_OUT_SIZE (1024 * 1024)
+/* The text colors are palette indexes, the same as the MS-DOS VGA mode: 16 is black and 31 is white in the default palette. */
+#define SIXEL_TEXT_BG 16
+#define SIXEL_TEXT_FG 31
 /* The images are placed on a 320x240 virtual screen (like SDL), stretched to the SIXEL_W x SIXEL_H canvas. */
 #define SIXEL_VIRTUAL_W 320
 #define SIXEL_VIRTUAL_H 240
@@ -115,7 +118,7 @@ void MT2D_Linux_Draw_Window(int which) {
 	unsigned int len;
 	int i, sx, sy, sx1, sy1;
 	MT2D_Linux_Start_Curses();
-	MT2D_Sixel_Draw_Text(&sixel_canvas, sixel_pixels, &buffer[0][0], MAX_HOR, SIXEL_ROWS);
+	MT2D_Sixel_Draw_Text(&sixel_canvas, sixel_pixels, &buffer[0][0], MAX_HOR, SIXEL_ROWS, SIXEL_TEXT_BG, SIXEL_TEXT_FG);
 	for (i = 0; i < sixel_queue_count; i++) {
 		Sprite *s = sixel_queue[i].Img;
 		int w = s->ScaleX > 0 ? s->ScaleX : s->SizeX; /* size on the virtual screen */
@@ -124,11 +127,10 @@ void MT2D_Linux_Draw_Window(int which) {
 		sy = (int)((long)sixel_queue[i].Y * SIXEL_H / SIXEL_VIRTUAL_H);
 		sx1 = (int)((long)(sixel_queue[i].X + w) * SIXEL_W / SIXEL_VIRTUAL_W);
 		sy1 = (int)((long)(sixel_queue[i].Y + h) * SIXEL_H / SIXEL_VIRTUAL_H);
-		MT2D_Sixel_Draw_Image(&sixel_canvas, s->Image->Pixels, (const unsigned char (*)[3])s->Image->Palette, s->Image->Colors,
-			s->SizeX, s->SizeY, sx, sy, sx1 - sx, sy1 - sy);
+		MT2D_Sixel_Draw_Image(&sixel_canvas, s->Image->Pixels, s->SizeX, s->SizeY, sx, sy, sx1 - sx, sy1 - sy);
 	}
 	sixel_queue_count = 0;
-	if (sixel_has_last && sixel_canvas.Colors == sixel_last_canvas.Colors &&
+	if (sixel_has_last &&
 		memcmp(sixel_canvas.Palette, sixel_last_canvas.Palette, sizeof(sixel_canvas.Palette)) == 0 &&
 		memcmp(sixel_pixels, sixel_last_pixels, sizeof(sixel_pixels)) == 0) return;
 	len = MT2D_Sixel_Encode(&sixel_canvas, sixel_buffer, (unsigned int)sizeof(sixel_buffer));

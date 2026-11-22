@@ -54,10 +54,14 @@ not sent again. curses is still used for the keyboard. It needs a terminal with 
 `MT2D_Init` asks the terminal for its device attributes (`ESC [ c`, waits up to 2 s) and, when Sixel (attribute 4) is not
 listed, prints an error to stderr and exits with code 1. `MT2D_SIXEL=1` in the environment skips the check, for a terminal
 that draws Sixel but does not say so.
-Image sprites (`Load_Sprite_Image`) load the 8 bit BMP files of the MS-DOS VGA mode (index 0 = transparent, see
-`examples/tools/png2dos.py`): `"ship.png"` is read from `d/ship.bmp`, and a name ending in `.bmp` is used as it is. They are placed
-on a 320x240 virtual screen like with SDL and drawn over the text (up to 256 images and 255 colors per frame). The container
-variant (`Load_Sprite_Image_From_Container`) still gives the `<!>` placeholder.
+Like the MS-DOS VGA mode, the screen has **one palette of 256 colors** and everything is drawn with palette indexes (nothing is
+built on the fly). `MT2D_Init` sets the default VGA palette through the `MT2D_SET_PALETTE` setting (see
+[settings.md](settings.md)), a program replaces it with that same setting, and loading a BMP sets the palette of the file. The
+text is drawn with index 16 (black) and 31 (white) and index 0 is the transparent color of the sprites, so all the images of a
+program should share one palette that keeps those. Image sprites (`Load_Sprite_Image`) load the 8 bit BMP files of the MS-DOS VGA mode
+(see `examples/tools/png2dos.py`): `"ship.png"` is read from `d/ship.bmp`, and a name ending in `.bmp` is used as it is. They are placed
+on a 320x240 virtual screen like with SDL and drawn over the text (up to 256 images per frame). The container variant
+(`Load_Sprite_Image_From_Container`) still gives the `<!>` placeholder.
 Ignored with `SDL_USE` and on other platforms.
 
 With `MT2D_TERMINAL_USE_AUDIO` (CMake examples: `-DMT2D_TERMINAL_AUDIO=ON`) `MT2D_Play_Audio` / `MT2D_Play_Music` (and the

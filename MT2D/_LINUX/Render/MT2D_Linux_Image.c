@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "MT2D_Linux_Image.h"
+#include "MT2D_Linux_Sixel.h"
 
 const char *MT2D_Linux_Image_Path(const char *file, char *out, size_t outSize) {
 	const char *base = file, *p, *dot;
@@ -36,7 +37,6 @@ int MT2D_Linux_Load_BMP(FILE *file, Sprite *S) {
 	unsigned long offset, dibSize, padding, colors;
 	long width, height, row;
 	MT2D_Internal_Image *image;
-	int i;
 	if (fread(head, 1, sizeof(head), file) != sizeof(head)) return 0;
 	if (head[0] != 'B' || head[1] != 'M') return 0;
 	offset = Le32(head + 10);
@@ -58,13 +58,6 @@ int MT2D_Linux_Load_BMP(FILE *file, Sprite *S) {
 		free(image);
 		return 0;
 	}
-	image->Colors = (int)colors;
-	memset(image->Palette, 0, sizeof(image->Palette));
-	for (i = 0; i < (int)colors; i++) {
-		image->Palette[i][0] = pal[i * 4 + 2];
-		image->Palette[i][1] = pal[i * 4 + 1];
-		image->Palette[i][2] = pal[i * 4];
-	}
 	/* rows are stored bottom up and padded to 4 bytes */
 	padding = (4UL - ((unsigned long)width % 4UL)) % 4UL;
 	if (fseek(file, (long)offset, SEEK_SET) != 0) {
@@ -78,6 +71,7 @@ int MT2D_Linux_Load_BMP(FILE *file, Sprite *S) {
 			return 0;
 		}
 	}
+	MT2D_Sixel_Palette_Set_Bgra(pal, (int)colors); /* the file is good: its palette becomes the palette of the screen */
 	S->Image = image;
 	S->SizeX = (int)width;
 	S->SizeY = (int)height;

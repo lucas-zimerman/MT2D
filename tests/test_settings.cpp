@@ -6,7 +6,7 @@
 
 static const MT2D_Setting_Operation all_operations[] = {
     MT2D_DOS_SET_AUDIO,
-    MT2D_DOS_SET_PALETTE,
+    MT2D_SET_PALETTE,
     MT2D_SDL_SET_WINDOW_SIZE,
     MT2D_SDL_SET_WINDOWED,
     MT2D_SDL_SET_FULLSCREEN,
@@ -25,7 +25,7 @@ TEST(result_values) {
 TEST(operations_are_grouped_by_platform) {
     // 1xxx Windows, 2xxx Linux, 3xxx macOS, 4xxx MS-DOS, 5xxx SDL, 6xxx shared
     CHECK((int)MT2D_DOS_SET_AUDIO / 1000 == 4);
-    CHECK((int)MT2D_DOS_SET_PALETTE / 1000 == 4);
+    CHECK((int)MT2D_SET_PALETTE / 1000 == 6);
     CHECK((int)MT2D_SDL_SET_WINDOW_SIZE / 1000 == 5);
     CHECK((int)MT2D_SDL_SET_WINDOWED / 1000 == 5);
     CHECK((int)MT2D_SDL_SET_FULLSCREEN / 1000 == 5);

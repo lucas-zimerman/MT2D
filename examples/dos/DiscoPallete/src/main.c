@@ -3,7 +3,7 @@
 
    A spiral is written once to the video memory, using all the 256 colors (index = distance + angle).
    After that nothing is drawn again: every frame we send a whole new palette to the VGA with
-   MT2D_DOS_SET_PALETTE, { op, 0xRRGGBB x 256 }, and the colors move through the spiral.
+   MT2D_SET_PALETTE, { op, 0xRRGGBB x 256 }, and the colors move through the spiral.
 
    SPACE changes the effect (it also changes by itself), ESC quits.
 */
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
     (void)argv;
     MT2D_Init();                    /* mode 13h */
     draw_spiral();
-    pal[0] = MT2D_DOS_SET_PALETTE;
+    pal[0] = MT2D_SET_PALETTE;
 
     for (;;) {
         if (MT2D_Keyboard_touched()) {
