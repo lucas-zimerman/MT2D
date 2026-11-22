@@ -598,6 +598,29 @@ TEST(global_names_are_checked_when_the_object_is_loaded) {
     MT2D_VAR_Free(speed, 1);
 }
 
+TEST(calc_registered_as_global_function) {
+    MT2D_VAR *speed = MT2D_Object_Create_Var_Int("Speed", 4);
+    CHECK(ObjectCore_AddGlobalVar(speed));
+    CHECK(ObjectCore_AddGlobalCScriptVars("Calc", Cscript_Calc, -1));
+    Object *o = compile_and_load(
+        "object a { int a = 10; int x = 0; states {\n"
+        "Main:\n"
+        "  global Calc(8, x, a, \"+\", global Speed, \"*\", 3, \"%\", 5)\n"   // 10 + (4 * 3) % 5
+        "  global Calc(4, Pos_X, x, \"-\", a)\n"
+        "  Goto End\n"
+        "End: Wait 1 }}");
+    CHECK(o != 0);
+    if (o) {
+        CHECK(run_to_end(o));
+        CHECK_EQ(var_of(o, "x"), 12);
+        CHECK_EQ(ObjectPosX(o), 2);
+        ObjectCore_Unload(o);
+    }
+    CHECK(ObjectCore_RemoveGlobalVar("Speed"));
+    CHECK(ObjectCore_RemoveGlobalCScript("Calc"));
+    MT2D_VAR_Free(speed, 1);
+}
+
 TEST(global_vars_in_operands_and_conditions) {
     MT2D_VAR *speed = MT2D_Object_Create_Var_Int("GameSpeed", 3);
     MT2D_VAR *req = MT2D_Object_Create_Var_Char("JmpReq", 1);

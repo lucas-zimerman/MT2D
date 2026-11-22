@@ -3,6 +3,7 @@
 #include <MT2D/ObjectCore/STDFunctions.h>
 #include <MT2D/ObjectCore/Object.h>
 #include <MT2D/ObjectCore/State.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -83,6 +84,147 @@ TEST(var_sub) {
     MT2D_VAR *objs[2] = {named("Pos_X"), named("Pos_Y")};
     Cscript_VAR_SUB(o, objs);
     CHECK_EQ(ObjectPosX(o), -4);
+}
+
+// ---- Calc ----------------------------------------------------------------
+
+static MT2D_VAR *op(const char *s) { return MT2D_Object_Create_Var_String("Op", s); }
+
+TEST(calc_single_operand_copies) {
+    Object *o = simple_object(3, 9);
+    MT2D_VAR *vars[3] = {integer(2), named("Pos_X"), named("Pos_Y")};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), 9);
+}
+
+TEST(calc_precedence_without_parentheses) {
+    Object *o = simple_object(0, 0);
+    add_user_var(o, "a", 10);
+    add_user_var(o, "b", 3);
+    // x = a + b * 2 - 8 / 4  ->  10 + 6 - 2 = 14
+    MT2D_VAR *vars[11] = {integer(10), named("Pos_X"), named("a"), op("+"), named("b"), op("*"), integer(2),
+                          op("-"), integer(8), op("/"), integer(4)};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), 14);
+}
+
+TEST(calc_store_can_be_in_the_math) {
+    Object *o = simple_object(5, 2);
+    // Pos_X = Pos_Y - Pos_X  ->  2 - 5
+    MT2D_VAR *vars[5] = {integer(4), named("Pos_X"), named("Pos_Y"), op("-"), named("Pos_X")};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), -3);
+}
+
+TEST(calc_mod_and_plain_store) {
+    Object *o = simple_object();
+    MT2D_VAR *target = integer(0);
+    MT2D_VAR *vars[5] = {integer(4), target, integer(17), op("%"), integer(5)};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(target->Data.i, 2);
+}
+
+TEST(calc_negative_division_rounds_toward_zero) {
+    Object *o = simple_object();
+    MT2D_VAR *q = integer(0);
+    MT2D_VAR *r = integer(0);
+    MT2D_VAR *div[5] = {integer(4), q, integer(-7), op("/"), integer(2)};
+    MT2D_VAR *mod[5] = {integer(4), r, integer(-7), op("%"), integer(2)};
+    Cscript_Calc(o, div);
+    Cscript_Calc(o, mod);
+    CHECK_EQ(q->Data.i, -3);
+    CHECK_EQ(r->Data.i, -1);
+}
+
+TEST(calc_int_min_by_minus_one_does_not_trap) {
+    Object *o = simple_object();
+    MT2D_VAR *q = integer(0);
+    MT2D_VAR *r = integer(7);
+    MT2D_VAR *div[5] = {integer(4), q, integer(INT_MIN), op("/"), integer(-1)};
+    MT2D_VAR *mod[5] = {integer(4), r, integer(INT_MIN), op("%"), integer(-1)};
+    Cscript_Calc(o, div);   // x86 idiv would raise SIGFPE / "Divide overflow"
+    Cscript_Calc(o, mod);
+    CHECK_EQ(q->Data.i, INT_MIN);
+    CHECK_EQ(r->Data.i, 0);
+    MT2D_VAR *neg[5] = {integer(4), q, integer(9), op("/"), integer(-1)};
+    Cscript_Calc(o, neg);
+    CHECK_EQ(q->Data.i, -9);
+}
+
+TEST(calc_divide_by_zero_stores_nothing) {
+    Object *o = simple_object(42, 0);
+    MT2D_VAR *vars[5] = {integer(4), named("Pos_X"), integer(1), op("/"), integer(0)};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), 42);
+    MT2D_VAR *mod[5] = {integer(4), named("Pos_X"), integer(1), op("%"), named("Pos_Y")};
+    Cscript_Calc(o, mod);
+    CHECK_EQ(ObjectPosX(o), 42);
+}
+
+TEST(calc_bad_lists_store_nothing) {
+    Object *o = simple_object(42, 1);
+    MT2D_VAR *odd[4] = {integer(3), named("Pos_X"), integer(1), op("+")};
+    MT2D_VAR *short_[2] = {integer(1), named("Pos_X")};
+    MT2D_VAR *badop[5] = {integer(4), named("Pos_X"), integer(1), op("x"), integer(2)};
+    MT2D_VAR *twochar[5] = {integer(4), named("Pos_X"), integer(1), op("++"), integer(2)};
+    MT2D_VAR *notop[5] = {integer(4), named("Pos_X"), integer(1), integer('+'), integer(2)};
+    MT2D_VAR *strval[5] = {integer(4), named("Pos_X"), integer(1), op("+"), op("2")};
+    Cscript_Calc(o, odd);
+    Cscript_Calc(o, short_);
+    Cscript_Calc(o, badop);
+    Cscript_Calc(o, twochar);
+    Cscript_Calc(o, notop);
+    Cscript_Calc(o, strval);
+    CHECK_EQ(ObjectPosX(o), 42);
+}
+
+TEST(calc_float_store_keeps_the_fraction) {
+    Object *o = simple_object();
+    Object_Add_Variable(o, MT2D_Object_Create_Var_Float("speed", 3.0f));
+    Object_Add_Variable(o, MT2D_Object_Create_Var_Float("half", 0.5f));
+    // speed = speed * half + 1 / 4  ->  1.5 + 0.25
+    MT2D_VAR *vars[9] = {integer(8), named("speed"), named("speed"), op("*"), named("half"), op("+"), integer(1),
+                         op("/"), integer(4)};
+    Cscript_Calc(o, vars);
+    MT2D_VAR *speed = &o->User_Vars[o->User_Vars_Count - 2];
+    CHECK(speed->Data.f > 1.749f && speed->Data.f < 1.751f);
+}
+
+TEST(calc_int_store_truncates_float_operands) {
+    Object *o = simple_object();
+    Object_Add_Variable(o, MT2D_Object_Create_Var_Float("half", 0.5f));
+    // int math: half is read as 0, so Pos_X = 3 * 0 + 1
+    MT2D_VAR *vars[7] = {integer(6), named("Pos_X"), integer(3), op("*"), named("half"), op("+"), integer(1)};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), 1);
+}
+
+TEST(calc_float_store_refuses_mod_and_zero) {
+    Object *o = simple_object();
+    MT2D_VAR *f = MT2D_Object_Create_Var_Float("f", 2.5f);
+    MT2D_VAR *mod[5] = {integer(4), f, integer(7), op("%"), integer(2)};
+    MT2D_VAR *div[5] = {integer(4), f, integer(7), op("/"), MT2D_Object_Create_Var_Float("z", 0.0f)};
+    Cscript_Calc(o, mod);
+    Cscript_Calc(o, div);
+    CHECK(f->Data.f == 2.5f);
+}
+
+TEST(calc_missing_store_does_nothing) {
+    Object *o = simple_object(7, 0);
+    MT2D_VAR *vars[3] = {integer(2), named("nope"), integer(1)};
+    Cscript_Calc(o, vars);
+    CHECK_EQ(ObjectPosX(o), 7);
+}
+
+TEST(calc_through_cscript_new3v) {
+    Object *o = simple_object(1, 0);
+    // Pos_X = Pos_X * 3 + 1
+    Cscript *c = Cscript_New3V(Cscript_Calc, 7, integer(6), named("Pos_X"), named("Pos_X"), op("*"), integer(3),
+                               op("+"), integer(1));
+    Cscript_Execute(o, c);
+    CHECK_EQ(ObjectPosX(o), 4);
+    Cscript_Execute(o, c);
+    CHECK_EQ(ObjectPosX(o), 13);
 }
 
 TEST(var_inc_and_dec) {

@@ -71,6 +71,8 @@ void Cscript_VAR_INC(Object *object, MT2D_VAR **VAR);
 void Cscript_VAR_DEC(Object *object, MT2D_VAR **VAR);
 void Cscript_VAR_ADD(Object *object, MT2D_VAR **VARS);
 void Cscript_VAR_SUB(Object *object, MT2D_VAR **VARS);
+/* VARS = count, store, operand, ("op", operand)... : store = the math (* / % before + -), see STDFunctions.c */
+void Cscript_Calc(Object *object, MT2D_VAR **VARS);
 
 
 
