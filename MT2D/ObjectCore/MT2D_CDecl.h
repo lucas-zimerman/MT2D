@@ -9,6 +9,12 @@
 #define MT2D_C_END   }
 #else
 #include <stdbool.h>
+/* "bool" is _Bool (curses.h pulls <stdbool.h> too, so it cannot be avoided). Strict C89 has no _Bool and clang
+   (Apple clang too) calls it a C99 extension, an error with -pedantic-errors. Every supported compiler accepts it,
+   so that warning is switched off. The guards keep DJGPP's -Werror=unknown-pragmas happy. */
+#if defined(__clang__) && !(defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
+#pragma clang diagnostic ignored "-Wc99-extensions"
+#endif
 #define MT2D_C_BEGIN
 #define MT2D_C_END
 #endif
