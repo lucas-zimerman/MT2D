@@ -24,7 +24,7 @@
 /* HOW TO USE A FUNCTION WITH Cscript
 
 You can link any kind of c/c++ function with Cscript, you just need to create a function where the input args are one of the following ones:
-void ...();
+void ...(void);
 void ...(Object *Name);
 void ...(Object *Name, MT2D_VAR **Array of const Vars);
 
@@ -57,7 +57,7 @@ MT2D_C_BEGIN
 
 struct Cscript
 {
-        void(*_void)(); /* a function without args */
+        void(*_void)(void); /* a function without args */
         void(*_Obj)(struct Object*); /* a function with only a single object as arg, normally the caller object */
         void(*_Obj_Vars)(struct Object*, MT2D_VAR **); /* a function with only a single object and one or more Vars as arg, normally the caller as an object */
         void(*_Obj_Obj_Vars)(struct Object*, struct Object*, MT2D_VAR**); /* a function with only a single object, one or more objects in the second arg and lastly one or more Vars as arg, normally the caller as the first object */
@@ -67,7 +67,7 @@ struct Cscript
 };
 
 Cscript *Cscript_Empty(void);
-Cscript *Cscript_New1(void(*Function)());
+Cscript *Cscript_New1(void(*Function)(void));
 Cscript *Cscript_New2(void(*Function)(struct Object *));
 Cscript *Cscript_New3(MT2D_VAR **ObjVarPointer, void(*Function)(struct Object*, MT2D_VAR **));
 Cscript *Cscript_New4(struct Object *ModelObj, MT2D_VAR **ObjVarPointers, void(*Function)(struct Object *, struct Object*, MT2D_VAR **));
@@ -105,7 +105,7 @@ MT2D_C_END
 #define CSCRIPT_NARGS(...) CSCRIPT_NARGS_(0, ##__VA_ARGS__, 16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)
 #define Cscript_New(fn, ...) Cscript_NewV((fn), CSCRIPT_NARGS(__VA_ARGS__), ##__VA_ARGS__)
 
-inline Cscript *Cscript_NewV(void(*Function)(), int, ...) {
+inline Cscript *Cscript_NewV(void(*Function)(void), int, ...) {
         return Cscript_New1(Function);
 }
 

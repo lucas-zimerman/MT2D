@@ -28,20 +28,25 @@ jobs:
           fi
 
       - name: Compile as ANSI C (C89)
+        # Both gcc and clang: clang rejects things gcc accepts, e.g. "void (*f)()"
+        # (-Wstrict-prototypes is an error by default in recent clang).
         run: |
+          clang --version | head -n 1
           status=0
           # -include stddef.h: header-only / platform-gated files are empty on their own, which ISO C forbids
           # Platform specific backends need their own SDKs; check the portable code.
           files=$(git ls-files 'MT2D/*.c' 'MT2D/*.h' \
             | grep -vE '^MT2D/(_WINDOWS|_MSDOS|_ANDROID|_EMNISCRIPT|SDL)/' || true)
-          for f in $files; do
-            case "$f" in
-              *.h) lang="-x c" ;;
-              *)   lang="" ;;
-            esac
-            if ! gcc $lang -std=c89 -pedantic-errors -Wall -Wextra -fsyntax-only -include stddef.h -I . "$f"; then
-              echo "::error file=$f::Not valid ANSI C: $f"
-              status=1
-            fi
+          for cc in gcc clang; do
+            for f in $files; do
+              case "$f" in
+                *.h) lang="-x c" ;;
+                *)   lang="" ;;
+              esac
+              if ! $cc $lang -std=c89 -pedantic-errors -Wall -Wextra -fsyntax-only -include stddef.h -I . "$f"; then
+                echo "::error file=$f::Not valid ANSI C ($cc): $f"
+                status=1
+              fi
+            done
           done
           exit $status

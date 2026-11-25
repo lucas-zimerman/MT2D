@@ -16,7 +16,7 @@ Cscript *Cscript_Empty(void)
         return F;
 }
 
-Cscript *Cscript_New1(void(*Function)()) {
+Cscript *Cscript_New1(void(*Function)(void)) {
         Cscript *F = Cscript_Empty();
         F->_void = Function;
         return F;
@@ -90,7 +90,10 @@ Cscript *Cscript_New4V(void(*Function)(Object *, Object *, MT2D_VAR **), int cou
 
 void Cscript_Execute(Object *Caller, Cscript *Function) {
         if (Function) {
-                if (Caller) {
+                if (Function->_void) {
+                        Function->_void(); /* takes no args, so it does not need a caller */
+                }
+                else if (Caller) {
                         if (Function->_Obj) {
                                 Function->_Obj(Caller);
                         }
