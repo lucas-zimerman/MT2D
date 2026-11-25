@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0 - 2026-11-25
+
 ### Breaking
 
 - `WINDOW2`, `DISPLAY_WINDOW2`, `transfer_window1_to_window2()` and `transfer_window2_to_window1()` were removed: `WINDOW1` is the only engine screen buffer (2080 bytes less). Popups and menus draw on `WINDOW1` and put back the cells they covered, see [MIGRATION.md](MIGRATION.md) ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
