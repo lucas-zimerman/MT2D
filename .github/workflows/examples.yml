@@ -22,6 +22,10 @@ jobs:
         run: cmake -S examples -B build/examples
       - name: Build
         run: cmake --build build/examples -j
+      - name: Build the mt2d library (terminal and SDL)
+        run: |
+          cmake -S . -B build/mt2d && cmake --build build/mt2d -j
+          cmake -S . -B build/mt2d-sdl -DMT2D_SDL=ON && cmake --build build/mt2d-sdl -j
 
   djgpp:
     runs-on: ubuntu-latest
@@ -46,6 +50,11 @@ jobs:
           export PATH="$HOME/djgpp/bin:$PATH"
           cmake -S examples -B build/dos -DCMAKE_TOOLCHAIN_FILE="$PWD/examples/cmake/djgpp.cmake"
           cmake --build build/dos -j
+      - name: Build the mt2d library for MS-DOS
+        run: |
+          export PATH="$HOME/djgpp/bin:$PATH"
+          cmake -S . -B build/mt2d-dos -DCMAKE_TOOLCHAIN_FILE="$PWD/examples/cmake/djgpp.cmake"
+          cmake --build build/mt2d-dos -j
 
   # macOS and Windows jobs were written without access to those systems, they do not block the PR yet.
   macos:

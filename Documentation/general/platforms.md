@@ -41,8 +41,45 @@ Off unless you uncomment them there or pass `-D...` to the compiler.
 
 ## Building
 
-There is no single build system: compile all `MT2D/**/*.c` with your
-project. Per target details are in [`../CONTRIBUTING.md`](../../CONTRIBUTING.md) and
+### CMake: the `mt2d` library
+
+The top level `CMakeLists.txt` builds the engine as a static library, `mt2d` (alias `mt2d::mt2d`), with the sources of
+one backend. The include directory (`<MT2D/MT2D.h>`), the backend defines and the libraries (curses, SDL2, ...) are
+`PUBLIC`, so a game only links it:
+
+```cmake
+add_subdirectory(MT2D)                       # the MT2D folder (a git submodule, a copy, ...)
+target_link_libraries(mygame PRIVATE mt2d)
+```
+
+or with `FetchContent`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(MT2D GIT_REPOSITORY https://github.com/lucas-zimerman/MT2D.git GIT_TAG master)
+FetchContent_MakeAvailable(MT2D)
+target_link_libraries(mygame PRIVATE mt2d)
+```
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `MT2D_SDL` | `OFF` (`ON` with Emscripten) | SDL2 backend (`SDL_USE`) instead of the native terminal one. Needs SDL2 + SDL2_image, not available with DJGPP |
+| `MT2D_SDL_AUDIO` | `ON` | with SDL: link SDL2_mixer when it is found (`SDL_USE_AUDIO`) |
+| `MT2D_TERMINAL_GRAPHICS` | `OFF` | Linux terminal: Sixel graphics (`MT2D_TERMINAL_USE_GRAPHICS`) |
+| `MT2D_TERMINAL_AUDIO` | `OFF` | Linux terminal: command line audio players (`MT2D_TERMINAL_USE_AUDIO`) |
+| `MT2D_DOS_VGA` | `OFF` | DJGPP: VGA renderer (`MSDOS_USE_GRAPHICS`) instead of the text mode |
+| `MT2D_CSCRIPT_PARSER` | `ON` (`OFF` for MS-DOS text mode) | Cscript / object text compiler (`MT2D_USING_CSCRIPT_PARSER`) |
+
+Set them before `add_subdirectory` (`set(MT2D_SDL ON CACHE BOOL "")`) or with `-D` on the command line. MS-DOS: configure
+with the DJGPP toolchain file, `-DCMAKE_TOOLCHAIN_FILE=<MT2D>/examples/cmake/djgpp.cmake`. Web: `emcmake cmake ...`, the
+SDL2 ports of Emscripten are enabled by the target (compile and link flags), the game adds its own `--preload-file` and
+shell page (see `mt2d_add_example` in `examples/cmake/MT2D.cmake`). The backend logic lives in `cmake/MT2DEngine.cmake`,
+which the examples use too (`mt2d` and `mt2d_sdl`). There is no `install` / `find_package(mt2d)` yet.
+
+### Other build systems
+
+Compile the `MT2D/**/*.c` files of your backend with your project (the lists are in `cmake/MT2DEngine.cmake`) and set
+the defines above by hand. Per target details are in [`../CONTRIBUTING.md`](../../CONTRIBUTING.md) and
 [`../examples/README.md`](../../examples/README.md) (CMake files for every example, DJGPP toolchain file in
 `examples/cmake/djgpp.cmake`). SDL links: `-lSDL2 -lSDL2_image` (+ `-lSDL2_mixer` for audio).
 
