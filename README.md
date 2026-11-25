@@ -32,6 +32,19 @@ and **ObjectCore**: objects with sprites, states and a small script language (Cs
 
 Details for each platform: [Documentation/general/platforms.md](Documentation/general/platforms.md).
 
+## Using it in a game
+
+With CMake, add the repository to your project and link the `mt2d` library:
+
+```cmake
+add_subdirectory(MT2D)                       # or FetchContent
+target_link_libraries(mygame PRIVATE mt2d)
+```
+
+It uses the native terminal of the system by default, `-DMT2D_SDL=ON` gives the SDL2 window. All the options are in
+[Documentation/general/platforms.md](Documentation/general/platforms.md#cmake-the-mt2d-library), the
+[`examples/`](examples/README.md) show the engine in use.
+
 ## Showcase
 
 Programs made with MT2D:

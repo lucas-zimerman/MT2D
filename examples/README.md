@@ -159,7 +159,7 @@ How images work in this mode:
 `SDL_USE_AUDIO` and the engine's `MT2D_Audio_Init`, `MT2D_Play_Audio`, `MT2D_Play_Music` and `MT2D_Audio_Close`
 work. Without it the engine ignores those calls, the examples still build and only print a message.
 The terminal examples never need audio files, `playpcspeaker` uses `MT2D_System_Beep`.
-Use `-DMT2D_EXAMPLES_AUDIO=OFF` to ignore SDL2_mixer even when it is installed.
+Use `-DMT2D_EXAMPLES_AUDIO=OFF` (or `-DMT2D_SDL_AUDIO=OFF`, the name of the `mt2d` library option) to ignore SDL2_mixer even when it is installed.
 
 On MS-DOS (DJGPP) the engine plays **IMF** songs on the OPL2 chip (Adlib / Sound Blaster, DOSBox emulates one):
 `MT2D_Audio_Init` returns 1 when the chip is found, `MT2D_Play_Music("song.ogg")` loops `d/song.imf` (the name is cut
