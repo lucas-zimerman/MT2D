@@ -224,7 +224,7 @@ Cscript_New(Cscript_CreateObject, model, a, b)   // object variant: the first ex
 - The overload is picked from the type of the function, so the arguments of the function decide which `Cscript` slot is filled (`void f()`, `void f(Object*)`, `void f(Object*, MT2D_VAR**)` or `void f(Object*, Object*, MT2D_VAR**)`).
 - It takes up to `CSCRIPT_MAX_ARGS` (16) arguments after the function.
 - `Cscript_New` is a variadic macro and uses the GNU `##__VA_ARGS__` extension (GCC, DJGPP and Clang accept it, also with `-std=gnu++98`). Compilers without it can keep using `Cscript_New1`..`4`.
-- The vars array is still allocated for you, and freed by `Cscript_RemoveFromMemory`, which also frees the model object of the object variant.
+- The vars array is still allocated for you, and freed by `Cscript_RemoveFromMemory`. The model object of the object variant is not freed (it used to be), delete it yourself.
 
 ## Build changes
 

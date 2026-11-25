@@ -101,6 +101,8 @@ ObjectPosX(Object) = 12;
 ### Fixes
 
 - A Cscript made with `Cscript_New1` now runs its function in `Cscript_Execute` (it was never called), and `Cscript.h` uses `void(*)(void)` instead of `void(*)()`, so it builds with clang in C89 mode (`-Wstrict-prototypes`). The ANSI C CI check also runs with clang ([#58](https://github.com/lucas-zimerman/MT2D/issues/58)) ([#67](https://github.com/lucas-zimerman/MT2D/pull/67))
+- `Cscript_RemoveFromMemory` no longer frees the model object of `Cscript_New4` / `Cscript_New4V` (`CreateObject`, `GotoStateIfHitObject`): deleting a state built in C freed the model (use after free, double free). A program that relied on that free must now delete the model itself ([#56](https://github.com/lucas-zimerman/MT2D/issues/56)) ([#66](https://github.com/lucas-zimerman/MT2D/pull/66))
+- `JumpToStateIfRandom` and `JumpFramesIfRandom` no longer divide by zero when `max` is 0: `max` <= 0 never jumps ([#57](https://github.com/lucas-zimerman/MT2D/issues/57)) ([#65](https://github.com/lucas-zimerman/MT2D/pull/65))
 - The MS-DOS text renderer read one cell past each row of the screen buffer ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
 - Resizing the terminal made a game on the Linux terminal backend wait for a key press (`KEY_RESIZE` was read as a key) ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
 - `MT2D_Joystick_Get_RightAxisY` returned the right stick X axis ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))

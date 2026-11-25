@@ -38,9 +38,9 @@ One Cscript can be attached to several frames/states (share it to save memory).
 
 Attach it: `MT2D_ObjectState_ADD(state, sprite, wait, cscript)`. Run it by hand: `Cscript_Execute(caller, cscript)`.
 
-`Cscript_RemoveFromMemory(c)` frees the Cscript, its `args` pointer array and, if `other` is set, **`free()`s the `other` object**
-(for unpacked ones) but not the vars. `MT2D_ObjectState_Delete` calls it for every frame, so deleting a state with a `CreateObject`
-frame frees the model object struct: do not use the model afterwards, and do not delete states that share a Cscript twice.
+`Cscript_RemoveFromMemory(c)` frees the Cscript and its `args` pointer array (for unpacked ones), but not the vars and not the
+`other` object: the Cscript does not own them. `MT2D_ObjectState_Delete` calls it for every frame, so deleting a state with a
+`CreateObject` frame leaves the model object alive (delete it yourself), and do not delete states that share a Cscript twice.
 `Packed` Cscripts (made by `ObjectCore_Load`) live in one block and are released with a single free.
 
 ## Writing your own
@@ -92,7 +92,7 @@ are the text-script names (`CscriptFunctions.h`).
 | `Cscript_Calc` | 3 | count, store, operand, (`"op"`, operand)... | `store = math`, see [Calc](#calc). Not in the compiler list, register it as a global |
 | `RemoveObject` | 2 | | `CanDelete = true` |
 | `JumpToStateIfVarEq` / `NotEq` / `Lower` / `Higher` / `LowerEq` / `HigherEq` | 3 | state, a, b | go to state if `a op b` (Eq compares `a == b`; the argument roles are `[1]`,`[2]`) |
-| `JumpToStateIfRandom` | 3 | state, chance, max | if `rand() % max <= chance`. `max` 0 divides by zero. Lands on frame 1, skipping frame 0 |
+| `JumpToStateIfRandom` | 3 | state, chance, max | if `rand() % max <= chance`. `max` <= 0 never jumps. Lands on frame 1, skipping frame 0 |
 | `JumpNextFrameIfVar...` | 3 | a, b | skip the next frame if `a op b`. Not for the last frame of a state. The compiler refuses them |
 | `JumpFrames`, `JumpFramesIfVar`, `JumpFramesIfRandom` | 3 | jump (, a, op, b) / (jump, chance, max) | move the frame index; used by the compiler for `if`/`while`. `op` is a char: `<` `>` `=` `!`, 242 `>=`, 243 `<=` |
 | `PlaySound`, `PlayMusic` | 3 | file | `MT2D_Play_Audio` / `MT2D_Play_Music` ([../general/audio.md](../general/audio.md)); silent when audio is not built |
