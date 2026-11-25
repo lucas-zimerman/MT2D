@@ -168,15 +168,15 @@ void Cscript_Set_Var(Object *Object, MT2D_VAR **VARS) {
 /**
 object  = caller
 VARS[0] = Name of the state to jump
-VARS[1] = MAX vALUe to JUMP
-VARS[2] = ACTUAL VALUE TO SELECT (Rand()%VARS[2]  <= VARS[1])
+VARS[1] = ACTUAL VALUE TO SELECT (Rand()%VARS[2]  <= VARS[1])
+VARS[2] = MAX vALUe to JUMP, <= 0 never jumps
 Main Object
 **/
 void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
         int i = 0;
         int MAX = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[2]);
         int SEL_RANGE = Cscript_VAR_Get_Integer(object, JUMPTO_CHANCE_MAX[1]);
-        if (rand() % MAX <= SEL_RANGE) {
+        if (MAX > 0 && rand() % MAX <= SEL_RANGE) {
                 while (i < object->States_Count) {
                         if (MT2D_NAME_EQ(object->State[i]->Name, JUMPTO_CHANCE_MAX[0]->Name)) {
                                 object->ActualState = i;
@@ -193,14 +193,14 @@ void Cscript_JumpToStateIfRandom(Object *object, MT2D_VAR **JUMPTO_CHANCE_MAX) {
 object  = caller
 VARS[0] = Total of Frames to jump, if 1 it'll jump to the next frame, 2 will skip 1 frame, -1 will go back one frame,...
 VARS[1] = ACTUAL VALUE TO SELECT (Rand()%VARS[2]  <= VARS[1])
-VARS[2] = MAX vALUe to JUMP
+VARS[2] = MAX vALUe to JUMP, <= 0 never jumps
 Main Object
 **/
 void Cscript_JumpFramesIfRandom(Object* caller, MT2D_VAR** vars) {
         int jump = Cscript_VAR_Get_Integer(caller, vars[0]);
         int max = Cscript_VAR_Get_Integer(caller, vars[2]);
         int selectRange = Cscript_VAR_Get_Integer(caller, vars[1]);
-        if (rand() % max <= selectRange) {
+        if (max > 0 && rand() % max <= selectRange) {
                 caller->ActualFrame += jump;
 /*              caller->ActualFrameWait = caller->State[caller->ActualState]->WaitSprites[caller->ActualFrame -1]; */
         }
