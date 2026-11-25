@@ -417,6 +417,17 @@ TEST(jump_to_state_if_random_never_with_negative_chance) {
     CHECK_EQ(o->ActualState, 0);
 }
 
+TEST(jump_to_state_if_random_never_with_max_zero_or_negative) {
+    Object *o = three_state_object();
+    // max <= 0 must not divide by zero, it never jumps
+    MT2D_VAR *zero[3] = {named("Dead"), integer(100), integer(0)};
+    Cscript_JumpToStateIfRandom(o, zero);
+    CHECK_EQ(o->ActualState, 0);
+    MT2D_VAR *neg[3] = {named("Dead"), integer(100), integer(-5)};
+    Cscript_JumpToStateIfRandom(o, neg);
+    CHECK_EQ(o->ActualState, 0);
+}
+
 // ---- frames --------------------------------------------------------------
 
 static Object *frames_object() {
@@ -557,6 +568,17 @@ TEST(jump_frames_if_random) {
     MT2D_VAR *never[3] = {integer(2), integer(-1), integer(10)};
     Cscript_JumpFramesIfRandom(p, never);
     CHECK_EQ(p->ActualFrame, 0);
+}
+
+TEST(jump_frames_if_random_never_with_max_zero_or_negative) {
+    Object *o = frames_object();
+    // max <= 0 must not divide by zero, it never jumps
+    MT2D_VAR *zero[3] = {integer(2), integer(100), integer(0)};
+    Cscript_JumpFramesIfRandom(o, zero);
+    CHECK_EQ(o->ActualFrame, 0);
+    MT2D_VAR *neg[3] = {integer(2), integer(100), integer(-5)};
+    Cscript_JumpFramesIfRandom(o, neg);
+    CHECK_EQ(o->ActualFrame, 0);
 }
 
 // ---- while ---------------------------------------------------------------
