@@ -111,10 +111,8 @@ void Cscript_RemoveFromMemory(Cscript *Me) {
                         free(Me); /* one block, nothing else to release */
                         return;
                 }
-                if (Me->TempObj) {
-                        free(Me->TempObj); /* we only store a pointer and not the actuall object so we just remover the byte that points for that object. */
-                }
-                if (Me->TempVars) { /* again, we only remove the array of pointers and not the actual vars */
+                /* TempObj (the model or target object) is not owned by the Cscript, the caller deletes it */
+                if (Me->TempVars) { /* we only remove the array of pointers and not the actual vars */
                         free(Me->TempVars);
                 }
                 free(Me);

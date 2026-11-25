@@ -38,9 +38,9 @@ One Cscript can be attached to several frames/states (share it to save memory).
 
 Attach it: `MT2D_ObjectState_ADD(state, sprite, wait, cscript)`. Run it by hand: `Cscript_Execute(caller, cscript)`.
 
-`Cscript_RemoveFromMemory(c)` frees the Cscript, its `args` pointer array and, if `other` is set, **`free()`s the `other` object**
-(for unpacked ones) but not the vars. `MT2D_ObjectState_Delete` calls it for every frame, so deleting a state with a `CreateObject`
-frame frees the model object struct: do not use the model afterwards, and do not delete states that share a Cscript twice.
+`Cscript_RemoveFromMemory(c)` frees the Cscript and its `args` pointer array (for unpacked ones), but not the vars and not the
+`other` object: the Cscript does not own them. `MT2D_ObjectState_Delete` calls it for every frame, so deleting a state with a
+`CreateObject` frame leaves the model object alive (delete it yourself), and do not delete states that share a Cscript twice.
 `Packed` Cscripts (made by `ObjectCore_Load`) live in one block and are released with a single free.
 
 ## Writing your own

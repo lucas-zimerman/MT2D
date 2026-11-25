@@ -80,8 +80,30 @@ TEST(new4_and_execute_obj_obj_vars) {
     CHECK(last_caller == &caller);
     CHECK(last_model == &model);
     CHECK(last_vars == arr);
-    free(arr);
-    free(c);
+    Cscript_RemoveFromMemory(c); // frees arr, not the model
+    MT2D_VAR_Free(v, 1);
+}
+
+TEST(remove_from_memory_keeps_the_model_object) {
+    reset();
+    // The model is not owned by the Cscript: removing it must not free the model (issue #56).
+    // Before the fix the free at the end of this test was a double free.
+    Object *model = (Object*)malloc(sizeof(Object));
+    model->States_Count = 3;
+    model->ActualState = 4;
+    Object caller;
+    MT2D_VAR *v = MT2D_Object_Create_Var_Int("V", 1);
+    Cscript *c = Cscript_New4V(fn_obj_obj_vars, 2, model, v);
+    CHECK(c->TempObj == model);
+    Cscript_RemoveFromMemory(c);
+    CHECK_EQ(model->States_Count, 3);
+    CHECK_EQ(model->ActualState, 4);
+    // the model still works for another Cscript
+    c = Cscript_New4V(fn_obj_obj_vars, 2, model, v);
+    Cscript_Execute(&caller, c);
+    CHECK(last_model == model);
+    Cscript_RemoveFromMemory(c);
+    free(model);
     MT2D_VAR_Free(v, 1);
 }
 
