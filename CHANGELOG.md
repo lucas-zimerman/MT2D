@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-## 3.0.0 - 2026-11-25
-
 ### Breaking
 
 - `WINDOW2`, `DISPLAY_WINDOW2`, `transfer_window1_to_window2()` and `transfer_window2_to_window1()` were removed: `WINDOW1` is the only engine screen buffer (2080 bytes less). Popups and menus draw on `WINDOW1` and put back the cells they covered, see [MIGRATION.md](MIGRATION.md) ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
@@ -13,29 +11,12 @@
 - The engine is now written in C: every `.cpp` of `MT2D/` outside `ObjectCore/` became a `.c` file (same names, so build lists must be updated), and the headers have C linkage (`extern "C"`), so C++ projects keep working. `ObjectCore` is still C++ for now, see [MIGRATION.md](MIGRATION.md) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
 - `close()` in `SDL/MT2D_SDL_main` was renamed `MT2D_SDL_Close()` (it clashed with `close()` from `<unistd.h>` in C) ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
 - The Windows UWP accelerometer code (C++/CX) moved from `_WINDOWS/IO/MT2D_Win_Joystick` to `_WINDOWS/IO/MT2D_Win_Uwp.cpp`, the only engine file outside `ObjectCore` that stays C++; UWP projects must add it to the build ([#29](https://github.com/lucas-zimerman/MT2D/pull/29))
-- `MT2D_VAR.Data` is now an inline union (`Data.i`, `Data.c`, `Data.f`, `Data.p`) and `MT2D_VAR.Name` an inline `char[MT2D_VAR_NAME_MAX]`: one allocation per var instead of three, see [MIGRATION.md](MIGRATION.md).
-- Var names are limited to `MT2D_VAR_NAME_MAX - 1` (18) characters. Longer names are rejected: the constructors return `NULL` and set `Var_Name_Too_Long`. Store long texts (e.g. sound paths) in a `VAR_STRING` var.
-- `MT2D_Object_Set_Var(Var, void*, Type)` copies the value instead of taking ownership of the pointer, and the `int`/`float`/`bool` overloads now store their value. The `char*`, `unsigned` and the never implemented `Create_Var_UInt/UChar` were removed.
-- `MT2D_Object_Create_Var` returns `NULL` (with `Var_Null_Data`/`Var_Null_Name`) on bad input.
-- `Cscript_Play*FromContainer` no longer cache the loaded file inside the var.
-- `bool` and `unsigned` var types were removed from MT2D_Var.
-- `Sprite` no longer has `Data`/`RotatedTexture`, ASCII sprites use a compact slice image and SDL images use `MT2D_Internal_Image`, see [MIGRATION.md](MIGRATION.md) ([#4](https://github.com/lucas-zimerman/MT2D/issues/4)).
-- Engine `FILE` references were replaced by `MT2D_FILE`.
-- File seek now accepts `long` values, and container coordinates are now `long`.
-- MS-DOS code was refactored (files renamed to the 8.3 format, e.g. `M2Render.cpp`, `M2Init.cpp`).
-- User_Vars is always initialized and you should add additional variables using Object_Add_Variable or Object_Add_Variables.
-- If you replace the content of User_Vars, ObjectCore will not work when dealing with primary variables.
-- To Capture the primitive parameters you can use one of the following methods:
-
-method1:
-```c
-//Set 12 to the posX coord
-Object.User_Vars[Object_PosX_Var_Index].Data.i = 12;
-```
-method2:
-```c
-ObjectPosX(Object) = 12;
-```
+- `MT2D_VAR.Data` is now an inline union (`Data.i`, `Data.c`, `Data.f`, `Data.p`) and `MT2D_VAR.Name` an inline `char[MT2D_VAR_NAME_MAX]`: one allocation per var instead of three, see [MIGRATION.md](MIGRATION.md) ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- Var names are limited to `MT2D_VAR_NAME_MAX - 1` (18) characters. Longer names are rejected: the constructors return `NULL` and set `Var_Name_Too_Long`. Store long texts (e.g. sound paths) in a `VAR_STRING` var ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- `MT2D_Object_Set_Var(Var, void*, Type)` copies the value instead of taking ownership of the pointer, and the `int`/`float`/`bool` overloads now store their value. The `char*`, `unsigned` and the never implemented `Create_Var_UInt/UChar` were removed ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- `MT2D_Object_Create_Var` returns `NULL` (with `Var_Null_Data`/`Var_Null_Name`) on bad input ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- `Cscript_Play*FromContainer` no longer cache the loaded file inside the var ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- `Sprite` no longer has `Data`/`RotatedTexture`, ASCII sprites use a compact slice image and SDL images use `MT2D_Internal_Image`, see [MIGRATION.md](MIGRATION.md) ([#4](https://github.com/lucas-zimerman/MT2D/issues/4)) ([#17](https://github.com/lucas-zimerman/MT2D/pull/17))
 - MS-DOS VGA: `MSDOS_USE_DOUBLE_BUFFER` no longer works (it is accepted but ignored): the renderer has no double buffer anymore and writes each changed 4x8 tile once, without flicker. Remove the define from your build flags and expect 64 KB less RAM use. `MSDOS_USE_SPRITE_TILE_RENDER` (the tile renderer is the only one now), `MT2D_Dos_Render_Sprites()`, the `DOUBLE_BUFFER`, `SpriteTiles` and `ChangedMasks` variables and `VGAsprTi.h` were removed; code that included or used them must be updated, see [MIGRATION.md](MIGRATION.md) ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
 
 ### Features
@@ -63,18 +44,74 @@ ObjectPosX(Object) = 12;
 - `MT2D/Audio/MT2D_Mixer.{h,c}`: portable software mixer in C for 8 bit and 16 bit voices (clamped sum, volume per voice and master, the same sound played again restarts its voice, a full mixer replaces the voice with the least left to play) ([#33](https://github.com/lucas-zimerman/MT2D/pull/33))
 - `MT2D/Audio/MT2D_Wav.{h,c}`: WAV reader (PCM mono, 8/16 bit) and rate converter used to load the sounds ([#33](https://github.com/lucas-zimerman/MT2D/pull/33))
 - `playsound` and `desert` play their sound effects on MS-DOS (`d/*.wav`, also written by their asset scripts), and the CI compiles the mixer, the WAV reader and the Sound Blaster code with DJGPP ([#33](https://github.com/lucas-zimerman/MT2D/pull/33))
-
 - MS-DOS: experimental VGA mode (`MSDOS_USE_GRAPHICS`, mode 13h 320x200 with 256 colors) that draws the text screen with a bitmap font and image sprites from 8 bit BMP files (palette index 0 is transparent). It works with DJGPP (near pointer video memory) and is turned on in the examples with `-DMT2D_DOS_VGA=ON`. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
 - MS-DOS: `Load_Sprite_Image("x.png")` loads `d/x.bmp` (8.3 name), and `examples/tools/png2dos.py` converts the example images. `graphics`, `cscript`, `sprites` and `desert` can be built for DJGPP in this mode. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
 - The CI compiles the VGA files with DJGPP, and the ANSI C check allows C++ under `MT2D/_MSDOS/` for now. ([#30](https://github.com/lucas-zimerman/MT2D/pull/30))
-
 - New `desert` example: a scripted demoscene (monster truck, sand worm, radar and particles are object scripts) showing globals, `CreateObject`, `GotoStateIfHitObject`, `random()` and `PlayMusic`/`PlaySound` (original chase theme and sound effects). ([#27](https://github.com/lucas-zimerman/MT2D/pull/27))
 - Global sprites: `ObjectCore_AddGlobalSprite(path, sprite)` registers a sprite that the object loader uses instead of loading the file a script has in `Show`, see [Object-Scripts.md](Documentation/Object-Scripts.md#globals). The registry holds its own reference, `ObjectCore_RemoveGlobalSprite` and `ObjectCore_ClearGlobalSprites` release it and `ObjectCore_CountGlobalSprites` returns how many are registered. ([#28](https://github.com/lucas-zimerman/MT2D/pull/28))
 - New Cscript functions: `Cscript_JumpToStateIfVar{Lower,Higher,NotEq}`, `Cscript_JumpNextFrameIfVar{Lower,Higher,NotEq}` (`<`, `>`, `!=`) and the relative frame jumps `Cscript_JumpFrames` and `Cscript_JumpFramesIfVar` (any of `<`, `>`, `=`, `!`, `>=`, `<=`). ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Object scripts: describe an object (vars, states, sprites, behaviour) in a text file, compile it with `cscriptc` and load it with `ObjectCore_Load("movingdot.mto")`, see [Object-Scripts.md](https://github.com/lucas-zimerman/MT2D/blob/master/Documentation/Object-Scripts.md) ([#3](https://github.com/lucas-zimerman/MT2D/issues/3)) ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
-- `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them
-- `MT2D_Object_Create_Var_Float`, float support in `MT2D_Object_ADD/SUB` and `MT2D_VAR_CLONE`; `MT2D_Object_VAR_GetInt/GetBool` are now inline
-- Add `MT2D_Types.h` (fixed width types), `Sprite_Create_Ascii_From_Cells` and `Sprite_Get_Char`, ASCII sprites no longer store transparent cells (saves RAM on MS-DOS)
+- `VAR_STRING` vars (`MT2D_Object_Create_Var_String`, `Set_Var_String`, `Get_Var_String`) and `MT2D_Object_VAR_GetPath`; `Cscript_PlaySound`/`PlayMusic` read the file from them ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- `MT2D_Object_Create_Var_Float`, float support in `MT2D_Object_ADD/SUB` and `MT2D_VAR_CLONE`; `MT2D_Object_VAR_GetInt/GetBool` are now inline ([#23](https://github.com/lucas-zimerman/MT2D/pull/23))
+- Add `MT2D_Types.h` (fixed width types), `Sprite_Create_Ascii_From_Cells` and `Sprite_Get_Char`, ASCII sprites no longer store transparent cells (saves RAM on MS-DOS) ([#17](https://github.com/lucas-zimerman/MT2D/pull/17))
+- Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
+- MS-DOS VGA: the renderer writes each changed 4x8 tile once to the video memory, so the 64 KB double buffer is not needed anymore, it makes no `malloc`/`free` per frame and uses about 40 KB less static memory. The spaceship game runs about 1.8x faster in DOSBox. Optional `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace before drawing. ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
+- Speed up the MS-DOS VGA renderer: sprite rows with no transparent pixel are copied with one dword write and the signature of a tile mixes one hash made per sprite, instead of hashing every sprite of every tile on every frame (`desert`, `-O3`, 86Box: 118.8 to 103.6 ms a frame on a 386DX/33, 34.8 to 30.0 ms on a 486DX2/66); add `bench/bench_vram.c` ([#41](https://github.com/lucas-zimerman/MT2D/pull/41))
+
+### Fixes
+
+- A Cscript made with `Cscript_New1` now runs its function in `Cscript_Execute` (it was never called), and `Cscript.h` uses `void(*)(void)` instead of `void(*)()`, so it builds with clang in C89 mode (`-Wstrict-prototypes`). The ANSI C CI check also runs with clang ([#58](https://github.com/lucas-zimerman/MT2D/issues/58)) ([#67](https://github.com/lucas-zimerman/MT2D/pull/67))
+- `Cscript_RemoveFromMemory` no longer frees the model object of `Cscript_New4` / `Cscript_New4V` (`CreateObject`, `GotoStateIfHitObject`): deleting a state built in C freed the model (use after free, double free). A program that relied on that free must now delete the model itself ([#56](https://github.com/lucas-zimerman/MT2D/issues/56)) ([#66](https://github.com/lucas-zimerman/MT2D/pull/66))
+- `JumpToStateIfRandom` and `JumpFramesIfRandom` no longer divide by zero when `max` is 0: `max` <= 0 never jumps ([#57](https://github.com/lucas-zimerman/MT2D/issues/57)) ([#65](https://github.com/lucas-zimerman/MT2D/pull/65))
+- The MS-DOS text renderer read one cell past each row of the screen buffer ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
+- Resizing the terminal made a game on the Linux terminal backend wait for a key press (`KEY_RESIZE` was read as a key) ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
+- `MT2D_Joystick_Get_RightAxisY` returned the right stick X axis ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))
+- The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
+- `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
+- The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
+- Emscripten: `MT2D_System_Beep` no longer waits for the tone to end (it froze the page), the beeps are queued. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
+- Emscripten: arrow keys stayed pressed forever with the joystick code (key releases were never applied), and `Mapped_Button` was not initialised. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
+- MS-DOS VGA mode: `MT2D_Dos_Draw_Window`, `MT2D_Dos_Clear_Main_Window` and the sprite/palette functions had C++ linkage (their `.cpp` files did not include their `extern "C"` headers), so VGA programs did not link. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
+- `Cscript_Empty` now initialises `_void`. ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
+- Fix memory leaks in the container, ObjectCore, input boxes and SDL code, plus a double free and a heap overflow in containers ([#16](https://github.com/lucas-zimerman/MT2D/pull/16))
+- Fix the Linux/macOS terminal (curses) backend: it never refreshed the screen, the clear/draw macros were swapped, `kbhit` ate keys, delays were 1000x too short and macOS did not build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix a missing `#` in `MT2D_Win_Debug.h` that broke every Windows terminal build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix backslashes in include paths and `Objectcore` letter case so the engine builds on Linux and macOS ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add `MT2D_SDL_Joystick_Init`/`Close`/`Update`, so the SDL joystick API works on desktop (arrow keys act as the left stick and held keys are tracked) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix SDL key releases that happened between two frames being lost (quick taps were never seen by the keyboard buffer) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- SDL builds now start in the executable folder, so the font and images are found when the program is launched from another directory ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Add a silent `SDL_Beep` when SDL audio is disabled, so SDL builds link without SDL2_mixer ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
+- Fix CP850 support in the Linux/macOS terminal (curses) backend: the screen buffers are now converted to Unicode when drawn (accents, box drawing, blocks and DOS symbols were blank or approximated) and typed characters are converted back to CP850. Needs `ncursesw` and a UTF-8 locale ([#21](https://github.com/lucas-zimerman/MT2D/pull/21))
+- Remove `#pragma region`/`endregion` from `MT2D_Terminal_Define.h`, which DJGPP's GCC rejects with `-Werror` ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
+- MS-DOS VGA: sprites that were not aligned to the 4x8 tile grid missed their last row/column of tiles, and the tile change detection (a 16 bit hash with a `>5` typo) could skip a redraw, leaving ghost pixels ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
+- Fix the ANSI C CI check: the errors now name the offending file in the job log, not only in the annotation ([#39](https://github.com/lucas-zimerman/MT2D/pull/39))
+- Strict C89 check with clang (Apple clang too): `bool` no longer fails with `-pedantic-errors` (`MT2D_CDecl.h` switches off `-Wc99-extensions` for clang in C89) and 17 `.c` / `.h` files got the final newline they were missing ([#49](https://github.com/lucas-zimerman/MT2D/pull/49))
+
+## 3.0.0 - 2026-11-07
+
+### Breaking
+
+- `bool` and `unsigned` var types were removed from MT2D_Var.
+- Engine `FILE` references were replaced by `MT2D_FILE`.
+- File seek now accepts `long` values, and container coordinates are now `long`.
+- MS-DOS code was refactored (files renamed to the 8.3 format, e.g. `M2Render.cpp`, `M2Init.cpp`).
+- User_Vars is always initialized and you should add additional variables using Object_Add_Variable or Object_Add_Variables.
+- If you replace the content of User_Vars, ObjectCore will not work when dealing with primary variables.
+- To Capture the primitive parameters you can use one of the following methods:
+
+method1:
+```c
+//Set 12 to the posX coord
+*(int*)Object.User_Vars[Object_PosX_Var_Index].Data = 12;
+```
+method2:
+```c
+ObjectPosX(Object) = 12;
+```
+
+### Features
+
 - Add common object parameters as variables (Acceleration, Position, Size) ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
 - Add functions Object_Add_Variable and Object_Add_Variables ([#7](https://github.com/lucas-zimerman/MT2D/pull/7))
 - Add Emscripten support (no audio yet) and a joystick implementation for it ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
@@ -95,27 +132,9 @@ ObjectPosX(Object) = 12;
 - Container refactor: data is no longer fully stored in memory, and it supports temporary files, updating, inserting and removing files, getting where the data is located, and clearing data/containers ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Add functions to create a matrix of vars of any size ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Add MS-DOS tooling notes (`Tools/msdos/readme.txt`) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
-- Add `examples/` with ten CMake based examples (`helloworld`, `inputpopup`, `menu`, `playpcspeaker`, `playsound`, `playmusic`, `asciigraphics`, `graphics`, `cscript`, `sprites`), a DJGPP toolchain file and a CI workflow ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Add `Cscript_New(fn, ...)`, a single constructor for every kind of Cscript function that accepts any number of vars; `Cscript_New1`..`4` still work, see [MIGRATION.md](MIGRATION.md) ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
-- MS-DOS VGA: the renderer writes each changed 4x8 tile once to the video memory, so the 64 KB double buffer is not needed anymore, it makes no `malloc`/`free` per frame and uses about 40 KB less static memory. The spaceship game runs about 1.8x faster in DOSBox. Optional `-DMSDOS_VGA_WAIT_RETRACE` waits the vertical retrace before drawing. ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
-- Speed up the MS-DOS VGA renderer: sprite rows with no transparent pixel are copied with one dword write and the signature of a tile mixes one hash made per sprite, instead of hashing every sprite of every tile on every frame (`desert`, `-O3`, 86Box: 118.8 to 103.6 ms a frame on a 386DX/33, 34.8 to 30.0 ms on a 486DX2/66); add `bench/bench_vram.c` ([#41](https://github.com/lucas-zimerman/MT2D/pull/41))
 
 ### Fixes
 
-- A Cscript made with `Cscript_New1` now runs its function in `Cscript_Execute` (it was never called), and `Cscript.h` uses `void(*)(void)` instead of `void(*)()`, so it builds with clang in C89 mode (`-Wstrict-prototypes`). The ANSI C CI check also runs with clang ([#58](https://github.com/lucas-zimerman/MT2D/issues/58)) ([#67](https://github.com/lucas-zimerman/MT2D/pull/67))
-- `Cscript_RemoveFromMemory` no longer frees the model object of `Cscript_New4` / `Cscript_New4V` (`CreateObject`, `GotoStateIfHitObject`): deleting a state built in C freed the model (use after free, double free). A program that relied on that free must now delete the model itself ([#56](https://github.com/lucas-zimerman/MT2D/issues/56)) ([#66](https://github.com/lucas-zimerman/MT2D/pull/66))
-- `JumpToStateIfRandom` and `JumpFramesIfRandom` no longer divide by zero when `max` is 0: `max` <= 0 never jumps ([#57](https://github.com/lucas-zimerman/MT2D/issues/57)) ([#65](https://github.com/lucas-zimerman/MT2D/pull/65))
-- The MS-DOS text renderer read one cell past each row of the screen buffer ([#51](https://github.com/lucas-zimerman/MT2D/pull/51))
-- Resizing the terminal made a game on the Linux terminal backend wait for a key press (`KEY_RESIZE` was read as a key) ([#48](https://github.com/lucas-zimerman/MT2D/pull/48))
-- `MT2D_Joystick_Get_RightAxisY` returned the right stick X axis ([#47](https://github.com/lucas-zimerman/MT2D/pull/47))
-- The web examples (`web-tui`, `web-gui`) ran too fast on 120 / 144 Hz screens, they were called once per screen refresh. `examples/common/web_timing.h` (`web_step_due(60)`) keeps them at 60 steps a second ([#45](https://github.com/lucas-zimerman/MT2D/pull/45))
-- `Cscript_While` compared the operator as a signed `char`, so `>=` and `<=` never matched ([#40](https://github.com/lucas-zimerman/MT2D/pull/40))
-- The PC speaker emulation of the SDL backend was almost silent: the sine was cast to an integer before the amplitude was applied. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
-- Emscripten: `MT2D_System_Beep` no longer waits for the tone to end (it froze the page), the beeps are queued. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
-- Emscripten: arrow keys stayed pressed forever with the joystick code (key releases were never applied), and `Mapped_Button` was not initialised. ([#35](https://github.com/lucas-zimerman/MT2D/pull/35))
-- MS-DOS VGA mode: `MT2D_Dos_Draw_Window`, `MT2D_Dos_Clear_Main_Window` and the sprite/palette functions had C++ linkage (their `.cpp` files did not include their `extern "C"` headers), so VGA programs did not link. ([#32](https://github.com/lucas-zimerman/MT2D/pull/32))
-
-- `Cscript_Empty` now initialises `_void`. ([#26](https://github.com/lucas-zimerman/MT2D/pull/26))
 - Better memory management in MT2D_Vars and ObjectCore; objects are properly cleared when removed from the object scene ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Allow the use of NULL as functions ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Set SDL Audio to 44KHz ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
@@ -127,19 +146,6 @@ ObjectPosX(Object) = 12;
 - Fix file reading/writing typo in containers and an include overflow ([#6](https://github.com/lucas-zimerman/MT2D/pull/6))
 - Fix SDL issues for MS-DOS/SDL builds and the full path handling ([#9](https://github.com/lucas-zimerman/MT2D/pull/9))
 - Code cleanup (tabs replaced by spaces, unused code removed) ([#8](https://github.com/lucas-zimerman/MT2D/pull/8))
-- Fix memory leaks in the container, ObjectCore, input boxes and SDL code, plus a double free and a heap overflow in containers ([#16](https://github.com/lucas-zimerman/MT2D/pull/16))
-- Fix the Linux/macOS terminal (curses) backend: it never refreshed the screen, the clear/draw macros were swapped, `kbhit` ate keys, delays were 1000x too short and macOS did not build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Fix a missing `#` in `MT2D_Win_Debug.h` that broke every Windows terminal build ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Fix backslashes in include paths and `Objectcore` letter case so the engine builds on Linux and macOS ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Add `MT2D_SDL_Joystick_Init`/`Close`/`Update`, so the SDL joystick API works on desktop (arrow keys act as the left stick and held keys are tracked) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Fix SDL key releases that happened between two frames being lost (quick taps were never seen by the keyboard buffer) ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- SDL builds now start in the executable folder, so the font and images are found when the program is launched from another directory ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Add a silent `SDL_Beep` when SDL audio is disabled, so SDL builds link without SDL2_mixer ([#20](https://github.com/lucas-zimerman/MT2D/pull/20))
-- Fix CP850 support in the Linux/macOS terminal (curses) backend: the screen buffers are now converted to Unicode when drawn (accents, box drawing, blocks and DOS symbols were blank or approximated) and typed characters are converted back to CP850. Needs `ncursesw` and a UTF-8 locale ([#21](https://github.com/lucas-zimerman/MT2D/pull/21))
-- Remove `#pragma region`/`endregion` from `MT2D_Terminal_Define.h`, which DJGPP's GCC rejects with `-Werror` ([#22](https://github.com/lucas-zimerman/MT2D/pull/22))
-- MS-DOS VGA: sprites that were not aligned to the 4x8 tile grid missed their last row/column of tiles, and the tile change detection (a 16 bit hash with a `>5` typo) could skip a redraw, leaving ghost pixels ([#37](https://github.com/lucas-zimerman/MT2D/pull/37))
-- Fix the ANSI C CI check: the errors now name the offending file in the job log, not only in the annotation ([#39](https://github.com/lucas-zimerman/MT2D/pull/39))
-- Strict C89 check with clang (Apple clang too): `bool` no longer fails with `-pedantic-errors` (`MT2D_CDecl.h` switches off `-Wc99-extensions` for clang in C89) and 17 `.c` / `.h` files got the final newline they were missing ([#49](https://github.com/lucas-zimerman/MT2D/pull/49))
 
 ## 2.0.1 - 2019-03-24
 
