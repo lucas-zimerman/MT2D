@@ -4,6 +4,7 @@
 #include <MT2D/ObjectCore/Object.h>
 #include <stdlib.h>
 
+static int calls_void = 0;
 static int calls_obj = 0;
 static int calls_vars = 0;
 static int calls_obj_obj_vars = 0;
@@ -12,7 +13,7 @@ static Object *last_model = 0;
 static MT2D_VAR **last_vars = 0;
 
 static void reset() {
-    calls_obj = calls_vars = calls_obj_obj_vars = 0;
+    calls_void = calls_obj = calls_vars = calls_obj_obj_vars = 0;
     last_caller = last_model = 0;
     last_vars = 0;
 }
@@ -22,10 +23,11 @@ static void fn_vars(Object *o, MT2D_VAR **v) { calls_vars++; last_caller = o; la
 static void fn_obj_obj_vars(Object *o, Object *m, MT2D_VAR **v) {
     calls_obj_obj_vars++; last_caller = o; last_model = m; last_vars = v;
 }
-static void fn_void() {}
+static void fn_void() { calls_void++; }
 
 TEST(empty_has_no_functions) {
     Cscript *c = Cscript_Empty();
+    CHECK(c->_void == 0);
     CHECK(c->_Obj == 0);
     CHECK(c->_Obj_Vars == 0);
     CHECK(c->_Obj_Obj_Vars == 0);
@@ -38,6 +40,18 @@ TEST(new1_stores_void_function) {
     Cscript *c = Cscript_New1(fn_void);
     CHECK(c->_void == fn_void);
     CHECK(c->_Obj == 0);
+    free(c);
+}
+
+TEST(new1_and_execute_void) {
+    reset();
+    Object o;
+    Cscript *c = Cscript_New1(fn_void);
+    Cscript_Execute(&o, c);
+    CHECK_EQ(calls_void, 1);
+    // no caller needed: the function takes no args
+    Cscript_Execute(0, c);
+    CHECK_EQ(calls_void, 2);
     free(c);
 }
 
