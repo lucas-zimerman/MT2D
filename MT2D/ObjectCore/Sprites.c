@@ -74,6 +74,165 @@ char Sprite_Get_Char(const Sprite *Me, int x, int y) {
         return MT2D_Text_Image_Get(Me->Text, x, y);
 }
 
+/* ------------------------------------------------------------------------------------------------
+   Editing (MT2D_SpriteRaw, see SprRaw.h)
+   ------------------------------------------------------------------------------------------------ */
+
+#if defined(MSDOS_USE_GRAPHICS) || defined(MT2D_LINUX_SIXEL)
+#define MT2D_SPRITE_INDEXED_IMAGE /* image sprites are Image->Pixels, 1 byte palette indexes */
+#endif
+
+#if defined(MSDOS_USE_GRAPHICS)
+/* The VGA renderer only redraws the tiles whose sprites changed: every new or edited image gets a new Version */
+static unsigned long Sprite_Image_Serial = 0;
+#define SPRITE_IMAGE_CHANGED(img) ((img)->Version = ++Sprite_Image_Serial)
+#else
+#define SPRITE_IMAGE_CHANGED(img) ((void)0)
+#endif
+
+/* true when Raw has the format of the sprite kind (image or ASCII) of this build */
+static bool Sprite_Raw_Format_Ok(const MT2D_SpriteRaw *Raw, bool image) {
+        if (!Raw || !Raw->Data.Cells || Raw->Width <= 0 || Raw->Height <= 0) return false;
+        if (!image) return !Raw->IsRgba;
+#if defined(SDL_USE)
+        return Raw->IsRgba;
+#elif defined(MT2D_SPRITE_INDEXED_IMAGE)
+        return !Raw->IsRgba;
+#else
+        return false; /* no image sprites on this build */
+#endif
+}
+
+/* ASCII sprite -> Width*Height cells (malloc), NULL when there is no memory */
+static unsigned char *Sprite_Expand_Text(const Sprite *Me) {
+        unsigned char *cells = (unsigned char*)malloc((size_t)Me->SizeX * (size_t)Me->SizeY);
+        if (cells) {
+                memset(cells, 0, (size_t)Me->SizeX * (size_t)Me->SizeY);
+                MT2D_Text_Image_Blit(Me->Text, cells, Me->SizeX, Me->SizeY, 0, 0);
+        }
+        return cells;
+}
+
+Sprite *MT2D_Sprite_Create_From_Raw(const MT2D_SpriteRaw *Raw, bool image, int ScaleX, int ScaleY) {
+        Sprite *S;
+        if (!Sprite_Raw_Format_Ok(Raw, image)) return 0;
+        if (!image) {
+                return Sprite_Create_Ascii_From_Cells(Raw->Width, Raw->Height, (const char*)Raw->Data.Cells);
+        }
+        S = (Sprite*)malloc(sizeof(Sprite));
+        if (!S) return 0;
+        S->Text = 0;
+        S->Image = 0;
+        S->SizeX = Raw->Width;
+        S->SizeY = Raw->Height;
+        S->ScaleX = ScaleX > 0 ? ScaleX : Raw->Width;
+        S->ScaleY = ScaleY > 0 ? ScaleY : Raw->Height;
+        S->type = 1;
+        S->refCount = 0;
+#if defined(SDL_USE)
+        S->Image = MT2D_SDL_Image_Create_Rgba(Raw->Width, Raw->Height, (const unsigned char*)Raw->Data.Rgba);
+#elif defined(MT2D_SPRITE_INDEXED_IMAGE)
+        S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
+        if (S->Image) {
+                S->Image->Pixels = (unsigned char*)malloc((size_t)Raw->Width * (size_t)Raw->Height);
+                if (S->Image->Pixels) {
+                        memcpy(S->Image->Pixels, Raw->Data.Cells, (size_t)Raw->Width * (size_t)Raw->Height);
+                        SPRITE_IMAGE_CHANGED(S->Image);
+                }
+                else {
+                        free(S->Image);
+                        S->Image = 0;
+                }
+        }
+#endif
+        if (!S->Image) {
+                free(S);
+                return 0;
+        }
+        return S;
+}
+
+int MT2D_Sprite_Alter_Block(Sprite *Me, int x, int y, const MT2D_SpriteRaw *Raw) {
+        long x0, y0, x1, y1;
+        int cw, ch, row;
+        const unsigned char *src;
+        size_t cellSize;
+        if (!Me || !Sprite_Raw_Format_Ok(Raw, Me->type != 0)) return 0;
+        if (Me->type != 0 && !Me->Image) return 0;
+        if (Me->type == 0 && !Me->Text) return 0;
+        /* the part of the sprite covered by Raw (longs: x + Width must not overflow) */
+        x0 = x < 0 ? 0 : x;
+        y0 = y < 0 ? 0 : y;
+        x1 = (long)x + Raw->Width;
+        y1 = (long)y + Raw->Height;
+        if (x1 > Me->SizeX) x1 = Me->SizeX;
+        if (y1 > Me->SizeY) y1 = Me->SizeY;
+        if (x0 >= x1 || y0 >= y1) return 0;
+        cw = (int)(x1 - x0);
+        ch = (int)(y1 - y0);
+        cellSize = Raw->IsRgba ? 4 : 1;
+        /* first cell of Raw that lands on the sprite */
+        src = Raw->Data.Cells + ((size_t)(y0 - y) * (size_t)Raw->Width + (size_t)(x0 - x)) * cellSize;
+
+        if (Me->type == 0) {
+                /* the text image is read only: expand, write, compress again */
+                MT2D_Text_Image *text;
+                unsigned char *cells = Sprite_Expand_Text(Me);
+                if (!cells) return 0;
+                for (row = 0; row < ch; row++) {
+                        memcpy(cells + (size_t)(y0 + row) * (size_t)Me->SizeX + (size_t)x0,
+                                src + (size_t)row * (size_t)Raw->Width, (size_t)cw);
+                }
+                text = MT2D_Text_Image_Create(Me->SizeX, Me->SizeY, (const char*)cells);
+                free(cells);
+                if (!text) return 0; /* too many opaque cells or no memory: the sprite is unchanged */
+                MT2D_Text_Image_Free(Me->Text);
+                Me->Text = text;
+                return cw * ch;
+        }
+#if defined(SDL_USE)
+        if (!MT2D_SDL_Image_Update_Rgba(Me->Image, (int)x0, (int)y0, cw, ch, src, Raw->Width * 4)) {
+                return 0;
+        }
+        return cw * ch;
+#elif defined(MT2D_SPRITE_INDEXED_IMAGE)
+        for (row = 0; row < ch; row++) {
+                memcpy(Me->Image->Pixels + (size_t)(y0 + row) * (size_t)Me->SizeX + (size_t)x0,
+                        src + (size_t)row * (size_t)Raw->Width, (size_t)cw);
+        }
+        SPRITE_IMAGE_CHANGED(Me->Image);
+        return cw * ch;
+#else
+        return 0;
+#endif
+}
+
+MT2D_SpriteRaw *MT2D_Sprite_To_SpriteRaw(const Sprite *Me) {
+        MT2D_SpriteRaw *raw;
+        if (!Me || Me->SizeX <= 0 || Me->SizeY <= 0) return 0;
+        if (Me->type == 0) {
+                if (!Me->Text) return 0;
+                raw = MT2D_SpriteRaw_Create(Me->SizeX, Me->SizeY, false);
+                if (raw) MT2D_Text_Image_Blit(Me->Text, raw->Data.Cells, Me->SizeX, Me->SizeY, 0, 0);
+                return raw;
+        }
+        if (!Me->Image) return 0;
+#if defined(SDL_USE)
+        raw = MT2D_SpriteRaw_Create(Me->SizeX, Me->SizeY, true);
+        if (raw && !MT2D_SDL_Image_Read_Rgba(Me->Image, Me->SizeX, Me->SizeY, (unsigned char*)raw->Data.Rgba)) {
+                MT2D_SpriteRaw_Free(raw);
+                raw = 0;
+        }
+        return raw;
+#elif defined(MT2D_SPRITE_INDEXED_IMAGE)
+        raw = MT2D_SpriteRaw_Create(Me->SizeX, Me->SizeY, false);
+        if (raw) memcpy(raw->Data.Cells, Me->Image->Pixels, (size_t)Me->SizeX * (size_t)Me->SizeY);
+        return raw;
+#else
+        return 0;
+#endif
+}
+
 Sprite *Load_Sprite(char *file) {
         Sprite *S=0;
         char BUFF;

@@ -16,6 +16,7 @@ Small programs that show how to use MT2D. Every folder has its own `CMakeLists.t
 | `graphics` | SDL | PNG images drawn on top of the text screen, parallax scrolling, smooth movement with the joystick API, touch stick and button (`MT2D_Touch`) |
 | `cscript` | SDL | Scripts (Cscript) attached to object states |
 | `sprites` | SDL | Animated PNG sprites (walk cycle, spinning coins, ghosts) with `Object`, `ObjectState` and `ObjectScene` |
+| `spriteediting` | SDL, MS-DOS (VGA), Linux Sixel, terminal | Sprites made and edited in code with `MT2D_SpriteRaw` (no asset files), one page per case: paint pixels and a brush, clipping, read back (`MT2D_Sprite_To_SpriteRaw`) and tiles cut with `MT2D_SpriteRaw_Clip`, RGBA semi transparency (SDL), ASCII sprites. `spriteediting_text` (`spredtxt.exe`) is the same program on the text backend, where only the ASCII page has sprites |
 | `desert` | SDL, MS-DOS (VGA) | Object scripts (`ObjectCore_LoadScript`, globals, `CreateObject`, `GotoStateIfHitObject`, `random()`): a monster truck drifts away from a leaping sand worm over parallax scenery, with a looping soundtrack and sound effects played by the scripts (`PlayMusic`, `PlaySound`, need SDL2_mixer; MS-DOS only plays the soundtrack, as IMF music on the OPL2 chip) |
 | `dos/DiscoPallete` | MS-DOS (VGA) only | Funky animations made only with the palette: a spiral is drawn once and every frame a whole new palette is sent with `MT2D_Set_Settings_Argv(MT2D_SET_PALETTE)` |
 | `dos/SetBlaster` | MS-DOS only | The smallest example of how to set up the Sound Blaster (port, irq, dma, rate) with `MT2D_Set_Settings_Argv(MT2D_DOS_SET_AUDIO)` |
@@ -41,7 +42,7 @@ cmake -S examples -B build/examples
 cmake --build build/examples
 ```
 
-SDL examples (`graphics`, `cscript`, `sprites`, `desert`, `playsound`, `playmusic`) run from their `bin` folder, which also receives the font
+SDL examples (`graphics`, `cscript`, `sprites`, `spriteediting`, `desert`, `playsound`, `playmusic`) run from their `bin` folder, which also receives the font
 (`assets/msdos_fnt.png`) and the example's images.
 
 ### Linux
@@ -109,7 +110,7 @@ This builds the terminal examples in the normal text mode. The programs need a D
 
 `-DMT2D_DOS_VGA=ON` builds the VGA renderer (mode 13h: 320x200, 256 colors, the text screen is drawn with a bitmap
 font) which can also draw image sprites. It defines `MSDOS_USE_GRAPHICS` (you can also define it yourself in
-`MT2D_Terminal_Define.h`) and adds the image examples (`graphics`, `cscript`, `sprites`, `desert`) to the build,
+`MT2D_Terminal_Define.h`) and adds the image examples (`graphics`, `cscript`, `sprites`, `spriteediting`, `desert`) to the build,
 the music of `desert` plays on the OPL2 chip (`desert/d/desert.imf`), there are no sound effects. The script compiler is turned on for `desert`.
 
 ```bash
@@ -121,7 +122,7 @@ cmake --build build/dos
 
 `-DMT2D_TERMINAL_GRAPHICS=ON` (defines `MT2D_TERMINAL_USE_GRAPHICS`) draws the Linux terminal backend as a Sixel image, so image
 sprites work in a terminal with Sixel support (foot, wezterm, mlterm, `xterm -ti vt340`). The images come from the converted BMPs of
-the `d` folder, like on MS-DOS. Only the examples that do not need the joystick are built this way (`desert`).
+the `d` folder, like on MS-DOS. Only the examples that do not need the joystick are built this way (`desert`, `spriteediting`).
 `-DMT2D_TERMINAL_AUDIO=ON` adds the sound (`.wav` / `.ogg`, played by `paplay` / `pw-play` / `aplay` / `ffplay`, so it must be installed): the
 wav and ogg assets are copied next to the executable.
 

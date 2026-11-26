@@ -107,6 +107,7 @@ int MT2D_Dos_Load_BMP(FILE *file,Sprite *S)
 
   S->Image = (MT2D_Internal_Image*)malloc(sizeof(MT2D_Internal_Image));
   if (!S->Image) return 0;
+  S->Image->Version = 0;
   S->Image->Pixels = (unsigned char *) malloc((size_t)Width*Height);
   if (!S->Image->Pixels) {
     free(S->Image);

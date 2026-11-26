@@ -16,7 +16,8 @@ Needs a C++11 and a C99 compiler and CMake 3.10+ (the tests are C++, the new eng
 | `test_vars.cpp` | `ObjectCore/Vars.c` |
 | `test_state.cpp` | `ObjectCore/State.c` |
 | `test_spriteblock.cpp` | `ObjectCore/SpriteBlock.c` |
-| `test_sprites.cpp` | `ObjectCore/Sprites.c` |
+| `test_sprites.cpp` | `ObjectCore/Sprites.c` (ASCII sprite editing too) |
+| `test_sprraw.cpp` | `ObjectCore/SprRaw.c` |
 | `test_cscript.cpp` | `ObjectCore/Cscript.c` |
 | `test_object.cpp` | `ObjectCore/Object.c` (objects and scenes) |
 | `test_stdfunctions.cpp` | `ObjectCore/STDFunctions.c` (built in Cscript functions, audio calls are no-ops) |

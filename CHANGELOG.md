@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+- Add `MT2D_SpriteRaw` (`MT2D/ObjectCore/SprRaw.h`, included by `Sprites.h`) to make and edit sprites in code: uncompressed cells you edit directly (1 byte characters / palette indexes, or `MT2D_RGBA`), with `MT2D_SpriteRaw_Create`, `MT2D_SpriteRaw_Clip` (shrinks to the overlap) and `MT2D_SpriteRaw_Free`. `MT2D_Sprite_Create_From_Raw` makes an ASCII or image sprite from a raw (a blank sprite from a new raw), `MT2D_Sprite_Alter_Block` writes a raw into a sprite (clipped, returns the cells written) and `MT2D_Sprite_To_SpriteRaw` reads a sprite back (heavy on SDL: GPU read back). ASCII sprites and MS-DOS VGA / Linux Sixel images take 1 byte cells, SDL images take RGBA cells with semi transparency, see [sprites.md](Documentation/scripting/sprites.md#editing-sprites-mt2d_spriteraw) ([#71](https://github.com/lucas-zimerman/MT2D/pull/71))
+
 ## 4.0.0
 
 ### Breaking

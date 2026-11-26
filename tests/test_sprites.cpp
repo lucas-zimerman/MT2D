@@ -158,4 +158,172 @@ TEST(delete_sprite_respects_refcount) {
     Sprite_Delete(0);         // null is accepted
 }
 
+// ---- editing with MT2D_SpriteRaw (terminal build: ASCII sprites only) ----
+
+static MT2D_SpriteRaw *raw_from(int w, int h, const char *cells) {
+    MT2D_SpriteRaw *r = MT2D_SpriteRaw_Create(w, h, false);
+    memcpy(r->Data.Cells, cells, (size_t)(w * h));
+    return r;
+}
+
+TEST(create_from_raw_ascii) {
+    MT2D_SpriteRaw *r = raw_from(3, 2, "AB\0D\0F");
+    Sprite *s = MT2D_Sprite_Create_From_Raw(r, false, 7, 7);
+    MT2D_SpriteRaw_Free(r); // the sprite has its own copy
+    CHECK(s != 0);
+    CHECK_EQ(s->type, 0);
+    CHECK_EQ(s->SizeX, 3);
+    CHECK_EQ(s->SizeY, 2);
+    CHECK_EQ(s->ScaleX, 1); // ignored by ASCII sprites
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'A');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 0), 'B');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 0), 0);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 1), 'D');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 0);
+    CHECK_EQ(Sprite_Get_Char(s, 2, 1), 'F');
+    Sprite_Delete(s);
+}
+
+TEST(create_from_blank_raw_is_transparent) {
+    MT2D_SpriteRaw *r = MT2D_SpriteRaw_Create(4, 3, false);
+    Sprite *s = MT2D_Sprite_Create_From_Raw(r, false, 0, 0);
+    MT2D_SpriteRaw_Free(r);
+    CHECK(s != 0);
+    CHECK_EQ(s->SizeX, 4);
+    CHECK_EQ(s->SizeY, 3);
+    clear_windows();
+    WINDOW1[0][0] = 'z';
+    CHECK(Sprite_Render_on_Window(s, DISPLAY_WINDOW1, 0, 0));
+    CHECK_EQ(WINDOW1[0][0], 'z'); // nothing drawn
+    Sprite_Delete(s);
+}
+
+TEST(create_from_raw_rejects_wrong_formats) {
+    MT2D_SpriteRaw *rgba = MT2D_SpriteRaw_Create(2, 2, true);
+    MT2D_SpriteRaw *cells = MT2D_SpriteRaw_Create(2, 2, false);
+    CHECK(MT2D_Sprite_Create_From_Raw(0, false, 0, 0) == 0);
+    CHECK(MT2D_Sprite_Create_From_Raw(rgba, false, 0, 0) == 0); // ASCII needs 1 byte cells
+    // the terminal build has no image sprites
+    CHECK(MT2D_Sprite_Create_From_Raw(cells, true, 0, 0) == 0);
+    CHECK(MT2D_Sprite_Create_From_Raw(rgba, true, 0, 0) == 0);
+    MT2D_SpriteRaw_Free(rgba);
+    MT2D_SpriteRaw_Free(cells);
+}
+
+TEST(alter_block_inside) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(4, 3, "abcd" "efgh" "ijkl");
+    MT2D_SpriteRaw *r = raw_from(2, 2, "XY" "Z\0");
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 1, 1, r), 4);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 1), 'e');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 'X');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 1), 'Y');
+    CHECK_EQ(Sprite_Get_Char(s, 3, 1), 'h');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 2), 'Z');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 2), 0); // a transparent cell erases
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'a');
+    MT2D_SpriteRaw_Free(r);
+    Sprite_Delete(s);
+}
+
+TEST(alter_block_single_cell) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(2, 1, "ab");
+    MT2D_SpriteRaw *r = raw_from(1, 1, "Q");
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 1, 0, r), 1);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'a');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 0), 'Q');
+    MT2D_SpriteRaw_Free(r);
+    Sprite_Delete(s);
+}
+
+TEST(alter_block_clips_top_left) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(3, 3, "abc" "def" "ghi");
+    MT2D_SpriteRaw *r = raw_from(3, 3, "123" "456" "789");
+    // only 5 6 / 8 9 land on the sprite, at (0,0)
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, -1, -1, r), 4);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), '5');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 0), '6');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 0), 'c');
+    CHECK_EQ(Sprite_Get_Char(s, 0, 1), '8');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), '9');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 2), 'i');
+    MT2D_SpriteRaw_Free(r);
+    Sprite_Delete(s);
+}
+
+TEST(alter_block_clips_bottom_right) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(3, 3, "abc" "def" "ghi");
+    MT2D_SpriteRaw *r = raw_from(3, 3, "123" "456" "789");
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 2, 1, r), 2);
+    CHECK_EQ(Sprite_Get_Char(s, 2, 1), '1');
+    CHECK_EQ(Sprite_Get_Char(s, 2, 2), '4');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 'e');
+    MT2D_SpriteRaw_Free(r);
+    Sprite_Delete(s);
+}
+
+TEST(alter_block_misses_or_rejects) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(2, 2, "abcd");
+    MT2D_SpriteRaw *r = raw_from(2, 2, "WXYZ");
+    MT2D_SpriteRaw *rgba = MT2D_SpriteRaw_Create(2, 2, true);
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 2, 0, r), 0);
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 0, -2, r), 0);
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 2147483647, 0, r), 0); // no int overflow
+    CHECK_EQ(MT2D_Sprite_Alter_Block(0, 0, 0, r), 0);
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 0, 0, 0), 0);
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 0, 0, rgba), 0); // ASCII takes 1 byte cells
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'a');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 'd');
+    MT2D_SpriteRaw_Free(rgba);
+    MT2D_SpriteRaw_Free(r);
+    Sprite_Delete(s);
+}
+
+TEST(alter_block_with_own_buffer) {
+    // a raw filled by hand, pointing to a 2D array of the caller
+    unsigned char block[2][3] = { { 'p', 'q', 'r' }, { 's', 0, 'u' } };
+    MT2D_SpriteRaw r;
+    r.Width = 3;
+    r.Height = 2;
+    r.IsRgba = false;
+    r.Data.Cells = &block[0][0];
+    Sprite *s = Sprite_Create_Ascii_From_Cells(3, 2, "abcdef");
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 0, 0, &r), 6);
+    CHECK_EQ(Sprite_Get_Char(s, 2, 0), 'r');
+    CHECK_EQ(Sprite_Get_Char(s, 0, 1), 's');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 0);
+    Sprite_Delete(s);
+}
+
+TEST(to_sprite_raw_ascii_round_trip) {
+    Sprite *s = Sprite_Create_Ascii_From_Cells(3, 2, "a\0c" "def");
+    MT2D_SpriteRaw *r = MT2D_Sprite_To_SpriteRaw(s);
+    CHECK(r != 0);
+    CHECK(!r->IsRgba);
+    CHECK_EQ(r->Width, 3);
+    CHECK_EQ(r->Height, 2);
+    CHECK(memcmp(r->Data.Cells, "a\0c" "def", 6) == 0);
+    // edit the raw and write it back
+    r->Data.Cells[1] = 'B';
+    CHECK_EQ(MT2D_Sprite_Alter_Block(s, 0, 0, r), 6);
+    CHECK_EQ(Sprite_Get_Char(s, 1, 0), 'B');
+    MT2D_SpriteRaw_Free(r);
+    CHECK(MT2D_Sprite_To_SpriteRaw(0) == 0);
+    Sprite_Delete(s);
+}
+
+TEST(to_sprite_raw_then_clip_makes_a_tile) {
+    Sprite *sheet = Sprite_Create_Ascii_From_Cells(4, 2, "AABB" "AABB");
+    MT2D_SpriteRaw *all = MT2D_Sprite_To_SpriteRaw(sheet);
+    MT2D_SpriteRaw *tile = MT2D_SpriteRaw_Clip(all, 2, 0, 2, 2);
+    Sprite *s = MT2D_Sprite_Create_From_Raw(tile, false, 0, 0);
+    CHECK(s != 0);
+    CHECK_EQ(s->SizeX, 2);
+    CHECK_EQ(Sprite_Get_Char(s, 0, 0), 'B');
+    CHECK_EQ(Sprite_Get_Char(s, 1, 1), 'B');
+    MT2D_SpriteRaw_Free(tile);
+    MT2D_SpriteRaw_Free(all);
+    Sprite_Delete(s);
+    Sprite_Delete(sheet);
+}
+
 MT2D_TEST_MAIN()

@@ -166,6 +166,7 @@ void Dos_Add_ImagetoBuffer(Sprite *IMG,int X, int Y) {
 		h = h * 31 + (unsigned long)s->Y;
 		h = h * 31 + (unsigned long)s->W;
 		h = h * 31 + (unsigned long)s->H;
+		h = h * 31 + IMG->Image->Version; /*edited pixels (see DosImg.h)*/
 		s->Hash = h;
 	}
 
