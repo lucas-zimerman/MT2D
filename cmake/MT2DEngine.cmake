@@ -56,6 +56,7 @@ set(MT2D_COMMON_SOURCES
     ObjectCore/ObjectGlobals.c
     ObjectCore/ObjectLoader.c
     ObjectCore/SpriteBlock.c
+    ObjectCore/SprRaw.c
     ObjectCore/Sprites.c
     ObjectCore/State.c
     ObjectCore/STDContainer.c
